@@ -1,0 +1,30 @@
+{
+    "name": "hybridtm/hybridtm",
+    "description": "HybridTM \u2014 PHP threat-modeling compiler that generates Threagile YAML from a PHP DSL and #[DataFlow] code attributes.",
+    "type": "library",
+    "license": "MIT",
+    "require": {
+        "php": ">=8.2",
+        "nikic/php-parser": "^5.7",
+        "symfony/console": "^8.0",
+        "symfony/yaml": "^7.0|^8.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "HybridTM\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "HybridTM\\Tests\\": "tests/"
+        }
+    },
+    "bin": [
+        "bin/hybridtm"
+    ],
+    "config": {
+        "sort-packages": true,
+        "optimize-autoloader": true
+    },
+    "minimum-stability": "stable"
+}

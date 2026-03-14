@@ -1,0 +1,21 @@
+#!/usr/bin/env php
+<?php
+
+declare(strict_types=1);
+
+$autoload = dirname(__DIR__) . '/vendor/autoload.php';
+
+if (!file_exists($autoload)) {
+    fwrite(STDERR, "Run `composer install` first.\n");
+    exit(1);
+}
+
+require $autoload;
+
+use HybridTM\Console\CompileCommand;
+use Symfony\Component\Console\Application;
+
+$app = new Application('HybridTM Threat Modeler', '0.1.0');
+$app->addCommand(new CompileCommand());
+$app->setDefaultCommand('compile');
+$app->run();
