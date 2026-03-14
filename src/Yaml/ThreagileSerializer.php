@@ -99,7 +99,8 @@ final class ThreagileSerializer
                 'data_assets_processed' => array_values(array_unique($asset->dataAssetsProcessed)),
                 'data_assets_stored' => array_values(array_unique($asset->dataAssetsStored)),
                 'data_formats_accepted' => $asset->dataFormatsAccepted,
-                'communication_links' => $links,
+                // Must be a YAML map, never a sequence — use stdClass when empty.
+                'communication_links' => $links !== [] ? $links : (object) [],
             ];
         }
         return $result;

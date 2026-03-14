@@ -1,0 +1,24 @@
+# Dependencies
+/vendor/
+
+# Composer lock is committed for applications, not libraries.
+# Uncomment if this is deployed as an application:
+# composer.lock
+
+# Generated threat model artifacts
+/build/
+/threagile-output/
+
+# Threagile YAML is generated — commit it only if you want CI diffs.
+# Remove this line if you want to track threagile.yaml in git.
+threagile.yaml
+
+# IDE / editor
+/.idea/
+/.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# PHP
+*.cache

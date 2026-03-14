@@ -2,12 +2,15 @@
 declare(strict_types=1);
 namespace HybridTM\Enums;
 
+/** Protocol values as accepted by Threagile 1.x (-list-types). */
 enum Protocol: string {
     case Unknown = 'unknown-protocol';
     case Http = 'http';
     case Https = 'https';
     case Ws = 'ws';
     case Wss = 'wss';
+    case ReverseProxyWebProtocol = 'reverse-proxy-web-protocol';
+    case ReverseProxyWebProtocolEncrypted = 'reverse-proxy-web-protocol-encrypted';
     case Mqtt = 'mqtt';
     case Jdbc = 'jdbc';
     case JdbcEncrypted = 'jdbc-encrypted';
@@ -33,12 +36,19 @@ enum Protocol: string {
     case Ftps = 'ftps';
     case Sftp = 'sftp';
     case Scp = 'scp';
+    case Ldap = 'ldap';
+    case Ldaps = 'ldaps';
+    case Jms = 'jms';
     case Nfs = 'nfs';
     case Smb = 'smb';
     case SmbEncrypted = 'smb-encrypted';
     case LocalFileAccess = 'local-file-access';
-    case Ldap = 'ldap';
-    case LdapEncrypted = 'ldap-encrypted';
+    case Nrpe = 'nrpe';
+    case Xmpp = 'xmpp';
+    case Iiop = 'iiop';
+    case IiopEncrypted = 'iiop-encrypted';
+    case Jrmp = 'jrmp';
+    case JrmpEncrypted = 'jrmp-encrypted';
     case InProcessLibraryCall = 'in-process-library-call';
     case ContainerSpawning = 'container-spawning';
 }

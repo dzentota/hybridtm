@@ -237,7 +237,7 @@ $link->tags           = [];
 `Business` | `DevOps`
 
 ### `Encryption`
-`None` | `Transparent` | `SymmetricSharedKey` | `AsymmetricSharedKey` | `EndToEnd` | `EndToEndOwnData`
+`None` | `Transparent` | `DataWithSymmetricSharedKey` | `DataWithAsymmetricSharedKey` | `DataWithEnduserIndividualKey`
 
 ### `Machine`
 `Physical` | `Virtual` | `Container` | `Serverless`
@@ -246,7 +246,7 @@ $link->tags           = [];
 `Accepted` | `InProgress` | `Mitigated` | `Unchecked`
 
 ### `Protocol`
-`Unknown` | `Http` | `Https` | `Ws` | `Wss` | `Mqtt` | `Jdbc` | `JdbcEncrypted` | `Odbc` | `OdbcEncrypted` | `SqlAccessProtocol` | `SqlAccessProtocolEncrypted` | `NosqlAccessProtocol` | `NosqlAccessProtocolEncrypted` | `Binary` | `BinaryEncrypted` | `Text` | `TextEncrypted` | `Ssh` | `SshTunnel` | `Smtp` | `SmtpEncrypted` | `Pop3` | `Pop3Encrypted` | `Imap` | `ImapEncrypted` | `Ftp` | `Ftps` | `Sftp` | `Scp` | `Nfs` | `Smb` | `SmbEncrypted` | `LocalFileAccess` | `Ldap` | `LdapEncrypted` | `InProcessLibraryCall` | `ContainerSpawning`
+`Unknown` | `Http` | `Https` | `Ws` | `Wss` | `ReverseProxyWebProtocol` | `ReverseProxyWebProtocolEncrypted` | `Mqtt` | `Jdbc` | `JdbcEncrypted` | `Odbc` | `OdbcEncrypted` | `SqlAccessProtocol` | `SqlAccessProtocolEncrypted` | `NosqlAccessProtocol` | `NosqlAccessProtocolEncrypted` | `Binary` | `BinaryEncrypted` | `Text` | `TextEncrypted` | `Ssh` | `SshTunnel` | `Smtp` | `SmtpEncrypted` | `Pop3` | `Pop3Encrypted` | `Imap` | `ImapEncrypted` | `Ftp` | `Ftps` | `Sftp` | `Scp` | `Ldap` | `Ldaps` | `Jms` | `Nfs` | `Smb` | `SmbEncrypted` | `LocalFileAccess` | `Nrpe` | `Xmpp` | `Iiop` | `IiopEncrypted` | `Jrmp` | `JrmpEncrypted` | `InProcessLibraryCall` | `ContainerSpawning`
 
 ### `Quantity`
 `VeryFew` | `Few` | `Many` | `VeryMany`
@@ -255,7 +255,7 @@ $link->tags           = [];
 `System` | `Service` | `Application` | `Component`
 
 ### `Technology`
-`WebServiceRest` | `WebServiceSoap` | `WebApplication` | `MobileApp` | `Desktop` | `Browser` | `CommandLine` | `Database` | `FileServer` | `LocalFileSystem` | `Erp` | `Cms` | `WebApplicationFirewall` | `ReverseProxy` | `LoadBalancer` | `BuildPipeline` | `SourcecodeRepository` | `ArtifactRegistry` | `CodeInspectionPlatform` | `Monitoring` | `LdapServer` | `ContainerPlatform` | `BatchProcessing` | `EventListener` | `StreamProcessing` | `ServiceMesh` | `DataLake` | `Unknown`
+`Unknown` | `ClientSystem` | `Browser` | `Desktop` | `MobileApp` | `DevopsClient` | `WebServer` | `WebApplication` | `ApplicationServer` | `WebServiceRest` | `WebServiceSoap` | `Database` | `FileServer` | `LocalFileSystem` | `Erp` | `Cms` | `SearchIndex` | `SearchEngine` | `ServiceRegistry` | `ReverseProxy` | `LoadBalancer` | `Waf` | `Ids` | `Ips` | `BuildPipeline` | `SourcecodeRepository` | `ArtifactRegistry` | `CodeInspectionPlatform` | `Monitoring` | `LdapServer` | `IdentityProvider` | `IdentityStoreLdap` | `IdentityStoreDatabase` | `ContainerPlatform` | `BatchProcessing` | `EventListener` | `MessageQueue` | `StreamProcessing` | `ServiceMesh` | `DataLake` | `ReportEngine` | `Ai` | `MailServer` | `Vault` | `Hsm` | `Scheduler` | `Mainframe` | `BlockStorage` | `Gateway` | `IoTDevice` | `Function` | `Tool` | `Cli` | `Library`
 
 ### `TrustBoundaryType`
 `NetworkOnPrem` | `NetworkDedicatedHoster` | `NetworkVirtualLan` | `NetworkCloudProvider` | `NetworkCloudSecurityGroup` | `NetworkPolicyNamespaceIsolation` | `ExecutionEnvironment`
@@ -319,7 +319,7 @@ $model->addTechnicalAsset($api);
 $db = new TechnicalAsset('payment-db', 'Payment DB');
 $db->type = AssetType::Datastore;
 $db->technology = Technology::Database;
-$db->encryption = Encryption::SymmetricSharedKey;
+$db->encryption = Encryption::DataWithSymmetricSharedKey;
 $db->dataAssetsStored = ['card-data'];
 $model->addTechnicalAsset($db);
 
