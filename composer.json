@@ -26,5 +26,14 @@
         "sort-packages": true,
         "optimize-autoloader": true
     },
+    "require-dev": {
+        "phpunit/phpunit": "^11"
+    },
+    "authors": [
+        {
+            "name": "Alex Tatulchenkov",
+            "email": "webtota@gmail.com"
+        }
+    ],
     "minimum-stability": "stable"
 }

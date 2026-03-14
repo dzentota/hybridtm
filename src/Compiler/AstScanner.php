@@ -32,9 +32,10 @@ final class AstScanner
             $errorHandler = new Collecting();
             $stmts = $parser->parse($code, $errorHandler);
 
-            if ($stmts === null) {
-                $warnings[] = "Parse error in {$file->getPathname()}: " . implode('; ', array_map(fn($e) => $e->getMessage(), $errorHandler->getErrors()));
-                continue;
+            if ($stmts === null || $errorHandler->hasErrors()) {
+                $errors = array_map(fn($e) => $e->getMessage(), $errorHandler->getErrors());
+                $warnings[] = "Parse error in {$file->getPathname()}: " . implode('; ', $errors);
+                if ($stmts === null) continue;
             }
 
             $traverser->traverse($stmts);
