@@ -1,52 +1,52 @@
-# Справочник: DSL, Атрибуты, Перечисления
+# Reference: DSL, Attributes, and Enumerations
 
-Полная документация по всем классам, атрибутам и перечислениям HybridTM.
-
----
-
-## Оглавление
-
-1. [CLI-команды](#cli-команды)
-2. [ThreatModel — корневой объект модели](#threatmodel)
-3. [TechnicalAsset — технические компоненты](#technicalasset)
-4. [DataAsset — типы данных](#dataasset)
-5. [TrustBoundary — границы доверия](#trustboundary)
-6. [CommunicationLink — соединения](#communicationlink)
-7. [Атрибуты кода](#атрибуты-кода)
-8. [Перечисления](#перечисления)
-9. [Быстрая шпаргалка по перечислениям](#быстрая-шпаргалка-по-перечислениям)
+Complete reference for all HybridTM classes, attributes, and enumerations.
 
 ---
 
-## CLI-команды
+## Table of Contents
+
+1. [CLI Commands](#cli-commands)
+2. [ThreatModel — Root Model Object](#threatmodel)
+3. [TechnicalAsset — Technical Components](#technicalasset)
+4. [DataAsset — Data Types](#dataasset)
+5. [TrustBoundary — Security Zones](#trustboundary)
+6. [CommunicationLink — Connections](#communicationlink)
+7. [Code Attributes](#code-attributes)
+8. [Enumerations](#enumerations)
+9. [Quick Cheat Sheet](#quick-cheat-sheet)
+
+---
+
+## CLI Commands
 
 ### `compile`
 
-Компилирует DSL-файл и PHP-атрибуты в Threagile YAML.
+Compiles the DSL file and PHP attributes into Threagile YAML.
 
 ```bash
 php bin/hybridtm compile [options]
 ```
 
-| Опция | По умолчанию | Описание |
-|-------|-------------|----------|
-| `--infra=PATH` | `threat-model.php` | Путь к DSL-файлу инфраструктуры |
-| `--source=DIR` | `src/` | Директория для сканирования PHP-атрибутов |
-| `--out=PATH` | `threagile.yaml` | Выходной файл Threagile YAML |
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--infra=PATH` | `threat-model.php` | Path to the infrastructure DSL file |
+| `--source=DIR` | `src/` | Directory to scan for PHP attributes |
+| `--out=PATH` | `threagile.yaml` | Output Threagile YAML file |
 
-**Примеры:**
+**Examples:**
 
 ```bash
-# Стандартный запуск
+# Standard run
 php bin/hybridtm compile
 
-# Явные пути
+# Explicit paths
 php bin/hybridtm compile \
     --infra=security/threat-model.php \
     --source=app/src/ \
     --out=build/threagile.yaml
 
-# В Docker (для CI без локального PHP)
+# Inside Docker (for CI without a local PHP installation)
 docker run --rm \
     -v "$(pwd):/app" \
     -w /app \
@@ -54,150 +54,150 @@ docker run --rm \
     php bin/hybridtm compile --infra=threat-model.php --source=src/
 ```
 
-**Выходные сообщения:**
+**Console output:**
 
-- `✓ Loaded DSL` — DSL-файл загружен и валиден
-- `✓ Scanned N file(s), found M data flow(s)` — результат AST-сканирования
-- `WARNING: [DataFlow@Class::method] ...` — предупреждения (атрибут не создан в YAML)
-- `ERROR: ...` — критическая ошибка (неизвестный ID актива), выход с кодом 1
+- `✓ Loaded DSL` — DSL file loaded and valid.
+- `✓ Scanned N file(s), found M data flow(s)` — AST scan result.
+- `WARNING: [DataFlow@Class::method] ...` — attribute not written to YAML (non-fatal).
+- `ERROR: ...` — critical failure (unknown asset ID); exits with code 1.
 
 ---
 
 ## ThreatModel
 
-Корневой объект модели. Создаётся в DSL-файле, возвращается через `return $model;`.
+Root object of the model. Created in the DSL file and returned via `return $model;`.
 
 ```php
 use HybridTM\DSL\ThreatModel;
 
-$model = new ThreatModel('Название системы');
+$model = new ThreatModel('System Name');
 ```
 
-### Свойства
+### Properties
 
-| Свойство | Тип | По умолчанию | Описание |
-|----------|-----|-------------|----------|
-| `title` | `string` | _(конструктор)_ | Название системы / продукта |
-| `description` | `string` | `''` | Краткое описание |
-| `author` | `string` | `''` | Автор / владелец модели |
-| `date` | `string` | `''` | Дата в формате `YYYY-MM-DD`; пустая → текущий год |
-| `businessCriticality` | `BusinessCriticality` | `Important` | Критичность для бизнеса |
-| `managementSummaryComment` | `string` | `''` | Комментарий для executive summary |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `title` | `string` | _(constructor)_ | System / product name |
+| `description` | `string` | `''` | Short description |
+| `author` | `string` | `''` | Author / model owner |
+| `date` | `string` | `''` | Date as `YYYY-MM-DD`; empty → current year |
+| `businessCriticality` | `BusinessCriticality` | `Important` | Business criticality level |
+| `managementSummaryComment` | `string` | `''` | Executive summary comment |
 
-### Методы
+### Methods
 
-| Метод | Описание |
-|-------|----------|
-| `addDataAsset(DataAsset)` | Добавить тип данных; возвращает `$this` |
-| `addTechnicalAsset(TechnicalAsset)` | Добавить компонент; возвращает `$this` |
-| `addTrustBoundary(TrustBoundary)` | Добавить границу доверия; возвращает `$this` |
-| `getDataAsset(string $id)` | Найти DataAsset по ID или `null` |
-| `getTechnicalAsset(string $id)` | Найти TechnicalAsset по ID или `null` |
-| `getDataAssets()` | Все DataAssets, индексированные по ID |
-| `getTechnicalAssets()` | Все TechnicalAssets, индексированные по ID |
-| `getTrustBoundaries()` | Все TrustBoundaries, индексированные по ID |
+| Method | Description |
+|--------|-------------|
+| `addDataAsset(DataAsset)` | Add a data type; returns `$this` |
+| `addTechnicalAsset(TechnicalAsset)` | Add a component; returns `$this` |
+| `addTrustBoundary(TrustBoundary)` | Add a trust boundary; returns `$this` |
+| `getDataAsset(string $id)` | Find a DataAsset by ID, or `null` |
+| `getTechnicalAsset(string $id)` | Find a TechnicalAsset by ID, or `null` |
+| `getDataAssets()` | All DataAssets indexed by ID |
+| `getTechnicalAssets()` | All TechnicalAssets indexed by ID |
+| `getTrustBoundaries()` | All TrustBoundaries indexed by ID |
 
 ---
 
 ## TechnicalAsset
 
-Представляет технический компонент системы: сервис, базу данных, внешнюю систему.
+Represents a technical component: a service, database, external system, or client.
 
 ```php
 use HybridTM\DSL\TechnicalAsset;
 
-$asset = new TechnicalAsset('asset-id', 'Human-readable Name');
-// Если name не указан — name = id
+$asset = new TechnicalAsset('asset-id', 'Human-Readable Name');
+// If name is omitted, it defaults to the id.
 ```
 
-### Свойства
+### Properties
 
-| Свойство | Тип | По умолчанию | Описание |
-|----------|-----|-------------|----------|
-| `id` | `string` | _(конструктор)_ | Уникальный ID (lowercase-kebab-case) |
-| `name` | `string` | `= id` | Отображаемое название |
-| `description` | `string` | `''` | Описание компонента |
-| `type` | `AssetType` | `Process` | Роль компонента в системе |
-| `usage` | `DataUsage` | `Business` | Цель использования |
-| `usedAsClientByHuman` | `bool` | `false` | Прямое использование людьми (браузер, мобильное приложение) |
-| `outOfScope` | `bool` | `false` | Исключить из анализа угроз |
-| `justificationOutOfScope` | `string` | `''` | Обоснование исключения |
-| `size` | `Size` | `Service` | Масштаб компонента |
-| `technology` | `Technology` | `WebServiceRest` | Тип технологии |
-| `internet` | `bool` | `false` | Доступен из интернета |
-| `machine` | `Machine` | `Virtual` | Тип среды исполнения |
-| `encryption` | `Encryption` | `None` | Шифрование данных at-rest |
-| `owner` | `string` | `''` | Владелец (команда, email) |
-| `confidentiality` | `Confidentiality` | `Internal` | Конфиденциальность |
-| `integrity` | `Integrity` | `Operational` | Требование к целостности |
-| `availability` | `Availability` | `Operational` | Требование к доступности |
-| `justificationCiaRating` | `string` | `''` | Обоснование CIA-рейтинга |
-| `multiTenant` | `bool` | `false` | Обслуживает нескольких tenant'ов |
-| `redundant` | `bool` | `false` | Дублирован для HA |
-| `customDevelopedParts` | `bool` | `false` | Содержит собственный код |
-| `dataAssetsProcessed` | `string[]` | `[]` | ID DataAssets, обрабатываемых компонентом |
-| `dataAssetsStored` | `string[]` | `[]` | ID DataAssets, хранимых компонентом |
-| `dataFormatsAccepted` | `string[]` | `[]` | Принимаемые форматы данных |
-| `tags` | `string[]` | `[]` | Теги для группировки |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `id` | `string` | _(constructor)_ | Unique ID (lowercase kebab-case) |
+| `name` | `string` | `= id` | Display name |
+| `description` | `string` | `''` | Component description |
+| `type` | `AssetType` | `Process` | Role in the system |
+| `usage` | `DataUsage` | `Business` | Purpose of use |
+| `usedAsClientByHuman` | `bool` | `false` | Directly used by humans (browser, mobile app) |
+| `outOfScope` | `bool` | `false` | Exclude from threat analysis |
+| `justificationOutOfScope` | `string` | `''` | Justification for exclusion |
+| `size` | `Size` | `Service` | Component scale |
+| `technology` | `Technology` | `WebServiceRest` | Technology type |
+| `internet` | `bool` | `false` | Accessible from the internet |
+| `machine` | `Machine` | `Virtual` | Execution environment type |
+| `encryption` | `Encryption` | `None` | Encryption at-rest |
+| `owner` | `string` | `''` | Owner (team name or email) |
+| `confidentiality` | `Confidentiality` | `Internal` | Confidentiality level |
+| `integrity` | `Integrity` | `Operational` | Integrity requirement |
+| `availability` | `Availability` | `Operational` | Availability requirement |
+| `justificationCiaRating` | `string` | `''` | Justification for CIA rating |
+| `multiTenant` | `bool` | `false` | Serves multiple tenants |
+| `redundant` | `bool` | `false` | Duplicated for high availability |
+| `customDevelopedParts` | `bool` | `false` | Contains custom-written code |
+| `dataAssetsProcessed` | `string[]` | `[]` | IDs of DataAssets processed |
+| `dataAssetsStored` | `string[]` | `[]` | IDs of DataAssets stored |
+| `dataFormatsAccepted` | `string[]` | `[]` | Accepted data formats |
+| `tags` | `string[]` | `[]` | Tags for grouping |
 
-### Методы
+### Methods
 
 #### `communicatesTo()`
 
-Создаёт `CommunicationLink` из этого актива к целевому.
+Creates a `CommunicationLink` from this asset to a target.
 
 ```php
 $link = $asset->communicatesTo(
-    targetId: 'db',                              // ID целевого TechnicalAsset
-    protocol: Protocol::JdbcEncrypted,           // протокол
-    authentication: Authentication::Credentials, // аутентификация
-    authorization: Authorization::TechnicalUser, // авторизация
-    description: 'SQL queries to main DB',       // описание
+    targetId: 'db',                               // target TechnicalAsset ID
+    protocol: Protocol::JdbcEncrypted,
+    authentication: Authentication::Credentials,
+    authorization: Authorization::TechnicalUser,
+    description: 'SQL queries to main DB',
 );
 
-// Далее настройте link по необходимости:
+// Configure the link further as needed:
 $link->dataSent     = ['user-data'];
 $link->dataReceived = ['query-result'];
 $link->vpn          = false;
 $link->readonly     = false;
 ```
 
-**ID ссылки** формируется автоматически как `{sourceId}-to-{targetId}`.
+**Link ID** is automatically formed as `{sourceId}-to-{targetId}`.
 
 ---
 
 ## DataAsset
 
-Описывает тип данных, которые обрабатываются или хранятся в системе.
+Describes a type of data that flows through or is stored in the system.
 
 ```php
 use HybridTM\DSL\DataAsset;
 
-$asset = new DataAsset('asset-id', 'Human-readable Name');
+$asset = new DataAsset('asset-id', 'Human-Readable Name');
 ```
 
-### Свойства
+### Properties
 
-| Свойство | Тип | По умолчанию | Описание |
-|----------|-----|-------------|----------|
-| `id` | `string` | _(конструктор)_ | Уникальный ID |
-| `name` | `string` | `= id` | Отображаемое название |
-| `description` | `string` | `''` | Описание |
-| `usage` | `DataUsage` | `Business` | Цель использования |
-| `origin` | `DataOrigin` | `Unknown` | Источник данных |
-| `owner` | `string` | `''` | Владелец данных |
-| `quantity` | `Quantity` | `Many` | Примерный объём |
-| `confidentiality` | `Confidentiality` | `Internal` | Уровень конфиденциальности |
-| `integrity` | `Integrity` | `Operational` | Требование к целостности |
-| `availability` | `Availability` | `Operational` | Требование к доступности |
-| `justificationCiaRating` | `string` | `''` | Обоснование CIA |
-| `tags` | `string[]` | `[]` | Теги |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `id` | `string` | _(constructor)_ | Unique ID |
+| `name` | `string` | `= id` | Display name |
+| `description` | `string` | `''` | Description |
+| `usage` | `DataUsage` | `Business` | Purpose of use |
+| `origin` | `DataOrigin` | `Unknown` | Data source |
+| `owner` | `string` | `''` | Data owner |
+| `quantity` | `Quantity` | `Many` | Approximate volume |
+| `confidentiality` | `Confidentiality` | `Internal` | Confidentiality level |
+| `integrity` | `Integrity` | `Operational` | Integrity requirement |
+| `availability` | `Availability` | `Operational` | Availability requirement |
+| `justificationCiaRating` | `string` | `''` | CIA rating justification |
+| `tags` | `string[]` | `[]` | Tags |
 
 ---
 
 ## TrustBoundary
 
-Группирует технические активы по уровню доверия. Соответствует понятию security zone.
+Groups technical assets by trust level. Corresponds to the concept of a security zone.
 
 ```php
 use HybridTM\DSL\TrustBoundary;
@@ -210,23 +210,23 @@ $boundary = new TrustBoundary(
 );
 ```
 
-### Свойства
+### Properties
 
-| Свойство | Тип | По умолчанию | Описание |
-|----------|-----|-------------|----------|
-| `id` | `string` | _(конструктор)_ | Уникальный ID |
-| `name` | `string` | `= id` | Отображаемое название |
-| `type` | `TrustBoundaryType` | `NetworkOnPrem` | Тип границы |
-| `description` | `string` | `''` | Описание |
-| `technicalAssetsInside` | `string[]` | `[]` | ID активов внутри границы |
-| `trustBoundariesNested` | `string[]` | `[]` | ID вложенных границ |
-| `tags` | `string[]` | `[]` | Теги |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `id` | `string` | _(constructor)_ | Unique ID |
+| `name` | `string` | `= id` | Display name |
+| `type` | `TrustBoundaryType` | `NetworkOnPrem` | Boundary type |
+| `description` | `string` | `''` | Description |
+| `technicalAssetsInside` | `string[]` | `[]` | IDs of assets inside |
+| `trustBoundariesNested` | `string[]` | `[]` | IDs of nested boundaries |
+| `tags` | `string[]` | `[]` | Tags |
 
-### Методы
+### Methods
 
 #### `addAssets(string ...$assetIds)`
 
-Добавляет активы в границу. Дубликаты игнорируются. Возвращает `$this`.
+Adds assets to the boundary. Duplicates are ignored. Returns `$this`.
 
 ```php
 $boundary->addAssets('web-app', 'api-service', 'auth-service');
@@ -236,242 +236,242 @@ $boundary->addAssets('web-app', 'api-service', 'auth-service');
 
 ## CommunicationLink
 
-Описывает соединение между двумя техническими активами. Создаётся через `TechnicalAsset::communicatesTo()`.
+Describes a connection between two technical assets. Created via `TechnicalAsset::communicatesTo()`.
 
-### Свойства
+### Properties
 
-| Свойство | Тип | По умолчанию | Описание |
-|----------|-----|-------------|----------|
-| `id` | `string` | _(авто)_ | `{sourceId}-to-{targetId}` |
-| `targetAssetId` | `string` | _(конструктор)_ | ID целевого актива |
-| `protocol` | `Protocol` | `Https` | Протокол передачи |
-| `authentication` | `Authentication` | `None` | Механизм аутентификации |
-| `authorization` | `Authorization` | `None` | Механизм авторизации |
-| `description` | `string` | `''` | Описание потока |
-| `usage` | `DataUsage` | `Business` | Цель использования |
-| `vpn` | `bool` | `false` | Трафик через VPN |
-| `ipFiltered` | `bool` | `false` | IP-фильтрация |
-| `readonly` | `bool` | `false` | Только чтение |
-| `dataSent` | `string[]` | `[]` | ID отправляемых DataAssets |
-| `dataReceived` | `string[]` | `[]` | ID получаемых DataAssets |
-| `tags` | `string[]` | `[]` | Теги |
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `id` | `string` | _(auto)_ | `{sourceId}-to-{targetId}` |
+| `targetAssetId` | `string` | _(constructor)_ | Target asset ID |
+| `protocol` | `Protocol` | `Https` | Transport protocol |
+| `authentication` | `Authentication` | `None` | Authentication mechanism |
+| `authorization` | `Authorization` | `None` | Authorisation mechanism |
+| `description` | `string` | `''` | Flow description |
+| `usage` | `DataUsage` | `Business` | Purpose of use |
+| `vpn` | `bool` | `false` | Traffic over VPN |
+| `ipFiltered` | `bool` | `false` | IP filtering applied |
+| `readonly` | `bool` | `false` | Read-only link |
+| `dataSent` | `string[]` | `[]` | IDs of DataAssets sent |
+| `dataReceived` | `string[]` | `[]` | IDs of DataAssets received |
+| `tags` | `string[]` | `[]` | Tags |
 
 ---
 
-## Атрибуты кода
+## Code Attributes
 
 ### `#[AssetId(string $id)]`
 
-**Где:** на классе  
-**Назначение:** связывает класс с `TechnicalAsset` в DSL по ID
+**Target:** class  
+**Purpose:** links the annotated class to a `TechnicalAsset` in the DSL by ID.
 
 ```php
 #[AssetId('web-app')]
 class UserController { ... }
 ```
 
-- Только один `#[AssetId]` на класс
-- ID должен точно совпадать с `TechnicalAsset::$id` в DSL
-- Без `#[AssetId]` — `#[DataFlow]` создаёт предупреждение и не генерирует ссылку
+- Only one `#[AssetId]` per class.
+- The ID must exactly match `TechnicalAsset::$id` in the DSL.
+- Without `#[AssetId]`, `#[DataFlow]` emits a warning and does not generate a link.
 
 ---
 
 ### `#[DataFlow(...)]`
 
-**Где:** на методе или функции (повторяемый)  
-**Назначение:** объявляет поток данных от актива-источника (`#[AssetId]`) к целевому
+**Target:** method or function (repeatable)  
+**Purpose:** declares a data flow from the source asset (`#[AssetId]`) to a target asset.
 
 ```php
 #[DataFlow(
-    target: 'db',                              // обязательно
-    protocol: Protocol::JdbcEncrypted,         // по умолчанию: Https
-    authentication: Authentication::Credentials, // по умолчанию: None
-    authorization: Authorization::TechnicalUser, // по умолчанию: None
-    dataSent: ['user-data'],                   // по умолчанию: []
-    dataReceived: ['query-result'],            // по умолчанию: []
-    vpn: false,                                // по умолчанию: false
-    ipFiltered: false,                         // по умолчанию: false
-    readonly: false,                           // по умолчанию: false
+    target: 'db',                               // required
+    protocol: Protocol::JdbcEncrypted,          // default: Https
+    authentication: Authentication::Credentials, // default: None
+    authorization: Authorization::TechnicalUser, // default: None
+    dataSent: ['user-data'],                    // default: []
+    dataReceived: ['query-result'],             // default: []
+    vpn: false,                                 // default: false
+    ipFiltered: false,                          // default: false
+    readonly: false,                            // default: false
 )]
-public function save(array $data): void { }
+public function save(array $data): void {}
 ```
 
-**Несколько потоков на одном методе** (например, метод вызывает два сервиса):
+**Multiple flows on one method** (e.g. the method calls two services):
 
 ```php
 #[DataFlow(target: 'auth-service', protocol: Protocol::Https, dataSent: ['session-token'])]
-#[DataFlow(target: 'audit-log', protocol: Protocol::Https, dataSent: ['order-data'])]
-public function checkout(array $cart): string { }
+#[DataFlow(target: 'audit-log',    protocol: Protocol::Https, dataSent: ['order-data'])]
+public function checkout(array $cart): string {}
 ```
 
-**Поведение при дублировании:** если `#[AssetId('a')]` и `#[DataFlow(target: 'b')]` уже есть явный `communicatesTo('b')` в DSL — компилятор дополнит существующий link данными из атрибута (не перезапишет).
+**Deduplication:** if a `communicatesTo()` link already exists in the DSL for the same source → target pair, the compiler enriches it with data from the attribute rather than replacing it.
 
 ---
 
 ### `#[Mitigation(...)]`
 
-**Где:** на классе, методе или функции (повторяемый)  
-**Назначение:** документирует принятую меру безопасности
+**Target:** class, method, or function (repeatable)  
+**Purpose:** documents an implemented security control or an accepted risk.
 
 ```php
 #[Mitigation(
-    cwe: 'CWE-89',                         // обязательно: номер CWE
-    description: 'PDO prepared statements', // обязательно: описание
-    status: MitigationStatus::Mitigated,   // по умолчанию: Mitigated
+    cwe: 'CWE-89',                          // required: CWE identifier
+    description: 'PDO prepared statements', // required: description
+    status: MitigationStatus::Mitigated,    // default: Mitigated
 )]
-public function findUser(int $id): array { }
+public function findUser(int $id): array {}
 ```
 
-**Статусы:**
+**Statuses:**
 
-| Константа | Значение | Когда использовать |
-|-----------|----------|--------------------|
-| `MitigationStatus::Mitigated` | `mitigated` | Мера реализована и проверена |
-| `MitigationStatus::InProgress` | `in-progress` | В работе |
-| `MitigationStatus::Accepted` | `accepted` | Риск принят (с обоснованием) |
-| `MitigationStatus::Unchecked` | `unchecked` | Не проверено |
+| Constant | Value | When to use |
+|----------|-------|-------------|
+| `MitigationStatus::Mitigated` | `mitigated` | Control is implemented and verified |
+| `MitigationStatus::InProgress` | `in-progress` | Work in progress |
+| `MitigationStatus::Accepted` | `accepted` | Risk accepted (justification required) |
+| `MitigationStatus::Unchecked` | `unchecked` | Not yet reviewed |
 
 ---
 
 ### `#[ProcessesData(dataAssets: [...])]`
 
-**Где:** на классе или методе (повторяемый)  
-**Назначение:** отмечает, что компонент обрабатывает указанные DataAssets
+**Target:** class or method (repeatable)  
+**Purpose:** explicitly declares which DataAssets a component processes.
 
 ```php
 #[AssetId('web-app')]
 #[ProcessesData(dataAssets: ['user-pii', 'session-token', 'payment-data'])]
-class UserController { }
+class UserController {}
 ```
 
-Используйте для явного документирования того, с какими данными работает компонент, даже если нет исходящих `#[DataFlow]`.
+Use this to document data processing even when there are no outbound `#[DataFlow]` calls from the component.
 
 ---
 
-## Перечисления
+## Enumerations
 
-### `AssetType` — роль компонента
+### `AssetType` — Component Role
 
-| Константа | YAML-значение | Когда использовать |
-|-----------|--------------|-------------------|
-| `ExternalEntity` | `external-entity` | Браузер, мобильный клиент, партнёрская система, пользователь |
-| `Process` | `process` | Сервис, приложение, обрабатывающее данные |
-| `Datastore` | `datastore` | База данных, кеш, файловое хранилище, очередь |
+| Constant | YAML value | When to use |
+|----------|-----------|-------------|
+| `ExternalEntity` | `external-entity` | Browser, mobile client, partner system, end user |
+| `Process` | `process` | Service or application that processes data |
+| `Datastore` | `datastore` | Database, cache, file store, message queue |
 
 ---
 
-### `Authentication` — механизм аутентификации
+### `Authentication` — Authentication Mechanism
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `None` | `none` | Нет аутентификации |
-| `Credentials` | `credentials` | Login/password, API key |
-| `SessionId` | `session-id` | Cookie/session |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `None` | `none` | No authentication |
+| `Credentials` | `credentials` | Username/password, API key |
+| `SessionId` | `session-id` | Cookie / session |
 | `Token` | `token` | JWT, OAuth Bearer token |
-| `ClientCertificate` | `client-certificate` | mTLS |
-| `TwoFactor` | `two-factor` | 2FA/MFA |
-| `ExternalizedViaGateway` | `externalized-via-gateway` | Auth делегирован API Gateway / APIM |
+| `ClientCertificate` | `client-certificate` | Mutual TLS (mTLS) |
+| `TwoFactor` | `two-factor` | Two-factor / MFA |
+| `ExternalizedViaGateway` | `externalized-via-gateway` | Auth delegated to API Gateway / APIM |
 
 ---
 
-### `Authorization` — механизм авторизации
+### `Authorization` — Authorisation Mechanism
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `None` | `none` | Нет авторизации |
-| `TechnicalUser` | `technical-user` | Системный пользователь (service account) |
-| `EnduserIdentityPropagation` | `enduser-identity-propagation` | Идентичность конечного пользователя пробрасывается (OIDC, JWT claims) |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `None` | `none` | No authorisation |
+| `TechnicalUser` | `technical-user` | Service account / technical user |
+| `EnduserIdentityPropagation` | `enduser-identity-propagation` | End-user identity propagated (OIDC, JWT claims) |
 
 ---
 
-### `Protocol` — протокол передачи
+### `Protocol` — Transport Protocol
 
-| Константа | YAML-значение | Типичное применение |
-|-----------|-------------|---------------------|
-| `Https` | `https` | REST API, веб-приложения |
-| `Http` | `http` | Внутренние незащищённые (не рекомендуется) |
-| `Wss` | `wss` | WebSocket TLS |
+| Constant | YAML value | Typical use |
+|----------|-----------|-------------|
+| `Https` | `https` | REST API, web applications |
+| `Http` | `http` | Internal unencrypted (not recommended) |
+| `Wss` | `wss` | WebSocket over TLS |
 | `Ws` | `ws` | WebSocket plain |
-| `JdbcEncrypted` | `jdbc-encrypted` | JDBC с TLS (PostgreSQL, MySQL) |
-| `Jdbc` | `jdbc` | JDBC без TLS (не рекомендуется) |
-| `OdbcEncrypted` | `odbc-encrypted` | ODBC с TLS |
-| `Odbc` | `odbc` | ODBC без TLS |
-| `SqlAccessProtocolEncrypted` | `sql-access-protocol-encrypted` | MySQL protocol с TLS |
-| `SqlAccessProtocol` | `sql-access-protocol` | MySQL protocol без TLS |
-| `NosqlAccessProtocolEncrypted` | `nosql-access-protocol-encrypted` | MongoDB, Redis с TLS |
-| `NosqlAccessProtocol` | `nosql-access-protocol` | MongoDB, Redis без TLS |
-| `BinaryEncrypted` | `binary-encrypted` | gRPC, Thrift, протокол бинарный + TLS |
-| `Binary` | `binary` | Бинарный протокол без TLS |
-| `TextEncrypted` | `text-encrypted` | Текстовый протокол + TLS |
-| `Text` | `text` | Текстовый протокол без TLS |
+| `JdbcEncrypted` | `jdbc-encrypted` | JDBC with TLS (PostgreSQL, MySQL) |
+| `Jdbc` | `jdbc` | JDBC without TLS (not recommended) |
+| `OdbcEncrypted` | `odbc-encrypted` | ODBC with TLS |
+| `Odbc` | `odbc` | ODBC without TLS |
+| `SqlAccessProtocolEncrypted` | `sql-access-protocol-encrypted` | MySQL protocol with TLS |
+| `SqlAccessProtocol` | `sql-access-protocol` | MySQL protocol without TLS |
+| `NosqlAccessProtocolEncrypted` | `nosql-access-protocol-encrypted` | MongoDB, Redis with TLS |
+| `NosqlAccessProtocol` | `nosql-access-protocol` | MongoDB, Redis without TLS |
+| `BinaryEncrypted` | `binary-encrypted` | gRPC, Thrift, binary + TLS |
+| `Binary` | `binary` | Binary protocol without TLS |
+| `TextEncrypted` | `text-encrypted` | Text protocol + TLS |
+| `Text` | `text` | Text protocol without TLS |
 | `Ssh` | `ssh` | SSH |
-| `SshTunnel` | `ssh-tunnel` | SSH tunneling |
-| `SmtpEncrypted` | `smtp-encrypted` | SMTP с STARTTLS / TLS |
-| `Smtp` | `smtp` | SMTP без TLS |
+| `SshTunnel` | `ssh-tunnel` | SSH tunnelling |
+| `SmtpEncrypted` | `smtp-encrypted` | SMTP with STARTTLS / TLS |
+| `Smtp` | `smtp` | SMTP without TLS |
 | `Ldaps` | `ldaps` | LDAP over TLS |
-| `Ldap` | `ldap` | LDAP без TLS (не рекомендуется) |
+| `Ldap` | `ldap` | LDAP without TLS (not recommended) |
 | `Jms` | `jms` | JMS / AMQP (RabbitMQ, ActiveMQ) |
-| `Sftp` | `sftp` | Безопасный FTP |
-| `Ftp` | `ftp` | FTP (не рекомендуется) |
+| `Sftp` | `sftp` | Secure FTP |
+| `Ftp` | `ftp` | FTP (not recommended) |
 | `Mqtt` | `mqtt` | MQTT (IoT) |
-| `LocalFileAccess` | `local-file-access` | Доступ к файловой системе |
-| `ContainerSpawning` | `container-spawning` | Запуск контейнеров (K8s API) |
-| `InProcessLibraryCall` | `in-process-library-call` | Вызов внутри процесса |
+| `LocalFileAccess` | `local-file-access` | File system access |
+| `ContainerSpawning` | `container-spawning` | Container spawning (K8s API) |
+| `InProcessLibraryCall` | `in-process-library-call` | In-process library call |
 
 ---
 
-### `Encryption` — шифрование at-rest
+### `Encryption` — Encryption at-Rest
 
-| Константа | YAML-значение | Когда использовать |
-|-----------|-------------|-------------------|
-| `None` | `none` | Нет шифрования |
-| `Transparent` | `transparent` | Прозрачное шифрование диска (TDE, AWS EBS) |
-| `DataWithSymmetricSharedKey` | `data-with-symmetric-shared-key` | AES с общим ключом (AWS KMS, GCP CMEK) |
-| `DataWithAsymmetricSharedKey` | `data-with-asymmetric-shared-key` | RSA шифрование данных |
-| `DataWithEnduserIndividualKey` | `data-with-enduser-individual-key` | E2E: ключ у конечного пользователя |
-
----
-
-### `Confidentiality` — уровень конфиденциальности
-
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Public` | `public` | Публичные данные, ущерба от раскрытия нет |
-| `Internal` | `internal` | Внутренние данные компании |
-| `Restricted` | `restricted` | Ограниченный доступ (не все сотрудники) |
-| `Confidential` | `confidential` | Конфиденциально (PII, коммерческая тайна) |
-| `StrictlyConfidential` | `strictly-confidential` | Строго конфиденциально (пароли, ключи, PCI данные) |
+| Constant | YAML value | When to use |
+|----------|-----------|-------------|
+| `None` | `none` | No encryption |
+| `Transparent` | `transparent` | Transparent disk encryption (TDE, AWS EBS) |
+| `DataWithSymmetricSharedKey` | `data-with-symmetric-shared-key` | AES with shared key (AWS KMS, GCP CMEK) |
+| `DataWithAsymmetricSharedKey` | `data-with-asymmetric-shared-key` | RSA data encryption |
+| `DataWithEnduserIndividualKey` | `data-with-enduser-individual-key` | E2E: key held by the end user |
 
 ---
 
-### `Integrity` — требование к целостности
+### `Confidentiality` — Confidentiality Level
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Archive` | `archive` | Архивные данные, изменения некритичны |
-| `Operational` | `operational` | Стандартная операционная целостность |
-| `Important` | `important` | Нарушение целостности заметно и проблематично |
-| `Critical` | `critical` | Нарушение целостности вызывает сбои |
-| `MissionCritical` | `mission-critical` | Нарушение целостности — катастрофа |
-
----
-
-### `Availability` — требование к доступности
-
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Archive` | `archive` | Редкий доступ, простой приемлем |
-| `Operational` | `operational` | Плановые остановки допустимы |
-| `Important` | `important` | Простой заметен, нежелателен |
-| `Critical` | `critical` | Простой приводит к потерям |
-| `MissionCritical` | `mission-critical` | Любой простой — катастрофа |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Public` | `public` | Public data; no harm from disclosure |
+| `Internal` | `internal` | Internal company data |
+| `Restricted` | `restricted` | Restricted access (not all employees) |
+| `Confidential` | `confidential` | Confidential (PII, trade secrets) |
+| `StrictlyConfidential` | `strictly-confidential` | Strictly confidential (passwords, keys, PCI data) |
 
 ---
 
-### `Technology` — тип технологии
+### `Integrity` — Integrity Requirement
 
-| Константа | YAML-значение | Типичный компонент |
-|-----------|-------------|-------------------|
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Archive` | `archive` | Archive data; changes are non-critical |
+| `Operational` | `operational` | Standard operational integrity |
+| `Important` | `important` | Integrity loss is noticeable and problematic |
+| `Critical` | `critical` | Integrity loss causes outages |
+| `MissionCritical` | `mission-critical` | Integrity loss is catastrophic |
+
+---
+
+### `Availability` — Availability Requirement
+
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Archive` | `archive` | Rare access; downtime acceptable |
+| `Operational` | `operational` | Planned downtime acceptable |
+| `Important` | `important` | Downtime is noticeable and undesirable |
+| `Critical` | `critical` | Downtime causes business losses |
+| `MissionCritical` | `mission-critical` | Any downtime is catastrophic |
+
+---
+
+### `Technology` — Technology Type
+
+| Constant | YAML value | Typical component |
+|----------|-----------|-------------------|
 | `Browser` | `browser` | Web browser |
 | `Desktop` | `desktop` | Desktop application |
 | `MobileApp` | `mobile-app` | iOS / Android app |
@@ -501,105 +501,105 @@ class UserController { }
 | `Gateway` | `gateway` | API Gateway (Kong, AWS API GW) |
 | `Scheduler` | `scheduler` | Cron, AWS EventBridge |
 | `Mainframe` | `mainframe` | IBM z/OS |
-| `Ai` | `ai` | ML-сервис, LLM endpoint |
-| `Cli` | `cli` | Command line tool |
+| `Ai` | `ai` | ML service, LLM endpoint |
+| `Cli` | `cli` | Command-line tool |
 
 ---
 
-### `Machine` — тип среды исполнения
+### `Machine` — Execution Environment
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Physical` | `physical` | Физический сервер / bare metal |
-| `Virtual` | `virtual` | Виртуальная машина (VMware, EC2) |
-| `Container` | `container` | Docker контейнер / K8s pod |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Physical` | `physical` | Physical server / bare metal |
+| `Virtual` | `virtual` | Virtual machine (VMware, EC2) |
+| `Container` | `container` | Docker container / K8s pod |
 | `Serverless` | `serverless` | Lambda, Cloud Functions |
 
 ---
 
-### `Size` — масштаб компонента
+### `Size` — Component Scale
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `System` | `system` | Крупная система (несколько сервисов) |
-| `Service` | `service` | Отдельный сервис / приложение |
-| `Application` | `application` | Приложение с несколькими модулями |
-| `Component` | `component` | Небольшой компонент, библиотека |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `System` | `system` | Large system (multiple services) |
+| `Service` | `service` | Individual service / application |
+| `Application` | `application` | Application with multiple modules |
+| `Component` | `component` | Small component, library |
 
 ---
 
-### `TrustBoundaryType` — тип границы доверия
+### `TrustBoundaryType` — Trust Boundary Type
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `NetworkOnPrem` | `network-on-prem` | On-premise сеть / дата-центр |
-| `NetworkDedicatedHoster` | `network-dedicated-hoster` | Выделенный хостинг |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `NetworkOnPrem` | `network-on-prem` | On-premise network / data centre |
+| `NetworkDedicatedHoster` | `network-dedicated-hoster` | Dedicated hosting |
 | `NetworkVirtualLan` | `network-virtual-lan` | VLAN |
 | `NetworkCloudProvider` | `network-cloud-provider` | VPC (AWS, GCP, Azure) |
 | `NetworkCloudSecurityGroup` | `network-cloud-security-group` | Security Group / firewall |
-| `NetworkPolicyNamespaceIsolation` | `network-policy-namespace-isolation` | K8s Namespace с NetworkPolicy |
-| `ExecutionEnvironment` | `execution-environment` | Execution environment (OS, runtime) |
+| `NetworkPolicyNamespaceIsolation` | `network-policy-namespace-isolation` | K8s Namespace with NetworkPolicy |
+| `ExecutionEnvironment` | `execution-environment` | OS / runtime execution environment |
 
 ---
 
-### `DataOrigin` — источник данных
+### `DataOrigin` — Data Source
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Unknown` | `unknown` | Источник не определён |
-| `UserInput` | `ui-input` | Ввод пользователя (форма, API запрос) |
-| `FileImport` | `file-import` | Импорт из файла |
-| `DeviceAccess` | `device-access` | Данные от устройства (IoT, mobile) |
-| `ServiceCall` | `service-call` | Получены от другого сервиса |
-| `TransferredFromPartner` | `transferred-from-partner` | Переданы партнёром / 3rd party |
-| `InHouse` | `in-house` | Сгенерированы внутри системы |
-
----
-
-### `DataUsage` — цель использования данных
-
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Business` | `business` | Бизнес-данные (основной поток) |
-| `DevOps` | `devops` | Данные для DevOps / инфраструктуры |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Unknown` | `unknown` | Source not determined |
+| `UserInput` | `ui-input` | User input (form, API request) |
+| `FileImport` | `file-import` | Imported from a file |
+| `DeviceAccess` | `device-access` | Data from a device (IoT, mobile) |
+| `ServiceCall` | `service-call` | Received from another service |
+| `TransferredFromPartner` | `transferred-from-partner` | Transferred by a partner / third party |
+| `InHouse` | `in-house` | Generated internally by the system |
 
 ---
 
-### `Quantity` — приблизительный объём данных
+### `DataUsage` — Data Usage Purpose
 
-| Константа | YAML-значение | Ориентир |
-|-----------|-------------|----------|
-| `VeryFew` | `very-few` | < 100 записей |
-| `Few` | `few` | 100 – 10 000 |
-| `Many` | `many` | 10 000 – 1 000 000 |
-| `VeryMany` | `very-many` | > 1 000 000 |
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Business` | `business` | Business data (primary flow) |
+| `DevOps` | `devops` | Infrastructure / DevOps data |
 
 ---
 
-### `BusinessCriticality` — критичность для бизнеса
+### `Quantity` — Approximate Data Volume
 
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Archive` | `archive` | Архивная / неактивная система |
-| `Operational` | `operational` | Поддерживает операции, не критична |
-| `Important` | `important` | Важна, потеря заметна |
-| `Critical` | `critical` | Критична, потеря серьёзно влияет на бизнес |
-| `MissionCritical` | `mission-critical` | Потеря = остановка бизнеса |
-
----
-
-### `MitigationStatus` — статус меры безопасности
-
-| Константа | YAML-значение | Описание |
-|-----------|-------------|----------|
-| `Mitigated` | `mitigated` | Реализовано и верифицировано |
-| `InProgress` | `in-progress` | В работе |
-| `Accepted` | `accepted` | Риск принят (нужно обоснование) |
-| `Unchecked` | `unchecked` | Не проверено |
+| Constant | YAML value | Guideline |
+|----------|-----------|-----------|
+| `VeryFew` | `very-few` | < 100 records |
+| `Few` | `few` | 100 – 10,000 |
+| `Many` | `many` | 10,000 – 1,000,000 |
+| `VeryMany` | `very-many` | > 1,000,000 |
 
 ---
 
-## Быстрая шпаргалка по перечислениям
+### `BusinessCriticality` — Business Criticality
+
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Archive` | `archive` | Archive / inactive system |
+| `Operational` | `operational` | Supports operations, not critical |
+| `Important` | `important` | Important; loss is noticeable |
+| `Critical` | `critical` | Critical; loss seriously impacts the business |
+| `MissionCritical` | `mission-critical` | Loss = business stoppage |
+
+---
+
+### `MitigationStatus` — Security Control Status
+
+| Constant | YAML value | Description |
+|----------|-----------|-------------|
+| `Mitigated` | `mitigated` | Implemented and verified |
+| `InProgress` | `in-progress` | Work in progress |
+| `Accepted` | `accepted` | Risk accepted (justification required) |
+| `Unchecked` | `unchecked` | Not yet reviewed |
+
+---
+
+## Quick Cheat Sheet
 
 ```php
 use HybridTM\Enums\{
@@ -609,19 +609,19 @@ use HybridTM\Enums\{
     Protocol, Quantity, Size, Technology, TrustBoundaryType
 };
 
-// Самые частые комбинации:
+// ── Most common combinations ──────────────────────────────────────────────────
 
-// REST API из браузера
+// Browser → REST API (public endpoint)
 $browserLink->protocol       = Protocol::Https;
-$browserLink->authentication = Authentication::Token;      // JWT cookie
+$browserLink->authentication = Authentication::Token;      // JWT / session cookie
 $browserLink->authorization  = Authorization::EnduserIdentityPropagation;
 
 // Microservice → Microservice (internal)
 $serviceLink->protocol       = Protocol::Https;
-$serviceLink->authentication = Authentication::Token;      // service JWT
+$serviceLink->authentication = Authentication::Token;      // service JWT / API key
 $serviceLink->authorization  = Authorization::TechnicalUser;
 
-// Service → PostgreSQL (encrypted)
+// Service → PostgreSQL (encrypted connection)
 $dbLink->protocol       = Protocol::JdbcEncrypted;
 $dbLink->authentication = Authentication::Credentials;
 $dbLink->authorization  = Authorization::TechnicalUser;
@@ -636,16 +636,49 @@ $mqLink->protocol       = Protocol::Jms;
 $mqLink->authentication = Authentication::Credentials;
 $mqLink->authorization  = Authorization::TechnicalUser;
 
-// gRPC (encrypted binary)
+// gRPC with mutual TLS
 $grpcLink->protocol       = Protocol::BinaryEncrypted;
-$grpcLink->authentication = Authentication::ClientCertificate; // mTLS
+$grpcLink->authentication = Authentication::ClientCertificate;
+$grpcLink->authorization  = Authorization::TechnicalUser;
 
 // SSH / SCP
 $sshLink->protocol       = Protocol::Ssh;
 $sshLink->authentication = Authentication::ClientCertificate;
 
-// External API (Stripe, Twilio, etc.)
+// External API (Stripe, Twilio, SendGrid, …)
 $externalLink->protocol       = Protocol::Https;
 $externalLink->authentication = Authentication::Token;      // API key / Bearer
 $externalLink->authorization  = Authorization::TechnicalUser;
+
+// LDAP directory lookup
+$ldapLink->protocol       = Protocol::Ldaps;
+$ldapLink->authentication = Authentication::Credentials;
+$ldapLink->authorization  = Authorization::TechnicalUser;
+
+// ── DataAsset sensitivity levels ─────────────────────────────────────────────
+
+// Public content (blog posts, product catalogue)
+$public->confidentiality = Confidentiality::Public;
+$public->integrity       = Integrity::Operational;
+$public->availability    = Availability::Operational;
+
+// Internal business data (orders, inventory)
+$internal->confidentiality = Confidentiality::Internal;
+$internal->integrity       = Integrity::Important;
+$internal->availability    = Availability::Important;
+
+// Personal data / PII (names, emails, addresses)
+$pii->confidentiality = Confidentiality::Confidential;
+$pii->integrity       = Integrity::Important;
+$pii->availability    = Availability::Important;
+
+// Authentication credentials (passwords, tokens)
+$credentials->confidentiality = Confidentiality::StrictlyConfidential;
+$credentials->integrity       = Integrity::Critical;
+$credentials->availability    = Availability::Critical;
+
+// Payment card data (PCI DSS scope)
+$pci->confidentiality = Confidentiality::StrictlyConfidential;
+$pci->integrity       = Integrity::MissionCritical;
+$pci->availability    = Availability::Critical;
 ```

@@ -87,6 +87,8 @@ The pipeline has four independent layers:
 - **[Enterprise Adoption Guide](docs/enterprise-adoption.md)** — phased rollout strategy for existing applications: audit, as-is model, incremental annotation, governance.
 - **[Reference](docs/reference.md)** — complete reference for CLI, DSL classes, all attributes, and every enum value.
 
+> Russian translations: [new-projects.ru.md](docs/new-projects.ru.md) · [enterprise-adoption.ru.md](docs/enterprise-adoption.ru.md) · [reference.ru.md](docs/reference.ru.md)
+
 ---
 
 ## Installation

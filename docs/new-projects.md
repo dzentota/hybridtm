@@ -1,81 +1,81 @@
-# Новый проект с нуля
+# New Projects Guide
 
-Это руководство описывает, как встроить HybridTM в PHP-приложение **с первого дня** — ещё до того, как написана основная бизнес-логика.
-
----
-
-## Оглавление
-
-1. [Концепция](#концепция)
-2. [Установка](#установка)
-3. [Структура файлов](#структура-файлов)
-4. [Шаг 1: Спроектировать инфраструктуру в DSL](#шаг-1-спроектировать-инфраструктуру-в-dsl)
-5. [Шаг 2: Аннотировать сервисы атрибутами](#шаг-2-аннотировать-сервисы-атрибутами)
-6. [Шаг 3: Скомпилировать и запустить Threagile](#шаг-3-скомпилировать-и-запустить-threagile)
-7. [Шаг 4: Настроить CI/CD](#шаг-4-настроить-cicd)
-8. [Шаг 5: Подключить AI-агента](#шаг-5-подключить-ai-агента)
-9. [Полный пример — e-commerce сервис](#полный-пример--e-commerce-сервис)
-10. [Рабочий процесс команды](#рабочий-процесс-команды)
+This guide explains how to integrate HybridTM into a PHP application **from day one** — before most of the business logic is written.
 
 ---
 
-## Концепция
+## Table of Contents
 
-HybridTM строится вокруг одного принципа: **угрозовая модель живёт рядом с кодом, а не отдельно от него**.
-
-Две части, которые нужно поддерживать:
-
-| Часть | Файл | Кто редактирует | Когда |
-|-------|------|-----------------|-------|
-| Инфраструктурный DSL | `threat-model.php` | Архитектор / лид | При добавлении нового сервиса или компонента |
-| Атрибуты кода | `src/**/*.php` | AI-агент (Copilot, Cursor) | Автоматически при каждом PR |
+1. [Philosophy](#philosophy)
+2. [Installation](#installation)
+3. [Recommended File Structure](#recommended-file-structure)
+4. [Step 1: Design the Infrastructure DSL](#step-1-design-the-infrastructure-dsl)
+5. [Step 2: Annotate Services with Attributes](#step-2-annotate-services-with-attributes)
+6. [Step 3: Compile and Run Threagile](#step-3-compile-and-run-threagile)
+7. [Step 4: Set Up CI/CD](#step-4-set-up-cicd)
+8. [Step 5: Connect the AI Agent](#step-5-connect-the-ai-agent)
+9. [Full Example — E-Commerce Service](#full-example--e-commerce-service)
+10. [Team Workflow](#team-workflow)
 
 ---
 
-## Установка
+## Philosophy
+
+HybridTM is built around a single principle: **the threat model lives next to the code, not separately from it**.
+
+There are two parts to maintain:
+
+| Part | File | Who edits it | When |
+|------|------|--------------|------|
+| Infrastructure DSL | `threat-model.php` | Architect / Tech Lead | When a new service or component is added |
+| Code attributes | `src/**/*.php` | AI agent (Copilot, Cursor) | Automatically on every PR |
+
+The DSL describes **what exists** in the system; the attributes describe **what the code does**.
+
+---
+
+## Installation
 
 ```bash
 composer require hybridtm/hybridtm
 ```
 
-Требования: PHP ≥ 8.2, Docker (для запуска Threagile).
+Requirements: PHP ≥ 8.2, Docker (for running Threagile).
 
 ---
 
-## Структура файлов
-
-Рекомендуемая раскладка нового проекта:
+## Recommended File Structure
 
 ```
 my-app/
 ├── src/
 │   ├── Controller/
-│   │   └── UserController.php       # аннотируется #[AssetId] и #[DataFlow]
+│   │   └── UserController.php       # annotated with #[AssetId] and #[DataFlow]
 │   ├── Service/
 │   │   ├── AuthService.php
 │   │   └── PaymentService.php
 │   └── Repository/
 │       └── UserRepository.php
-├── threat-model.php                  # единственный DSL-файл
+├── threat-model.php                  # the single DSL file
 ├── .github/
 │   └── workflows/
 │       └── threat-model.yml          # CI/CD pipeline
 ├── .copilot/
-│   └── SKILL.md → symlink или копия SKILL.md из hybridtm
+│   └── SKILL.md → symlink or copy of SKILL.md from hybridtm package
 └── composer.json
 ```
 
 ---
 
-## Шаг 1: Спроектировать инфраструктуру в DSL
+## Step 1: Design the Infrastructure DSL
 
-Создайте `threat-model.php` в корне проекта. DSL описывает **что существует** в системе — активы, данные, границы доверия.
+Create `threat-model.php` at the project root. The DSL declares **what exists** — assets, data types, and trust boundaries.
 
-Правила:
-- Каждый самостоятельный компонент — `TechnicalAsset`.
-- Каждый тип данных, который передаётся или хранится — `DataAsset`.
-- Группы компонентов по уровню доверия — `TrustBoundary`.
-- Файл должен заканчиваться `return $model;`.
+Rules:
+- Every independent component gets its own `TechnicalAsset`.
+- Every meaningful data type that flows or is stored gets a `DataAsset`.
+- Groups of components at the same trust level belong in a `TrustBoundary`.
+- The file must end with `return $model;`.
 
 ```php
 <?php
@@ -90,39 +90,38 @@ use HybridTM\Enums\{
     Integrity, Machine, Protocol, Quantity, Size, Technology, TrustBoundaryType
 };
 
-// ─── Метаданные модели ────────────────────────────────────────────────────────
+// ── Model metadata ────────────────────────────────────────────────────────────
 
 $model = new ThreatModel('My E-Commerce App');
-$model->description   = 'Угрозовая модель интернет-магазина';
-$model->author        = 'Platform Security Team';
-$model->date          = '2024-01-15';
+$model->description         = 'Threat model for an online retail platform';
+$model->author              = 'Platform Security Team';
+$model->date                = '2024-01-15';
 $model->businessCriticality = BusinessCriticality::Critical;
 
-// ─── DataAsset: типы данных ───────────────────────────────────────────────────
-
-// Правило: один DataAsset = один смысловой класс данных.
-// Не создавайте "UserData" для всего — разделяйте по чувствительности.
+// ── Data Assets ───────────────────────────────────────────────────────────────
+// Rule: one DataAsset = one meaningful data class.
+// Do not lump everything into "UserData" — split by sensitivity level.
 
 $customerPii = new DataAsset('customer-pii', 'Customer PII');
-$customerPii->description      = 'Имя, email, адрес доставки';
-$customerPii->confidentiality  = Confidentiality::Confidential;
-$customerPii->integrity        = Integrity::Important;
-$customerPii->availability     = Availability::Important;
-$customerPii->origin           = DataOrigin::UserInput;
-$customerPii->quantity         = Quantity::VeryMany;
+$customerPii->description     = 'Name, email, shipping address';
+$customerPii->confidentiality = Confidentiality::Confidential;
+$customerPii->integrity       = Integrity::Important;
+$customerPii->availability    = Availability::Important;
+$customerPii->origin          = DataOrigin::UserInput;
+$customerPii->quantity        = Quantity::VeryMany;
 $model->addDataAsset($customerPii);
 
 $paymentData = new DataAsset('payment-data', 'Payment Card Data');
-$paymentData->description      = 'Номер карты, срок, CVV (только транзитно — не хранится)';
-$paymentData->confidentiality  = Confidentiality::StrictlyConfidential;
-$paymentData->integrity        = Integrity::Critical;
-$paymentData->availability     = Availability::Critical;
-$paymentData->origin           = DataOrigin::UserInput;
-$paymentData->quantity         = Quantity::Many;
+$paymentData->description     = 'Card number, expiry, CVV — transit only, never stored';
+$paymentData->confidentiality = Confidentiality::StrictlyConfidential;
+$paymentData->integrity       = Integrity::Critical;
+$paymentData->availability    = Availability::Critical;
+$paymentData->origin          = DataOrigin::UserInput;
+$paymentData->quantity        = Quantity::Many;
 $model->addDataAsset($paymentData);
 
 $sessionToken = new DataAsset('session-token', 'Session Token');
-$sessionToken->description     = 'JWT токен аутентификации';
+$sessionToken->description     = 'JWT authentication token';
 $sessionToken->confidentiality = Confidentiality::StrictlyConfidential;
 $sessionToken->integrity       = Integrity::Critical;
 $sessionToken->availability    = Availability::Operational;
@@ -131,41 +130,41 @@ $sessionToken->quantity        = Quantity::VeryMany;
 $model->addDataAsset($sessionToken);
 
 $orderData = new DataAsset('order-data', 'Order Data');
-$orderData->description        = 'Состав заказа, статус, история';
-$orderData->confidentiality    = Confidentiality::Internal;
-$orderData->integrity          = Integrity::Critical;
-$orderData->availability       = Availability::Critical;
-$orderData->origin             = DataOrigin::UserInput;
-$orderData->quantity           = Quantity::VeryMany;
+$orderData->description     = 'Cart contents, order status, transaction history';
+$orderData->confidentiality = Confidentiality::Internal;
+$orderData->integrity       = Integrity::Critical;
+$orderData->availability    = Availability::Critical;
+$orderData->origin          = DataOrigin::UserInput;
+$orderData->quantity        = Quantity::VeryMany;
 $model->addDataAsset($orderData);
 
-// ─── TechnicalAsset: компоненты ──────────────────────────────────────────────
+// ── Technical Assets ──────────────────────────────────────────────────────────
 
-// Внешние пользователи и системы — ExternalEntity
+// External users and systems — ExternalEntity
 $browser = new TechnicalAsset('browser', 'User Browser');
-$browser->type               = AssetType::ExternalEntity;
-$browser->technology         = Technology::Browser;
+$browser->type                = AssetType::ExternalEntity;
+$browser->technology          = Technology::Browser;
 $browser->usedAsClientByHuman = true;
-$browser->internet           = true;
-$browser->machine            = Machine::Physical;
-$browser->size               = Size::Component;
-$browser->confidentiality    = Confidentiality::Public;
-$browser->integrity          = Integrity::Operational;
-$browser->availability       = Availability::Operational;
+$browser->internet            = true;
+$browser->machine             = Machine::Physical;
+$browser->size                = Size::Component;
+$browser->confidentiality     = Confidentiality::Public;
+$browser->integrity           = Integrity::Operational;
+$browser->availability        = Availability::Operational;
 $model->addTechnicalAsset($browser);
 
 $paymentProvider = new TechnicalAsset('payment-provider', 'Payment Gateway (Stripe)');
-$paymentProvider->type       = AssetType::ExternalEntity;
-$paymentProvider->technology = Technology::WebServiceRest;
-$paymentProvider->internet   = true;
-$paymentProvider->machine    = Machine::Virtual;
-$paymentProvider->size       = Size::System;
+$paymentProvider->type        = AssetType::ExternalEntity;
+$paymentProvider->technology  = Technology::WebServiceRest;
+$paymentProvider->internet    = true;
+$paymentProvider->machine     = Machine::Virtual;
+$paymentProvider->size        = Size::System;
 $paymentProvider->confidentiality = Confidentiality::StrictlyConfidential;
-$paymentProvider->integrity  = Integrity::MissionCritical;
+$paymentProvider->integrity   = Integrity::MissionCritical;
 $paymentProvider->availability = Availability::Critical;
 $model->addTechnicalAsset($paymentProvider);
 
-// Собственные сервисы
+// Internal services
 $webApp = new TechnicalAsset('web-app', 'Web Application (PHP/Symfony)');
 $webApp->type                 = AssetType::Process;
 $webApp->technology           = Technology::WebApplication;
@@ -203,23 +202,23 @@ $authService->owner                = 'Security Team';
 $authService->dataAssetsProcessed  = ['session-token', 'customer-pii'];
 $model->addTechnicalAsset($authService);
 
-// Хранилища данных
+// Data stores
 $mainDb = new TechnicalAsset('main-db', 'Main PostgreSQL Database');
-$mainDb->type               = AssetType::Datastore;
-$mainDb->technology         = Technology::Database;
-$mainDb->size               = Size::System;
-$mainDb->machine            = Machine::Virtual;
-$mainDb->encryption         = Encryption::DataWithSymmetricSharedKey;
-$mainDb->confidentiality    = Confidentiality::StrictlyConfidential;
-$mainDb->integrity          = Integrity::Critical;
-$mainDb->availability       = Availability::Critical;
-$mainDb->owner              = 'DBA Team';
-$mainDb->dataAssetsStored   = ['customer-pii', 'order-data'];
+$mainDb->type             = AssetType::Datastore;
+$mainDb->technology       = Technology::Database;
+$mainDb->size             = Size::System;
+$mainDb->machine          = Machine::Virtual;
+$mainDb->encryption       = Encryption::DataWithSymmetricSharedKey;
+$mainDb->confidentiality  = Confidentiality::StrictlyConfidential;
+$mainDb->integrity        = Integrity::Critical;
+$mainDb->availability     = Availability::Critical;
+$mainDb->owner            = 'DBA Team';
+$mainDb->dataAssetsStored = ['customer-pii', 'order-data'];
 $model->addTechnicalAsset($mainDb);
 
 $redisCache = new TechnicalAsset('redis-cache', 'Redis Session Cache');
 $redisCache->type             = AssetType::Datastore;
-$redisCache->technology       = Technology::Database; // NoSQL
+$redisCache->technology       = Technology::Database;
 $redisCache->size             = Size::Component;
 $redisCache->machine          = Machine::Virtual;
 $redisCache->encryption       = Encryption::Transparent;
@@ -230,29 +229,29 @@ $redisCache->owner            = 'Platform Team';
 $redisCache->dataAssetsStored = ['session-token'];
 $model->addTechnicalAsset($redisCache);
 
-// ─── TrustBoundary: зоны доверия ─────────────────────────────────────────────
+// ── Trust Boundaries ──────────────────────────────────────────────────────────
 
-// Интернет — минимальный уровень доверия
+// Internet — minimal trust level
 $internet = new TrustBoundary('internet', 'Internet (Untrusted)', TrustBoundaryType::NetworkDedicatedHoster);
-$internet->description = 'Публичная сеть: браузеры, мобильные клиенты, партнёрские системы';
+$internet->description = 'Public network: browsers, mobile clients, partner systems';
 $internet->addAssets('browser', 'payment-provider');
 $model->addTrustBoundary($internet);
 
 // DMZ / Edge — API Gateway, WAF
 $dmz = new TrustBoundary('dmz', 'DMZ', TrustBoundaryType::NetworkCloudSecurityGroup);
-$dmz->description = 'Публичная зона, защищённая WAF и API Gateway';
+$dmz->description = 'Public-facing zone protected by WAF and API Gateway';
 $dmz->addAssets('web-app');
 $model->addTrustBoundary($dmz);
 
-// Внутренняя VPC — сервисы без прямого доступа из интернета
+// Internal VPC — services without direct internet access
 $internalVpc = new TrustBoundary('internal-vpc', 'Internal VPC', TrustBoundaryType::NetworkCloudProvider);
-$internalVpc->description = 'Изолированная приватная сеть, доступ только из DMZ';
+$internalVpc->description = 'Isolated private network, accessible only from the DMZ';
 $internalVpc->addAssets('order-service', 'auth-service');
 $model->addTrustBoundary($internalVpc);
 
-// Слой данных — самый высокий уровень защиты
+// Data layer — highest protection level
 $dataLayer = new TrustBoundary('data-layer', 'Data Layer', TrustBoundaryType::NetworkCloudSecurityGroup);
-$dataLayer->description = 'Изолированный слой БД, доступ только из Internal VPC';
+$dataLayer->description = 'Isolated data tier, accessible only from the Internal VPC';
 $dataLayer->addAssets('main-db', 'redis-cache');
 $model->addTrustBoundary($dataLayer);
 
@@ -261,13 +260,13 @@ return $model;
 
 ---
 
-## Шаг 2: Аннотировать сервисы атрибутами
+## Step 2: Annotate Services with Attributes
 
-Для каждого класса, который **инициирует** запросы к другим сервисам:
+For every class that **initiates** requests to other services:
 
-1. Добавьте `#[AssetId('asset-id')]` на уровне класса — ID должен совпадать с ID в DSL.
-2. Добавьте `#[DataFlow(...)]` на каждый метод, который делает внешний вызов.
-3. Опционально — `#[Mitigation(...)]` для задокументированных мер безопасности.
+1. Add `#[AssetId('asset-id')]` at the class level — the ID must match the DSL.
+2. Add `#[DataFlow(...)]` to every method that makes an external call.
+3. Optionally add `#[Mitigation(...)]` for documented security controls.
 
 ```php
 <?php
@@ -282,7 +281,7 @@ use HybridTM\Enums\{Authentication, Authorization, MitigationStatus, Protocol};
 #[ProcessesData(dataAssets: ['customer-pii', 'payment-data', 'session-token'])]
 class CheckoutController
 {
-    // Вызов auth-service для проверки сессии
+    // Session validation against auth-service
     #[DataFlow(
         target: 'auth-service',
         protocol: Protocol::Https,
@@ -296,7 +295,7 @@ class CheckoutController
         // ...
     }
 
-    // Вызов order-service для создания заказа
+    // Order placement via order-service
     #[DataFlow(
         target: 'order-service',
         protocol: Protocol::Https,
@@ -307,7 +306,7 @@ class CheckoutController
     )]
     #[Mitigation(
         cwe: 'CWE-20',
-        description: 'Input validation via Symfony Validator before forwarding to order-service',
+        description: 'Input validated via Symfony Validator before forwarding to order-service',
         status: MitigationStatus::Mitigated,
     )]
     public function placeOrder(array $cartItems, string $userId): string
@@ -315,7 +314,7 @@ class CheckoutController
         // ...
     }
 
-    // Вызов payment provider — самые чувствительные данные
+    // Payment — most sensitive data flow
     #[DataFlow(
         target: 'payment-provider',
         protocol: Protocol::Https,
@@ -323,8 +322,6 @@ class CheckoutController
         authorization: Authorization::TechnicalUser,
         dataSent: ['payment-data'],
         dataReceived: ['order-data'],
-        vpn: false,
-        ipFiltered: false,
     )]
     #[Mitigation(
         cwe: 'CWE-311',
@@ -333,7 +330,7 @@ class CheckoutController
     )]
     #[Mitigation(
         cwe: 'CWE-312',
-        description: 'Raw card data never stored — only tokenized reference returned by Stripe',
+        description: 'Raw card data never reaches our servers — client-side tokenisation via Stripe.js',
         status: MitigationStatus::Mitigated,
     )]
     public function processPayment(array $paymentDetails, string $orderId): string
@@ -390,19 +387,19 @@ class OrderService
 
 ---
 
-## Шаг 3: Скомпилировать и запустить Threagile
+## Step 3: Compile and Run Threagile
 
 ```bash
-# Скомпилировать DSL + атрибуты → threagile.yaml
+# Compile DSL + attributes → threagile.yaml
 php bin/hybridtm compile \
     --infra=threat-model.php \
     --source=src/ \
     --out=threagile.yaml
 
-# Создать директорию для вывода
+# Create output directory (Threagile requires it to pre-exist)
 mkdir -p threagile-output
 
-# Запустить анализ
+# Run analysis
 docker run --rm \
     -v "$(pwd):/work" \
     threagile/threagile:latest \
@@ -410,20 +407,20 @@ docker run --rm \
     --output /work/threagile-output
 ```
 
-Результат в `threagile-output/`:
+Output in `threagile-output/`:
 
 ```
-data-flow-diagram.pdf     ← DFD с границами доверия
-report.pdf                ← Полный отчёт с рисками
-risks.json                ← Машиночитаемые риски
-risks.xlsx                ← Excel для code review / security review
+data-flow-diagram.pdf     ← DFD with trust boundaries
+report.pdf                ← Full risk report
+risks.json                ← Machine-readable risk findings
+risks.xlsx                ← Excel spreadsheet for review
 ```
 
 ---
 
-## Шаг 4: Настроить CI/CD
+## Step 4: Set Up CI/CD
 
-Создайте `.github/workflows/threat-model.yml`:
+Create `.github/workflows/threat-model.yml`:
 
 ```yaml
 name: Threat Model
@@ -475,70 +472,69 @@ jobs:
             threagile-output/report.pdf
             threagile-output/risks.json
 
-      # Опционально: упасть, если есть новые критические риски
+      # Optional: fail the build if new critical risks appear
       - name: Check for critical risks
         run: |
           CRITICAL=$(cat threagile-output/risks.json | python3 -c "
-          import sys,json
+          import sys, json
           risks = json.load(sys.stdin)
-          critical = [r for r in risks if r.get('severity') == 'critical']
-          print(len(critical))
+          print(sum(1 for r in risks if r.get('severity') == 'critical'))
           ")
           echo "Critical risks found: $CRITICAL"
-          # Раскомментируйте, чтобы блокировать PR при критических рисках:
+          # Uncomment to block PRs with critical risks:
           # [ "$CRITICAL" -eq 0 ] || exit 1
 ```
 
 ---
 
-## Шаг 5: Подключить AI-агента
+## Step 5: Connect the AI Agent
 
-Скопируйте `SKILL.md` из пакета HybridTM в конфигурацию вашего AI-ассистента:
+Copy `SKILL.md` from the HybridTM package into your AI assistant configuration:
 
 ```bash
-# Для GitHub Copilot (Workspace Instructions)
+# GitHub Copilot (Workspace Instructions)
 cp vendor/hybridtm/hybridtm/SKILL.md .github/copilot-instructions.md
 
-# Для Cursor
+# Cursor
 cp vendor/hybridtm/hybridtm/SKILL.md .cursor/rules/hybridtm.mdc
 
-# Для Claude Code (Agents)
+# Claude Code
 cp vendor/hybridtm/hybridtm/SKILL.md CLAUDE.md
 ```
 
-После этого AI-агент будет **автоматически** добавлять `#[DataFlow]` при написании кода, который пересекает границы сервисов.
+After this, the AI agent will **automatically** add `#[DataFlow]` whenever it writes code that crosses a service boundary.
 
-**Проверка:** попросите AI написать метод, который вызывает внешний сервис. В сгенерированном коде должны появиться аннотации.
-
----
-
-## Полный пример — e-commerce сервис
-
-Полный рабочий пример доступен в директории `example/` пакета.
+**Verification:** ask the AI to write a method that calls an external service. The generated code should include the appropriate attributes.
 
 ---
 
-## Рабочий процесс команды
+## Full Example — E-Commerce Service
 
-### День 0 (инициализация проекта)
+A complete working example is available in the `example/` directory of the package.
 
-1. Архитектор создаёт `threat-model.php` с начальным набором активов.
-2. DevOps настраивает CI/CD пайплайн.
-3. Тимлид добавляет `SKILL.md` в конфигурацию AI-агента.
+---
 
-### Каждый PR (разработчики)
+## Team Workflow
 
-- AI-агент автоматически добавляет `#[DataFlow]` на новые методы, пересекающие границы.
-- Разработчик ревьюит атрибуты вместе с кодом (они видны в diff).
-- Если добавлен новый сервис → разработчик добавляет `TechnicalAsset` в `threat-model.php`.
+### Day 0 (project initialisation)
 
-### Каждый релиз (тимлид / Security Champion)
+1. The architect creates `threat-model.php` with the initial set of assets.
+2. DevOps sets up the CI/CD pipeline.
+3. The tech lead adds `SKILL.md` to the AI agent configuration.
 
-- Просматривает `risks.json` из артефактов сборки.
-- При необходимости добавляет `#[Mitigation]` или закрывает риски через `risk_tracking` в Threagile.
-- Сохраняет `threagile.yaml` в git для diff между релизами.
+### Every PR (developers)
 
-### Ежеквартально (Security Review)
+- The AI agent automatically adds `#[DataFlow]` to new methods that cross service boundaries.
+- The developer reviews the attributes alongside the code — they appear in the diff.
+- If a new service is introduced, the developer adds its `TechnicalAsset` to `threat-model.php`.
 
-- Команда безопасности просматривает `report.pdf`.
-- Обновляет `businessCriticality` и CIA-рейтинги по результатам аудита.
+### Every release (Tech Lead / Security Champion)
+
+- Review `risks.json` from the build artefacts.
+- Add `#[Mitigation]` where appropriate, or close risks via `risk_tracking` in Threagile.
+- Commit `threagile.yaml` to git for diff comparison between releases.
+
+### Quarterly (Security Review)
+
+- The security team reviews `report.pdf`.
+- Update `businessCriticality` and CIA ratings based on audit findings.

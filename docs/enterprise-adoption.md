@@ -1,106 +1,106 @@
-# Внедрение в существующие энтерпрайз-приложения
+# Enterprise Adoption Guide
 
-Это руководство описывает, как добавить HybridTM в **уже работающее** PHP-приложение — монолит, микросервисы или гибридную архитектуру — не нарушая текущей разработки.
-
----
-
-## Оглавление
-
-1. [Стратегия внедрения](#стратегия-внедрения)
-2. [Фаза 1: Аудит и инвентаризация](#фаза-1-аудит-и-инвентаризация)
-3. [Фаза 2: Создание базовой DSL-модели](#фаза-2-создание-базовой-dsl-модели)
-4. [Фаза 3: Добавление атрибутов](#фаза-3-добавление-атрибутов)
-5. [Фаза 4: CI/CD и governance](#фаза-4-cicd-и-governance)
-6. [Паттерны для сложных случаев](#паттерны-для-сложных-случаев)
-7. [Типичные ошибки и как их избежать](#типичные-ошибки-и-как-их-избежать)
+This guide explains how to add HybridTM to an **already running** PHP application — whether it is a monolith, a microservice fleet, or a hybrid architecture — without disrupting ongoing development.
 
 ---
 
-## Стратегия внедрения
+## Table of Contents
 
-**Главный принцип:** не пытайтесь покрыть всю систему сразу. Начните с самого чувствительного потока данных и расширяйте постепенно.
+1. [Adoption Strategy](#adoption-strategy)
+2. [Phase 1: Audit and Inventory](#phase-1-audit-and-inventory)
+3. [Phase 2: Build the Baseline DSL Model](#phase-2-build-the-baseline-dsl-model)
+4. [Phase 3: Add Attributes Incrementally](#phase-3-add-attributes-incrementally)
+5. [Phase 4: CI/CD and Governance](#phase-4-cicd-and-governance)
+6. [Patterns for Complex Cases](#patterns-for-complex-cases)
+7. [Common Mistakes and How to Avoid Them](#common-mistakes-and-how-to-avoid-them)
 
-### Трёхфазный подход
+---
+
+## Adoption Strategy
+
+**Core principle:** do not try to cover the entire system at once. Start with the most sensitive data flow and expand gradually.
+
+### Three-Phase Approach
 
 ```
-Фаза 1 (1-2 недели)      Фаза 2 (2-4 недели)      Фаза 3 (continuous)
+Phase 1 (1–2 weeks)      Phase 2 (2–4 weeks)      Phase 3 (continuous)
 ─────────────────────    ─────────────────────    ─────────────────────
-Аудит системы            Базовая DSL-модель       AI-агент аннотирует
-↓                        ↓                        новые изменения
-Карта активов            Первый threagile.yaml    ↓
-↓                        ↓                        CI/CD блокирует
-Приоритизация            Ручная аннотация          неаннотированные
-рисков                   критичных путей           cross-service вызовы
+Audit the system         Baseline DSL model       AI agent annotates
+↓                        ↓                        new changes
+Asset inventory          First threagile.yaml     ↓
+↓                        ↓                        CI/CD blocks
+Risk prioritisation      Manual annotation of     unannotated
+                         critical paths            cross-service calls
 ```
 
 ---
 
-## Фаза 1: Аудит и инвентаризация
+## Phase 1: Audit and Inventory
 
-Прежде чем писать код — нужно понять, что уже есть в системе.
+Before writing any code, you need to understand what already exists.
 
-### 1.1 Составить карту компонентов
+### 1.1 Map the Components
 
-Запросите у команды или соберите самостоятельно:
+Gather from the team or discover yourself:
 
-- **Список сервисов** (микросервисы, монолит, batch jobs, cron).
-- **Список баз данных** (RDBMS, NoSQL, key-value, очереди сообщений).
-- **Список внешних зависимостей** (payment gateways, identity providers, 3rd-party APIs).
-- **Список данных** (что хранится, что передаётся, классификация по чувствительности).
+- **Service list** (microservices, monolith, batch jobs, cron workers).
+- **Database list** (RDBMS, NoSQL, key-value stores, message queues).
+- **External dependency list** (payment gateways, identity providers, third-party APIs).
+- **Data inventory** (what is stored, what flows, classification by sensitivity).
 
-Шаблон вопросов:
-
-```
-Для каждого сервиса:
-  - Какой протокол он принимает?
-  - С какими другими сервисами взаимодействует?
-  - Какие данные обрабатывает?
-  - Кто им владеет (команда)?
-  - Есть ли данные платёжных карт (PCI DSS) или персональные данные (GDPR)?
-
-Для каждой БД:
-  - Какое шифрование at-rest?
-  - Кто имеет доступ (technical user vs. human)?
-  - Хранятся ли credentials в plaintext?
-```
-
-### 1.2 Приоритизировать по риску
-
-Не все компоненты одинаково важны. Начинайте с тех, где:
-
-| Признак | Почему важно |
-|---------|-------------|
-| Хранятся PII / платёжные данные | Регуляторные требования (GDPR, PCI DSS) |
-| Принимают данные из интернета | Поверхность атаки максимальна |
-| Нет аутентификации между сервисами | Lateral movement риск |
-| Передают credentials в открытом виде | Критическая уязвимость |
-| Нет шифрования at-rest | Утечка данных при компрометации хоста |
-
-Создайте простую таблицу приоритетов:
+Useful discovery questions:
 
 ```
-Компонент       | PII | Интернет | Auth | Приоритет
+For each service:
+  - What protocol does it accept (HTTP, gRPC, AMQP, …)?
+  - Which other services does it communicate with?
+  - What data does it process?
+  - Which team owns it?
+  - Does it handle payment card data (PCI DSS) or personal data (GDPR)?
+
+For each database:
+  - Is encryption at-rest configured?
+  - Who has access — technical users only, or humans too?
+  - Are credentials stored in plaintext anywhere?
+```
+
+### 1.2 Prioritise by Risk
+
+Not all components are equally important. Start with those that:
+
+| Indicator | Why it matters |
+|-----------|----------------|
+| Store PII or payment data | Regulatory requirements (GDPR, PCI DSS) |
+| Accept data from the internet | Maximum attack surface |
+| Have no authentication between services | Lateral movement risk |
+| Transmit credentials in plain text | Critical vulnerability |
+| Have no encryption at-rest | Data exposure if a host is compromised |
+
+Build a simple priority table:
+
+```
+Component       | PII | Internet | Auth | Priority
 ──────────────────────────────────────────────────
-API Gateway     | да  | да       | нет  | CRITICAL
-User Service    | да  | нет      | да   | HIGH
-Order Service   | нет | нет      | да   | MEDIUM
-Admin Panel     | да  | да       | нет  | CRITICAL
-Batch Jobs      | нет | нет      | нет  | LOW
+API Gateway     | yes | yes      | no   | CRITICAL
+User Service    | yes | no       | yes  | HIGH
+Order Service   | no  | no       | yes  | MEDIUM
+Admin Panel     | yes | yes      | no   | CRITICAL
+Batch Jobs      | no  | no       | no   | LOW
 ```
 
 ---
 
-## Фаза 2: Создание базовой DSL-модели
+## Phase 2: Build the Baseline DSL Model
 
-Установите пакет без изменения production-кода:
+Install the package without touching production code:
 
 ```bash
 composer require hybridtm/hybridtm
 ```
 
-### 2.1 Начните с "как есть" (as-is)
+### 2.1 Start with "as-is"
 
-Создайте `threat-model.php`, отражающий текущее состояние системы, даже если оно несовершенно. Не пытайтесь сразу описать идеальное состояние.
+Create `threat-model.php` that reflects the **current** state of the system, even if it is imperfect. Do not try to model the ideal target state — model reality.
 
 ```php
 <?php
@@ -116,16 +116,16 @@ use HybridTM\Enums\{
 };
 
 $model = new ThreatModel('Legacy E-Commerce Platform');
-$model->description         = 'Угрозовая модель существующей платформы (as-is, Q1 2024)';
+$model->description         = 'Threat model for existing platform (as-is, Q1 2024)';
 $model->author              = 'Security Champion, Backend Team';
 $model->date                = date('Y-01-01');
 $model->businessCriticality = BusinessCriticality::Critical;
 
-// ─── Данные ───────────────────────────────────────────────────────────────────
-// Совет: начните с 3-5 ключевых DataAsset, постепенно детализируйте
+// ── Data Assets ───────────────────────────────────────────────────────────────
+// Tip: start with 3–5 key DataAssets and add more detail over time.
 
 $customerPii = new DataAsset('customer-pii', 'Customer PII');
-$customerPii->description     = 'Имя, email, телефон, адрес (GDPR sensitive)';
+$customerPii->description     = 'Name, email, phone, address (GDPR sensitive)';
 $customerPii->confidentiality = Confidentiality::Confidential;
 $customerPii->integrity       = Integrity::Important;
 $customerPii->availability    = Availability::Important;
@@ -134,7 +134,7 @@ $customerPii->quantity        = Quantity::VeryMany;
 $model->addDataAsset($customerPii);
 
 $orderData = new DataAsset('order-data', 'Order & Transaction Data');
-$orderData->description     = 'Заказы, статусы, история платежей';
+$orderData->description     = 'Orders, statuses, payment history';
 $orderData->confidentiality = Confidentiality::Internal;
 $orderData->integrity       = Integrity::Critical;
 $orderData->availability    = Availability::Critical;
@@ -143,7 +143,7 @@ $orderData->quantity        = Quantity::VeryMany;
 $model->addDataAsset($orderData);
 
 $internalConfig = new DataAsset('internal-config', 'Internal Config & Secrets');
-$internalConfig->description     = 'DB credentials, API keys, env variables';
+$internalConfig->description     = 'DB credentials, API keys, environment variables';
 $internalConfig->confidentiality = Confidentiality::StrictlyConfidential;
 $internalConfig->integrity       = Integrity::Critical;
 $internalConfig->availability    = Availability::Critical;
@@ -151,23 +151,23 @@ $internalConfig->origin          = DataOrigin::InHouse;
 $internalConfig->quantity        = Quantity::VeryFew;
 $model->addDataAsset($internalConfig);
 
-// ─── Компоненты ───────────────────────────────────────────────────────────────
-
-// ВАЖНО: Если сервис legacy и нет времени изучать детали —
-// используйте консервативные (более "страшные") значения CIA:
-// это лучше, чем занизить и пропустить реальный риск.
+// ── Technical Assets ──────────────────────────────────────────────────────────
+//
+// IMPORTANT: if a legacy service is poorly understood, use conservative
+// (higher-severity) CIA values. It is better to over-estimate risk than to
+// miss a real one.
 
 $legacyMonolith = new TechnicalAsset('monolith', 'Legacy PHP Monolith');
 $legacyMonolith->type                 = AssetType::Process;
 $legacyMonolith->technology           = Technology::WebApplication;
 $legacyMonolith->size                 = Size::System;
-$legacyMonolith->machine              = Machine::Virtual; // на bare-metal? → Machine::Physical
+$legacyMonolith->machine              = Machine::Virtual;  // bare-metal? → Machine::Physical
 $legacyMonolith->customDevelopedParts = true;
 $legacyMonolith->confidentiality      = Confidentiality::Confidential;
 $legacyMonolith->integrity            = Integrity::Critical;
 $legacyMonolith->availability         = Availability::Critical;
 $legacyMonolith->owner                = 'Platform Team';
-// Если не знаете, какие данные обрабатывает — добавьте всё
+// If unsure what data the component handles, list everything
 $legacyMonolith->dataAssetsProcessed  = ['customer-pii', 'order-data'];
 $model->addTechnicalAsset($legacyMonolith);
 
@@ -176,7 +176,8 @@ $mainDb->type             = AssetType::Datastore;
 $mainDb->technology       = Technology::Database;
 $mainDb->size             = Size::System;
 $mainDb->machine          = Machine::Virtual;
-// Если шифрование at-rest не настроено — укажите None. Это покажет риск.
+// If encryption at-rest is not configured, explicitly set None.
+// This will surface the risk in the Threagile report.
 $mainDb->encryption       = Encryption::None;
 $mainDb->confidentiality  = Confidentiality::StrictlyConfidential;
 $mainDb->integrity        = Integrity::Critical;
@@ -186,32 +187,32 @@ $mainDb->dataAssetsStored = ['customer-pii', 'order-data'];
 $model->addTechnicalAsset($mainDb);
 
 $externalPayment = new TechnicalAsset('payment-gateway', 'External Payment Gateway');
-$externalPayment->type         = AssetType::ExternalEntity;
-$externalPayment->technology   = Technology::WebServiceRest;
-$externalPayment->internet     = true;
-$externalPayment->machine      = Machine::Virtual;
-$externalPayment->size         = Size::System;
+$externalPayment->type          = AssetType::ExternalEntity;
+$externalPayment->technology    = Technology::WebServiceRest;
+$externalPayment->internet      = true;
+$externalPayment->machine       = Machine::Virtual;
+$externalPayment->size          = Size::System;
 $externalPayment->confidentiality = Confidentiality::StrictlyConfidential;
-$externalPayment->integrity    = Integrity::MissionCritical;
-$externalPayment->availability = Availability::Critical;
+$externalPayment->integrity     = Integrity::MissionCritical;
+$externalPayment->availability  = Availability::Critical;
 $model->addTechnicalAsset($externalPayment);
 
-// ─── Границы доверия ──────────────────────────────────────────────────────────
+// ── Trust Boundaries ──────────────────────────────────────────────────────────
+// If the network topology is unknown, use broad categories.
 
-// Если топология сети неизвестна — используйте общие категории
 $internet = new TrustBoundary('internet', 'Internet', TrustBoundaryType::NetworkDedicatedHoster);
 $internet->addAssets('payment-gateway');
 $model->addTrustBoundary($internet);
 
-$datacenter = new TrustBoundary('dc', 'Data Center', TrustBoundaryType::NetworkOnPrem);
-$datacenter->description = 'Собственный дата-центр / хостинг-провайдер';
+$datacenter = new TrustBoundary('dc', 'Data Centre', TrustBoundaryType::NetworkOnPrem);
+$datacenter->description = 'Own data centre or dedicated hosting provider';
 $datacenter->addAssets('monolith', 'main-db');
 $model->addTrustBoundary($datacenter);
 
 return $model;
 ```
 
-### 2.2 Верифицировать первый запуск
+### 2.2 Verify the First Run
 
 ```bash
 php bin/hybridtm compile \
@@ -227,22 +228,22 @@ docker run --rm \
     --output /work/threagile-output
 ```
 
-Посмотрите `threagile-output/risks.json`. На этом этапе вы увидите риски **только от DSL** — без аннотаций кода. Это уже полезно: Threagile выявит проблемы архитектуры (незашифрованные БД, отсутствие аутентификации между сервисами и т.д.).
+Open `threagile-output/risks.json`. At this stage you will see risks from the **DSL alone** — without any code annotations. This is already useful: Threagile will identify architectural problems such as unencrypted databases, missing inter-service authentication, and so on.
 
 ---
 
-## Фаза 3: Добавление атрибутов
+## Phase 3: Add Attributes Incrementally
 
-### 3.1 Начните с самых критичных точек
+### 3.1 Start with the Most Critical Paths
 
-Не нужно аннотировать сразу весь код. Начните с методов, которые:
-- Принимают данные из интернета
-- Передают PII или платёжные данные
-- Работают с authentication/authorization
+You do not need to annotate the entire codebase at once. Begin with methods that:
+- Accept data from the internet.
+- Transfer PII or payment data.
+- Handle authentication or authorisation.
 
-### 3.2 Техника: grep-driven discovery
+### 3.2 Technique: Grep-Driven Discovery
 
-Найдите все исходящие HTTP-вызовы в кодовой базе:
+Find all outbound HTTP calls in the codebase:
 
 ```bash
 # cURL
@@ -261,44 +262,41 @@ grep -rn "->executeQuery\|->createQuery\|->prepare(" src/ --include="*.php"
 grep -rn "->publish(\|->consume(" src/ --include="*.php"
 ```
 
-Каждый найденный метод — кандидат на `#[DataFlow]`.
+Every matching method is a candidate for `#[DataFlow]`.
 
-### 3.3 Паттерн аннотации монолита
+### 3.3 Annotation Pattern — Monolith
 
-Монолит обычно содержит смешанную логику. Разбейте по смысловым ролям:
+A monolith typically contains mixed logic. Split annotations by semantic role:
 
 ```php
 <?php
 // src/Service/PaymentService.php
-
-// Этот класс уже существует в production.
-// Добавляем только атрибуты — код не трогаем.
+// This class already exists in production.
+// We only add attributes — the implementation code is untouched.
 
 use HybridTM\Attributes\{AssetId, DataFlow, Mitigation};
 use HybridTM\Enums\{Authentication, Authorization, MitigationStatus, Protocol};
 
-// Если класс полностью относится к одному компоненту DSL:
 #[AssetId('monolith')]
 class PaymentService
 {
-    private GuzzleHttp\Client $http;
+    private \GuzzleHttp\Client $http;
 
     /**
-     * Обращается к внешнему платёжному шлюзу.
-     * Атрибуты отражают реальное поведение метода.
+     * Calls the external payment gateway.
+     * Attributes reflect the real runtime behaviour of this method.
      */
     #[DataFlow(
         target: 'payment-gateway',
         protocol: Protocol::Https,
-        authentication: Authentication::Token,       // Bearer token для Stripe/Braintree
+        authentication: Authentication::Token,       // Bearer token for Stripe/Braintree
         authorization: Authorization::TechnicalUser,
-        dataSent: ['order-data'],                   // сумма и описание заказа
-        // payment-data не хранится в нашей системе — только проксируется
+        dataSent: ['order-data'],                    // order amount and description
         readonly: false,
     )]
     #[Mitigation(
         cwe: 'CWE-312',
-        description: 'Raw card numbers never reach our servers; tokenization done client-side via Stripe.js',
+        description: 'Raw card numbers never reach our servers; tokenisation done client-side via Stripe.js',
         status: MitigationStatus::Mitigated,
     )]
     public function charge(string $token, int $amountCents, string $currency): array
@@ -314,38 +312,37 @@ class PaymentService
 }
 ```
 
-### 3.4 Паттерн аннотации микросервиса
+### 3.4 Annotation Pattern — Microservice
 
-Для микросервиса с чётко определённой ролью:
+For a microservice with a well-defined role:
 
 ```php
 <?php
-// services/user-service/src/Api/UserApiClient.php
-// Клиент, который вызывает этот сервис из другого сервиса
+// services/order-service/src/Api/UserApiClient.php
+// Client that lives in order-service and calls user-service
 
-use HybridTM\Attributes\{AssetId, DataFlow, Mitigation};
-use HybridTM\Enums\{Authentication, Authorization, MitigationStatus, Protocol};
+use HybridTM\Attributes\{AssetId, DataFlow};
+use HybridTM\Enums\{Authentication, Authorization, Protocol};
 
-// Этот класс живёт в order-service и вызывает user-service
 #[AssetId('order-service')]
 class UserApiClient
 {
     #[DataFlow(
-        target: 'user-service',          // должен быть TechnicalAsset в DSL
+        target: 'user-service',         // must be a TechnicalAsset in the DSL
         protocol: Protocol::Https,
         authentication: Authentication::Token,
         authorization: Authorization::TechnicalUser,
-        dataReceived: ['customer-pii'],  // получаем профиль для отображения в заказе
+        dataReceived: ['customer-pii'], // user profile for order display
         readonly: true,
     )]
     public function getUserProfile(string $userId): array
     {
-        // Guzzle / Symfony HttpClient вызов
+        // Guzzle / Symfony HttpClient call
     }
 }
 ```
 
-### 3.5 Паттерн для репозиториев (Database layer)
+### 3.5 Annotation Pattern — Repository (Database Layer)
 
 ```php
 <?php
@@ -371,7 +368,7 @@ class UserRepository
         // Doctrine / PDO
     }
 
-    // INSERT / UPDATE — не readonly
+    // INSERT / UPDATE — not readonly
     #[DataFlow(
         target: 'main-db',
         protocol: Protocol::JdbcEncrypted,
@@ -382,7 +379,7 @@ class UserRepository
     )]
     #[Mitigation(
         cwe: 'CWE-89',
-        description: 'Doctrine ORM parameterized queries, no raw SQL with user input',
+        description: 'Doctrine ORM parameterised queries; no raw SQL with user input',
         status: MitigationStatus::Mitigated,
     )]
     public function save(array $user): int
@@ -390,7 +387,7 @@ class UserRepository
         // Doctrine / PDO
     }
 
-    // GDPR: право на удаление
+    // GDPR: right to erasure
     #[DataFlow(
         target: 'main-db',
         protocol: Protocol::JdbcEncrypted,
@@ -400,12 +397,12 @@ class UserRepository
     )]
     public function deleteById(int $id): void
     {
-        // Hard delete для GDPR compliance
+        // Hard delete for GDPR compliance
     }
 }
 ```
 
-### 3.6 Асинхронные воркеры и очереди сообщений
+### 3.6 Annotation Pattern — Async Workers and Message Queues
 
 ```php
 <?php
@@ -417,10 +414,10 @@ use HybridTM\Enums\{Authentication, Authorization, Protocol};
 #[AssetId('order-service')]
 class OrderProcessedConsumer
 {
-    // Воркер читает из очереди — это тоже DataFlow
+    // Worker reads from a queue — this is also a DataFlow
     #[DataFlow(
-        target: 'message-queue',       // RabbitMQ / SQS — добавьте в DSL
-        protocol: Protocol::Jms,       // AMQP / JMS
+        target: 'message-queue',        // RabbitMQ / SQS — add to the DSL
+        protocol: Protocol::Jms,        // AMQP / JMS
         authentication: Authentication::Credentials,
         authorization: Authorization::TechnicalUser,
         dataReceived: ['order-data'],
@@ -428,10 +425,10 @@ class OrderProcessedConsumer
     )]
     public function __invoke(OrderProcessedMessage $message): void
     {
-        // обработка события
+        // process the event
     }
 
-    // Воркер публикует результат в другую очередь / сервис
+    // Worker publishes result to another queue / service
     #[DataFlow(
         target: 'notification-service',
         protocol: Protocol::Https,
@@ -448,11 +445,11 @@ class OrderProcessedConsumer
 
 ---
 
-## Фаза 4: CI/CD и governance
+## Phase 4: CI/CD and Governance
 
-### 4.1 Постепенное включение в CI
+### 4.1 Gradual CI Enablement
 
-Не включайте strict-mode сразу. Используйте **предупреждения** до достижения нужного покрытия:
+Do not block the pipeline immediately. Use **warnings** until sufficient coverage is reached:
 
 ```yaml
 # .github/workflows/threat-model.yml
@@ -462,7 +459,7 @@ class OrderProcessedConsumer
       --infra=threat-model.php \
       --source=src/ \
       --out=threagile.yaml
-  # Пока не блокируем — только предупреждения
+  # Not blocking yet — only warnings
   continue-on-error: true
 
 - name: Run Threagile
@@ -476,48 +473,48 @@ class OrderProcessedConsumer
   continue-on-error: true
 ```
 
-После достижения покрытия критичных сервисов уберите `continue-on-error: true`.
+Once critical services are covered, remove `continue-on-error: true`.
 
-### 4.2 Ownership модель для энтерпрайза
+### 4.2 Ownership Model for Enterprise
 
-В больших командах важно определить, кто отвечает за каждый компонент модели:
+In large teams it is important to define who owns each component in the model:
 
 ```php
-// threat-model.php — добавляйте owner на каждый TechnicalAsset
+// threat-model.php — set owner on every TechnicalAsset
 $paymentService->owner = 'payments-team@company.com';
 $authService->owner    = 'security-team@company.com';
 $userService->owner    = 'user-platform-team@company.com';
 ```
 
-### 4.3 Трекинг рисков (Risk Tracking)
+### 4.3 Risk Tracking
 
-Когда Threagile находит риск, его можно пометить как принятый, отложенный или митигированный напрямую в `threat-model.php` через секцию `risk_tracking` в итоговом YAML. Рекомендуемый подход для энтерпрайза — сохранять `threagile.yaml` в git и редактировать `risk_tracking` прямо в нём:
+When Threagile identifies a risk, it can be marked as accepted, deferred, or mitigated. The recommended enterprise approach is to commit `threagile.yaml` to git and edit the `risk_tracking` block directly:
 
 ```yaml
-# threagile.yaml (редактируется вручную или через скрипт)
+# threagile.yaml — edited manually or via script
 risk_tracking:
   sql-injection@main-db:
     status: mitigated
-    justification: "All queries via Doctrine ORM with parameterized statements. Audited Q4 2023."
+    justification: "All queries via Doctrine ORM with parameterised statements. Audited Q4 2023."
     date: '2024-01-15'
     ticket: "SEC-142"
 
   missing-authentication@internal-api:
     status: accepted
-    justification: "Internal API accessible only from VPC private subnet. Network-level isolation is sufficient given current threat model."
+    justification: "Internal API accessible only from the VPC private subnet. Network-level isolation is sufficient given the current threat model."
     date: '2024-01-15'
     ticket: "SEC-98"
 ```
 
 ---
 
-## Паттерны для сложных случаев
+## Patterns for Complex Cases
 
-### Монорепозиторий с несколькими сервисами
+### Monorepo with Multiple Services
 
 ```
 monorepo/
-├── threat-model.php          ← единая DSL-модель для всех сервисов
+├── threat-model.php          ← single DSL model for all services
 ├── services/
 │   ├── user-service/src/
 │   ├── order-service/src/
@@ -528,32 +525,32 @@ monorepo/
 ```bash
 # Makefile
 threat-model:
-    php bin/hybridtm compile \
-        --infra=threat-model.php \
-        --source=services/ \   # сканирует все сервисы рекурсивно
-        --out=threagile.yaml
+	php bin/hybridtm compile \
+	    --infra=threat-model.php \
+	    --source=services/ \     # scans all services recursively
+	    --out=threagile.yaml
 ```
 
-### Несколько команд — несколько частичных моделей
+### Multiple Teams — Separate Partial Models
 
-Если каждая команда хочет управлять своим куском модели:
+If each team wants to own their slice of the model:
 
 ```php
-// threat-model.php — агрегирует отдельные файлы
+// threat-model.php — aggregates separate team files
 declare(strict_types=1);
 require_once __DIR__ . '/vendor/autoload.php';
 
 use HybridTM\DSL\ThreatModel;
+use HybridTM\Enums\BusinessCriticality;
 
-// Каждая команда поддерживает свой файл с активами
+// Each team maintains their own asset file
 $userAssets    = require __DIR__ . '/threat-models/user-service.php';
 $orderAssets   = require __DIR__ . '/threat-models/order-service.php';
 $paymentAssets = require __DIR__ . '/threat-models/payment-service.php';
 
 $model = new ThreatModel('Full Platform');
-$model->businessCriticality = \HybridTM\Enums\BusinessCriticality::Critical;
+$model->businessCriticality = BusinessCriticality::Critical;
 
-// Мерж активов из всех подмоделей
 foreach ($userAssets    as $asset) { $model->addTechnicalAsset($asset); }
 foreach ($orderAssets   as $asset) { $model->addTechnicalAsset($asset); }
 foreach ($paymentAssets as $asset) { $model->addTechnicalAsset($asset); }
@@ -562,8 +559,8 @@ return $model;
 ```
 
 ```php
-// threat-models/user-service.php — только TechnicalAsset'ы этой команды
-// Возвращает массив активов, не ThreatModel
+// threat-models/user-service.php — only this team's TechnicalAssets
+// Returns an array of assets, not a ThreatModel
 return [
     (function () {
         $svc = new \HybridTM\DSL\TechnicalAsset('user-service', 'User Service');
@@ -574,14 +571,15 @@ return [
 ];
 ```
 
-### Легаси-код без строгой типизации (PHP 7.x)
+### Legacy Code Without Strict Typing (PHP 7.x)
 
-Если часть кодовой базы написана на PHP < 8.0, атрибуты нельзя разместить непосредственно в этих файлах. Создайте отдельные **маппинговые файлы**:
+If part of the codebase is written in PHP < 8.0, attributes cannot be placed directly in those files. Create separate **mapping files** instead:
 
 ```php
 <?php
-// threat-models/annotations/LegacyPaymentService.php
-// Этот файл живёт рядом с моделью, не с legacy кодом
+// threat-models/annotations/LegacyPaymentServiceAnnotations.php
+// This file lives alongside the model, not with the legacy code.
+// It is ONLY for HybridTM scanning — never instantiated at runtime.
 
 declare(strict_types=1);
 namespace ThreatAnnotations;
@@ -589,10 +587,6 @@ namespace ThreatAnnotations;
 use HybridTM\Attributes\{AssetId, DataFlow};
 use HybridTM\Enums\{Authentication, Protocol};
 
-/**
- * Аннотации для LegacyPaymentService из legacy-модуля.
- * Этот класс ТОЛЬКО для целей сканирования HybridTM — не используется в runtime.
- */
 #[AssetId('monolith')]
 class LegacyPaymentServiceAnnotations
 {
@@ -605,42 +599,34 @@ class LegacyPaymentServiceAnnotations
 }
 ```
 
-```bash
-# Сканируйте оба источника: legacy src/ и папку с аннотациями
-php bin/hybridtm compile \
-    --infra=threat-model.php \
-    --source=src/,threat-models/annotations/ \   # TODO: multi-source (roadmap)
-    --out=threagile.yaml
-```
+Place the mapping files inside `src/` (or a subdirectory of it) so the scanner picks them up.
 
-> **Заметка:** поддержка нескольких `--source` путей — в roadmap. Пока обходной путь: положите маппинговые файлы в поддиректорию `src/`.
-
-### Интеграция с третьими системами (SSO, ESB, ERP)
+### Integrating with Third-Party Systems (SSO, ESB, ERP)
 
 ```php
 // threat-model.php
 
-// SAP ERP — внешняя система, коммуникация через ESB
+// SAP ERP — external system, communication via ESB
 $sap = new TechnicalAsset('sap-erp', 'SAP ERP');
-$sap->type       = AssetType::ExternalEntity;
-$sap->technology = Technology::Erp;
-$sap->internet   = false;
-$sap->machine    = Machine::Physical;
-$sap->size       = Size::System;
+$sap->type        = AssetType::ExternalEntity;
+$sap->technology  = Technology::Erp;
+$sap->internet    = false;
+$sap->machine     = Machine::Physical;
+$sap->size        = Size::System;
 $sap->confidentiality = Confidentiality::Restricted;
-$sap->integrity  = Integrity::Critical;
+$sap->integrity   = Integrity::Critical;
 $sap->availability = Availability::Critical;
 $model->addTechnicalAsset($sap);
 
 $esb = new TechnicalAsset('esb', 'Enterprise Service Bus (MuleSoft)');
-$esb->type       = AssetType::Process;
-$esb->technology = Technology::MessageQueue;
-$esb->machine    = Machine::Virtual;
-$esb->size       = Size::System;
+$esb->type        = AssetType::Process;
+$esb->technology  = Technology::MessageQueue;
+$esb->machine     = Machine::Virtual;
+$esb->size        = Size::System;
 $esb->customDevelopedParts = false;
 $model->addTechnicalAsset($esb);
 
-// SSO / LDAP
+// Corporate SSO / LDAP
 $ldap = new TechnicalAsset('ldap', 'Corporate LDAP / Active Directory');
 $ldap->type       = AssetType::Datastore;
 $ldap->technology = Technology::LdapServer;
@@ -650,24 +636,24 @@ $ldap->dataAssetsStored = ['internal-config']; // credentials
 $model->addTechnicalAsset($ldap);
 ```
 
-### Kubernetes / Cloud-native среды
+### Kubernetes / Cloud-Native Environments
 
 ```php
-// trust-boundary для K8s namespace
+// Kubernetes namespace trust boundary
 $k8sNamespace = new TrustBoundary(
     'k8s-prod',
     'Kubernetes Production Namespace',
-    TrustBoundaryType::NetworkPolicyNamespaceIsolation
+    TrustBoundaryType::NetworkPolicyNamespaceIsolation,
 );
-$k8sNamespace->description = 'K8s namespace с NetworkPolicy, доступ только через ingress';
+$k8sNamespace->description = 'K8s namespace with NetworkPolicy; access only via ingress';
 $k8sNamespace->addAssets('web-app', 'api-service', 'auth-service');
 $model->addTrustBoundary($k8sNamespace);
 
-// Ingress / WAF вне namespace
+// Ingress / WAF layer outside the namespace
 $ingress = new TrustBoundary(
     'ingress',
     'Ingress / WAF Layer',
-    TrustBoundaryType::NetworkCloudSecurityGroup
+    TrustBoundaryType::NetworkCloudSecurityGroup,
 );
 $ingress->addAssets('api-gateway');
 $model->addTrustBoundary($ingress);
@@ -675,89 +661,88 @@ $model->addTrustBoundary($ingress);
 
 ---
 
-## Типичные ошибки и как их избежать
+## Common Mistakes and How to Avoid Them
 
-### ❌ Создать один DataAsset "UserData" для всего
+### ❌ Creating a Single "UserData" DataAsset for Everything
 
 ```php
-// ПЛОХО: всё в одну кучу
+// BAD: everything lumped together
 $userData = new DataAsset('user-data', 'User Data');
-// Threagile не может корректно оценить риск для смешанных данных
+// Threagile cannot correctly score risk for mixed data types.
 
-// ХОРОШО: разделяйте по чувствительности
+// GOOD: split by sensitivity level
 $userPii         = new DataAsset('user-pii', 'User PII (name, email)');
 $userCredentials = new DataAsset('user-credentials', 'Password Hashes');
 $userPreferences = new DataAsset('user-preferences', 'Non-sensitive Preferences');
 ```
 
-### ❌ Не указывать `encryption` для баз данных
+### ❌ Omitting `encryption` on Datastores
 
 ```php
-// ПЛОХО: оставить по умолчанию (None)
+// BAD: leaving the default (None) without acknowledging it
 $db = new TechnicalAsset('db', 'Database');
-// Threagile сгенерирует риск, но вы потеряете контекст
 
-// ХОРОШО: явно указать реальное состояние
-$db->encryption = Encryption::None; // если не настроено — честно указываем None
-// ИЛИ
-$db->encryption = Encryption::DataWithSymmetricSharedKey; // если настроено
-$db->justificationCiaRating = 'Encrypted via AWS RDS encryption at rest with KMS';
+// GOOD: explicitly state the real situation
+$db->encryption = Encryption::None; // if not configured — be honest
+// OR
+$db->encryption = Encryption::DataWithSymmetricSharedKey; // if configured
+$db->justificationCiaRating = 'Encrypted via AWS RDS at-rest encryption with KMS';
 ```
 
-### ❌ Добавить `#[AssetId]` на базовый класс / трейт
+### ❌ Placing `#[AssetId]` on a Base Class or Trait
 
 ```php
-// ПЛОХО: атрибут на AbstractController наследуется всеми контроллерами
+// BAD: the attribute is inherited by all subclasses
 #[AssetId('web-app')]
-abstract class AbstractController { }
+abstract class AbstractController {}
 
-// ХОРОШО: атрибут на конкретный класс
+// GOOD: place the attribute on each concrete class
 #[AssetId('web-app')]
-class UserController extends AbstractController { }
+class UserController extends AbstractController {}
 
-#[AssetId('admin-panel')]  // другой asset!
-class AdminController extends AbstractController { }
+#[AssetId('admin-panel')]  // different asset!
+class AdminController extends AbstractController {}
 ```
 
-### ❌ Аннотировать методы-хелперы внутри одного сервиса
+### ❌ Annotating Internal Helper Methods
 
 ```php
-// ПЛОХО: private helper внутри того же класса — это не cross-service вызов
+// BAD: a private helper within the same service is not a cross-service call
 #[AssetId('web-app')]
 class UserController
 {
-    #[DataFlow(target: 'web-app', ...)] // web-app → web-app? Не имеет смысла
-    private function formatResponse(array $data): array { }
+    #[DataFlow(target: 'web-app', ...)] // web-app → web-app? Makes no sense.
+    private function formatResponse(array $data): array {}
 }
 
-// ХОРОШО: аннотируйте только методы, пересекающие границу сервиса
+// GOOD: only annotate methods that cross a service boundary
 #[AssetId('web-app')]
 class UserController
 {
     #[DataFlow(target: 'user-db', ...)] // web-app → user-db ✓
-    public function getUser(int $id): array { }
+    public function getUser(int $id): array {}
 }
 ```
 
-### ❌ Указать несуществующий ID в `target`
+### ❌ Referencing a Non-Existent Asset ID
 
 ```bash
-# Компилятор покажет:
+# The compiler will report:
 # [DataFlow@UserController::save] Unknown target asset 'users-database'.
 # Add it to your threat model DSL file.
 
-# Решение: ID в атрибуте должен совпадать с ID в DSL
+# Solution: the ID in the attribute must exactly match the ID in the DSL
 $model->addTechnicalAsset(new TechnicalAsset('user-db', 'User Database'));
-#                                              ^^^^^^^^^
+#                                              ^^^^^^^^
 #[DataFlow(target: 'user-db', ...)]
-#                   ^^^^^^^^^
+#                   ^^^^^^^^
 ```
 
-### ❌ Игнорировать предупреждения компилятора
+### ❌ Ignoring Compiler Warnings
 
 ```bash
 php bin/hybridtm compile ... 2>&1 | grep -E "WARNING|ERROR"
 
-# WARNING означает, что DataFlow не будет создан в YAML
-# Всегда исправляйте предупреждения перед коммитом
+# A WARNING means the DataFlow will not appear in the YAML.
+# Always resolve warnings before committing.
 ```
