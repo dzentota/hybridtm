@@ -81,6 +81,14 @@ The pipeline has four independent layers:
 
 ---
 
+## Documentation
+
+- **[New Projects Guide](docs/new-projects.md)** — step-by-step guide for adding HybridTM from day one: DSL design, attribute annotation, CI/CD setup, AI agent integration.
+- **[Enterprise Adoption Guide](docs/enterprise-adoption.md)** — phased rollout strategy for existing applications: audit, as-is model, incremental annotation, governance.
+- **[Reference](docs/reference.md)** — complete reference for CLI, DSL classes, all attributes, and every enum value.
+
+---
+
 ## Installation
 
 ```bash
