@@ -1,0 +1,74 @@
+# HybridTM — AI Coding Agent Security Protocol
+#
+# This is the Cursor IDE agent configuration.
+# The canonical instructions live in .github/copilot-instructions.md
+# and are duplicated here for Cursor compatibility.
+#
+# Read .github/copilot-instructions.md for the full reference.
+
+You are a **DevSecOps-aware coding agent** working in a PHP codebase that uses the **HybridTM** threat-modeling framework. Every code change you make must keep the threat model in sync with the implementation.
+
+## Your Mandatory Workflow
+
+### When creating or modifying a PHP class that talks to another service, database, cache, queue, or external API:
+
+1. **Ensure the class has `#[AssetId('...')]`** mapping it to a TechnicalAsset ID from `threat-model.php`.
+2. **Add `#[DataFlow(...)]`** to every method that sends or receives data across a component boundary.
+3. **Add `#[Mitigation(...)]`** for every security control implemented in the method.
+4. **Add `#[ProcessesData(...)]`** at the class level listing the data asset IDs that this component handles.
+
+### When adding new infrastructure:
+
+1. Open `threat-model.php` and add the `TechnicalAsset`, `DataAsset`, and `TrustBoundary`.
+2. Add `communicatesTo()` calls for macro-level links.
+
+### Before finishing:
+
+```bash
+php bin/hybridtm compile --infra=threat-model.php --source=src/ --out=threagile.yaml
+```
+
+## Quick Attribute Reference
+
+### `#[AssetId(string $id)]` — Class level
+Maps class → TechnicalAsset ID from DSL.
+
+### `#[DataFlow(target, protocol, authentication, authorization, dataSent, dataReceived, readonly)]` — Method level
+Declares data flow from source (class `#[AssetId]`) to target asset.
+
+- `target`: string — MUST match TechnicalAsset ID in `threat-model.php`
+- `protocol`: `Protocol::Https`, `Protocol::JdbcEncrypted`, etc.
+- `authentication`: `Authentication::None|Credentials|Token|...`
+- `authorization`: `Authorization::None|TechnicalUser|EnduserIdentityPropagation`
+- `dataSent` / `dataReceived`: `string[]` — DataAsset IDs
+- `readonly`: `bool` — set `true` for read-only operations
+
+### `#[Mitigation(cwe, description, status)]` — Class or method level
+- `cwe`: e.g. `'CWE-89'`, `'CWE-307'`
+- `description`: what the control does
+- `status`: `MitigationStatus::Mitigated|InProgress|Accepted|Unchecked`
+
+### `#[ProcessesData(dataAssets: [...])]` — Class level
+Lists DataAsset IDs this component handles.
+
+## Protocol Quick Reference
+
+| Use case             | Enum                                    |
+|----------------------|-----------------------------------------|
+| REST API             | `Protocol::Https`                       |
+| Database (encrypted) | `Protocol::JdbcEncrypted`               |
+| Redis / NoSQL (enc)  | `Protocol::NosqlAccessProtocolEncrypted` |
+| Message queue        | `Protocol::Jms`                         |
+| WebSocket (TLS)      | `Protocol::Wss`                         |
+| File system          | `Protocol::LocalFileAccess`             |
+
+## Critical Rules
+
+1. Every `target` in `#[DataFlow]` MUST match a TechnicalAsset ID in `threat-model.php`.
+2. Every ID in `dataSent`/`dataReceived` MUST match a DataAsset ID in `threat-model.php`.
+3. Every class with `#[DataFlow]` methods MUST have `#[AssetId]`.
+4. Use PHP enum cases (e.g., `Protocol::Https`), never raw strings.
+5. Set `readonly: true` on read-only data flows.
+6. Run `php bin/hybridtm compile` after every change.
+
+## Full reference: .github/copilot-instructions.md
