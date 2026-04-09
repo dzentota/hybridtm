@@ -44,6 +44,25 @@ Requirements: PHP ≥ 8.2, Docker (for running Threagile).
 
 ---
 
+## Optional Bootstrap: CLI Wizard
+
+Instead of writing `threat-model.php` from scratch, you can scaffold it interactively:
+
+```bash
+php bin/hybridtm init --out=threat-model.php
+```
+
+The wizard collects:
+- project metadata
+- data assets
+- technical assets
+- trust boundaries
+- communication links
+
+It then generates a valid baseline DSL file you can refine in Step 1.
+
+---
+
 ## Recommended File Structure
 
 ```

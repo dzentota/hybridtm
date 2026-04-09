@@ -86,6 +86,7 @@ The pipeline has four independent layers:
 - **[New Projects Guide](docs/new-projects.md)** — step-by-step guide for adding HybridTM from day one: DSL design, attribute annotation, CI/CD setup, AI agent integration.
 - **[Enterprise Adoption Guide](docs/enterprise-adoption.md)** — phased rollout strategy for existing applications: audit, as-is model, incremental annotation, governance.
 - **[Reference](docs/reference.md)** — complete reference for CLI, DSL classes, all attributes, and every enum value.
+- **CLI Wizard (`init`)** — interactive threat-model bootstrap with ASCII UI: `php bin/hybridtm init --out=threat-model.php`.
 
 > Russian translations: [new-projects.ru.md](docs/new-projects.ru.md) · [enterprise-adoption.ru.md](docs/enterprise-adoption.ru.md) · [reference.ru.md](docs/reference.ru.md)
 
@@ -102,6 +103,18 @@ Requirements: PHP ≥ 8.2
 ---
 
 ## Quick Start
+
+### 0. Bootstrap with the wizard (recommended)
+
+If you are starting from scratch, use the interactive wizard to generate a baseline `threat-model.php`:
+
+```bash
+php bin/hybridtm init --out=threat-model.php
+```
+
+The wizard asks for model metadata, data assets, technical assets, trust boundaries, and communication links, then writes a ready-to-edit DSL file.
+
+---
 
 ### 1. Write an infrastructure DSL file
 
@@ -191,6 +204,12 @@ The DSL describes the **architecture**; the attributes describe the **behaviour*
 ## Command Reference
 
 ```
+php bin/hybridtm init [options]
+php bin/hybridtm compile [options]
+
+Options (init):
+  --out=PATH        Output path for generated DSL file  [default: threat-model.php]
+
 php bin/hybridtm compile [options]
 
 Options:

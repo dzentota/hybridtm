@@ -63,6 +63,37 @@ docker run --rm \
 
 ---
 
+### `init`
+
+Interactive wizard that scaffolds a `threat-model.php` DSL file.
+
+```bash
+php bin/hybridtm init [options]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--out=PATH` | `threat-model.php` | Output path for generated DSL file |
+
+**Example:**
+
+```bash
+php bin/hybridtm init --out=threat-model.php
+```
+
+Wizard flow:
+
+1. Project metadata (title, author, business criticality)
+2. Data assets
+3. Technical assets
+4. Trust boundaries
+5. Communication links
+6. File generation
+
+The wizard provides a styled ASCII/box-drawing interface and outputs a valid baseline model that you can refine manually.
+
+---
+
 ## ThreatModel
 
 Root object of the model. Created in the DSL file and returned via `return $model;`.
