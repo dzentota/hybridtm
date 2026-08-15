@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/trait.v1.json",
+  "title": "HybridTM KB Trait",
+  "description": "A vocabulary entry the rule engine matches on (ADR-04), e.g. 'datastore', 'internet_reachable'. See plan §4.2.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "Trait" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "$ref": "#/$defs/traitId" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "category", "derived"],
+      "properties": {
+        "label": { "type": "string", "minLength": 1 },
+        "description": { "type": "string" },
+        "category": { "type": "string", "minLength": 1 },
+        "derived": {
+          "type": "boolean",
+          "description": "true if the engine's Derive phase computes this trait; false if a KB component declares it directly."
+        }
+      }
+    }
+  },
+  "$defs": {
+    "traitId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{1,62}$",
+      "description": "snake_case, matching HasTrait()/hasAllTraits() lookups."
+    }
+  }
+}

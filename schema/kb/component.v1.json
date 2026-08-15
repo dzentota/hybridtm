@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/component.v1.json",
+  "title": "HybridTM KB Component",
+  "description": "A palette component: a template that expands into one or more TechnicalAssets (ADR-03). See plan §4.3.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "Component" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "version"],
+      "properties": {
+        "id": { "$ref": "#/$defs/componentId" },
+        "name": { "type": "string", "minLength": 1 },
+        "version": { "$ref": "#/$defs/semver" },
+        "vendor": { "type": "string" },
+        "categories": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "icon": { "type": "string" },
+        "color": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+        "docs": { "type": "string", "format": "uri" },
+        "maturity": { "enum": ["stable", "beta", "deprecated"] },
+        "since": { "$ref": "#/$defs/semver" },
+        "abstract": { "type": "boolean" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["mapping"],
+      "properties": {
+        "extends": { "$ref": "#/$defs/componentId" },
+        "mapping": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type"],
+          "properties": {
+            "type": { "enum": ["external-entity", "process", "datastore"] },
+            "technologies": {
+              "type": "array",
+              "items": { "type": "string" },
+              "minItems": 1
+            },
+            "machine": { "enum": ["physical", "virtual", "container", "serverless"] },
+            "size": { "enum": ["system", "service", "application", "component"] },
+            "customDevelopedParts": { "type": "boolean" },
+            "defaults": {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "confidentiality": { "type": "string" },
+                "integrity": { "type": "string" },
+                "availability": { "type": "string" },
+                "encryption": { "type": "string" }
+              }
+            }
+          }
+        },
+        "traits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "uniqueItems": true
+        },
+        "ports": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "inbound": { "type": "array", "items": { "$ref": "#/$defs/port" } },
+            "outbound": { "type": "array", "items": { "$ref": "#/$defs/port" } }
+          }
+        },
+        "properties": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/property" }
+        },
+        "rules": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "risk_patterns": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "hardening_guides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["title", "url"],
+            "properties": {
+              "title": { "type": "string" },
+              "url": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "componentId": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9/-]{1,62}$",
+      "description": "Slug, optionally namespaced (e.g. 'abstract/reverse-proxy')."
+    },
+    "semver": {
+      "type": "string",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "port": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "protocols", "cardinality"],
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "label": { "type": "string" },
+        "protocols": {
+          "type": "array",
+          "items": { "type": "string" },
+          "minItems": 1
+        },
+        "cardinality": { "enum": ["one", "many"] },
+        "optional": { "type": "boolean" }
+      }
+    },
+    "property": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "type"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,62}$" },
+        "label": { "type": "string" },
+        "help": { "type": "string" },
+        "type": { "enum": ["boolean", "string", "integer", "number", "enum", "array"] },
+        "default": true,
+        "values": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Allowed values when type = enum."
+        },
+        "maps_to": { "type": "string" },
+        "group": { "type": "string" },
+        "show_if": { "type": "string" },
+        "pattern": { "type": "string" },
+        "placeholder": { "type": "string" },
+        "feeds": { "type": "string" }
+      }
+    }
+  }
+}

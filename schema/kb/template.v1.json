@@ -1,0 +1,88 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/template.v1.json",
+  "title": "HybridTM KB Template",
+  "description": "A starter architecture for the Studio template gallery: a small pre-wired graph of components, boundaries and flows. See plan §4.8.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "Template" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9/-]{1,78}$" },
+        "name": { "type": "string", "minLength": 1 }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["description", "graph"],
+      "properties": {
+        "description": { "type": "string", "minLength": 1 },
+        "preview": { "type": "string" },
+        "graph": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["components"],
+          "properties": {
+            "components": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "type"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "type": { "type": "string", "minLength": 1 },
+                  "x": { "type": "number" },
+                  "y": { "type": "number" },
+                  "properties": {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                }
+              }
+            },
+            "boundaries": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["id", "type", "contains"],
+                "properties": {
+                  "id": { "type": "string", "minLength": 1 },
+                  "type": { "type": "string", "minLength": 1 },
+                  "name": { "type": "string" },
+                  "contains": {
+                    "type": "array",
+                    "items": { "type": "string" },
+                    "minItems": 1
+                  }
+                }
+              }
+            },
+            "flows": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["source", "target", "protocol"],
+                "properties": {
+                  "source": { "type": "string", "minLength": 1 },
+                  "target": { "type": "string", "minLength": 1 },
+                  "protocol": { "type": "string", "minLength": 1 }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

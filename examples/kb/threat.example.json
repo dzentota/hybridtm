@@ -1,0 +1,38 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Threat",
+  "metadata": {
+    "id": "THREAT-DATA-AT-REST-UNENCRYPTED",
+    "version": "1.1.0"
+  },
+  "spec": {
+    "title": "Unencrypted data at rest",
+    "summary": "A datastore holds confidential data without disk- or DBMS-level encryption. Compromise of the underlying media, a snapshot, or a backup discloses the data directly.",
+    "stride": ["information-disclosure"],
+    "base": {
+      "likelihood": "likely",
+      "impact": "medium"
+    },
+    "standards": {
+      "cwe": [311, 312],
+      "capec": [37, 545],
+      "owasp_top10_2021": ["A02"],
+      "owasp_asvs": ["V6.2.1", "V6.2.2"],
+      "mitre_attack": ["T1005", "T1530"],
+      "pci_dss_4": ["3.5.1"],
+      "iso_27001_2022": ["A.8.24"],
+      "nist_800_53": ["SC-28", "SC-28(1)"]
+    },
+    "attacker_goal": "Obtain confidential data without compromising the application.",
+    "attack_vectors": [
+      "Theft or improper disposal of physical media",
+      "Access to a publicly exposed snapshot or backup",
+      "Hypervisor or co-tenant compromise"
+    ],
+    "countermeasures": ["CM-ENCRYPT-AT-REST", "CM-KEY-MANAGEMENT-KMS", "CM-BACKUP-ENCRYPTION"],
+    "false_positives": "Data is already encrypted at the application layer before being written — closed by CM-APP-LEVEL-ENCRYPTION.",
+    "references": [
+      { "title": "OWASP Cryptographic Storage Cheat Sheet", "url": "https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html" }
+    ]
+  }
+}

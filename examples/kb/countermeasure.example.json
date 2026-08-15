@@ -1,0 +1,35 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Countermeasure",
+  "metadata": {
+    "id": "CM-ENCRYPT-AT-REST",
+    "version": "1.0.0"
+  },
+  "spec": {
+    "title": "Enable encryption at rest",
+    "description": "Turn on the datastore's built-in at-rest encryption with keys in a managed KMS/HSM and rotation enabled.",
+    "cost": "low",
+    "effort": "low",
+    "effectiveness": "high",
+    "category": "preventive",
+    "standards": {
+      "owasp_asvs": ["V6.2.1"],
+      "pci_dss_4": ["3.5.1"],
+      "iso_27001_2022": ["A.8.24"],
+      "nist_800_53": ["SC-28"]
+    },
+    "implementation": {
+      "aws-rds-postgres": "Terraform: storage_encrypted = true, kms_key_id = aws_kms_key.db.arn.",
+      "postgresql": "pgcrypto for column-level encryption, or LUKS/dm-crypt at the volume level.",
+      "mongodb": "Enterprise Advanced: WiredTiger Encryption at Rest with a KMIP provider."
+    },
+    "verification": {
+      "manual": "Check that the datastore is marked encrypted in the provider console.",
+      "automated": [
+        { "kind": "hybridtm_mitigation", "cwe": "CWE-311" },
+        { "kind": "iac_check", "tool": "checkov", "rule": "CKV_AWS_16" }
+      ]
+    },
+    "applies_property": { "id": "encryption_at_rest", "value": true }
+  }
+}

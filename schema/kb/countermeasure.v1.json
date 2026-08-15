@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/countermeasure.v1.json",
+  "title": "HybridTM KB Countermeasure",
+  "description": "A countermeasure entry, with per-product implementation hints and verification strategies. See plan §4.5.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "Countermeasure" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^CM-[A-Z0-9-]+$" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "description", "cost", "effort", "effectiveness", "category"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "description": { "type": "string", "minLength": 1 },
+        "cost": { "enum": ["low", "medium", "high"] },
+        "effort": { "enum": ["low", "medium", "high"] },
+        "effectiveness": { "enum": ["low", "medium", "high"] },
+        "category": { "enum": ["preventive", "detective", "corrective"] },
+        "standards": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "owasp_asvs": { "type": "array", "items": { "type": "string" } },
+            "pci_dss_4": { "type": "array", "items": { "type": "string" } },
+            "iso_27001_2022": { "type": "array", "items": { "type": "string" } },
+            "nist_800_53": { "type": "array", "items": { "type": "string" } }
+          }
+        },
+        "implementation": {
+          "type": "object",
+          "additionalProperties": { "type": "string" },
+          "description": "Product id (e.g. 'aws-rds-postgres') to implementation hint."
+        },
+        "verification": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "manual": { "type": "string" },
+            "automated": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "additionalProperties": true,
+                "required": ["kind"],
+                "properties": {
+                  "kind": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "applies_property": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "value"],
+          "properties": {
+            "id": { "type": "string" },
+            "value": true
+          }
+        }
+      }
+    }
+  }
+}

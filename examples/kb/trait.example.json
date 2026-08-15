@@ -1,0 +1,13 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Trait",
+  "metadata": {
+    "id": "encrypts_at_rest_natively"
+  },
+  "spec": {
+    "label": "Supports native encryption at rest",
+    "description": "The component can encrypt data on disk using built-in means. Does not imply encryption is enabled.",
+    "category": "storage",
+    "derived": false
+  }
+}

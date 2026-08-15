@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/risk-pattern.v1.json",
+  "title": "HybridTM KB Risk Pattern",
+  "description": "A named group of threats that apply together, analogous to an IriusRisk risk pattern. See plan §4.7.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "RiskPattern" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "version"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^RP-[A-Z0-9-]+$" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "applies_when", "threats"],
+      "properties": {
+        "title": { "type": "string", "minLength": 1 },
+        "applies_when": { "type": "string", "minLength": 1 },
+        "threats": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "type": "string", "pattern": "^THREAT-[A-Z0-9-]+$" }
+        }
+      }
+    }
+  }
+}

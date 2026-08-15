@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/kb/rule.v1.json",
+  "title": "HybridTM KB Rule",
+  "description": "A rule entry, in one of three levels of expressiveness (§4.6): declarative when/unless/then (~85% of rules), or a PHP-implemented RuleInterface (spec.impl) for graph rules.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "kind", "metadata", "spec"],
+  "properties": {
+    "apiVersion": { "const": "hybridtm.io/kb/v1" },
+    "kind": { "const": "Rule" },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9/-]{1,78}$" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "priority": { "type": "integer" }
+      }
+    },
+    "spec": {
+      "oneOf": [
+        { "$ref": "#/$defs/declarativeSpec" },
+        { "$ref": "#/$defs/implSpec" }
+      ]
+    }
+  },
+  "$defs": {
+    "declarativeSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scope", "when", "then"],
+      "properties": {
+        "scope": { "enum": ["component", "flow", "boundary", "model"] },
+        "description": { "type": "string" },
+        "when": { "$ref": "#/$defs/condition" },
+        "unless": { "$ref": "#/$defs/condition" },
+        "then": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/action" }
+        }
+      }
+    },
+    "implSpec": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["impl"],
+      "properties": {
+        "scope": { "enum": ["component", "flow", "boundary", "model"] },
+        "description": { "type": "string" },
+        "impl": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\\\[A-Za-z_][A-Za-z0-9_]*)+$",
+          "description": "Fully-qualified PHP class implementing RuleInterface."
+        }
+      }
+    },
+    "condition": {
+      "type": "object",
+      "additionalProperties": false,
+      "minProperties": 1,
+      "properties": {
+        "all": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        },
+        "any": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 },
+          "minItems": 1
+        }
+      }
+    },
+    "action": {
+      "oneOf": [
+        { "$ref": "#/$defs/raiseAction" },
+        { "$ref": "#/$defs/suggestFixAction" }
+      ]
+    },
+    "raiseAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["raise"],
+      "properties": {
+        "raise": { "type": "string", "pattern": "^THREAT-[A-Z0-9-]+$" },
+        "likelihood": { "type": "string" },
+        "impact": { "type": "string" },
+        "evidence": { "type": "string" },
+        "require": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^CM-[A-Z0-9-]+$" }
+        }
+      }
+    },
+    "suggestFixAction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["suggest_fix"],
+      "properties": {
+        "suggest_fix": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["set", "label"],
+          "properties": {
+            "set": {
+              "type": "object",
+              "additionalProperties": true,
+              "minProperties": 1
+            },
+            "label": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}
