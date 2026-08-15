@@ -1,0 +1,11 @@
+parameters:
+    level: 8
+    paths:
+        - src
+        - tests
+    tmpDir: build/phpstan
+    treatPhpDocTypesAsCertain: false
+    checkMissingIterableValueType: true
+    ignoreErrors:
+        # The DSL file returns a ThreatModel; the CLI verifies this at runtime.
+        - identifier: require.fileNotFound

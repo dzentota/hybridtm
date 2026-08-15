@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 1,
+  "kbVersion": "kb-core@1.0.0",
+  "model": {
+    "id": "ecommerce-platform",
+    "title": "E-Commerce Platform",
+    "description": "Threat model for a cloud-native PHP e-commerce platform.",
+    "author": "Platform Security Team",
+    "date": "2026-08-15",
+    "businessCriticality": "critical",
+    "managementSummaryComment": "PCI DSS in scope for payment flows. GDPR in scope for EU customer data."
+  },
+  "dataAssets": [
+    {
+      "id": "customer-pii",
+      "name": "Customer PII",
+      "description": "Name, email, shipping and billing address.",
+      "origin": "ui-input",
+      "owner": "Customer Success",
+      "quantity": "very-many",
+      "confidentiality": "confidential",
+      "integrity": "important",
+      "availability": "important",
+      "justificationCiaRating": "GDPR Article 4 personal data; breach triggers 72h notification.",
+      "tags": ["pii", "gdpr"]
+    },
+    {
+      "id": "user-credentials",
+      "name": "User Credentials",
+      "description": "Argon2id password hashes; never stored in plaintext.",
+      "origin": "ui-input",
+      "quantity": "many",
+      "confidentiality": "strictly-confidential",
+      "integrity": "critical",
+      "availability": "critical",
+      "tags": ["secret"]
+    }
+  ],
+  "components": [
+    {
+      "id": "frontend-proxy",
+      "name": "Frontend Proxy",
+      "kbComponent": "web-server-nginx",
+      "kbVersion": "1.0.0",
+      "properties": {
+        "internet_facing": true,
+        "tls_terminated": true,
+        "tls_min_version": "1.2",
+        "hsts_enabled": false,
+        "server_tokens": true,
+        "waf_module": "none",
+        "version": "1.27.0"
+      },
+      "overrides": { "confidentiality": "restricted" },
+      "dataAssetsProcessed": ["customer-pii"],
+      "tags": ["edge"],
+      "codeRef": { "assetId": "frontend-proxy" }
+    },
+    {
+      "id": "web-app",
+      "name": "Storefront",
+      "kbComponent": "app-php-symfony",
+      "properties": { "framework_version": "7.1", "csrf_protection": true },
+      "dataAssetsProcessed": ["customer-pii", "user-credentials"],
+      "codeRef": { "assetId": "web-app" }
+    },
+    {
+      "id": "user-db",
+      "name": "User DB",
+      "kbComponent": "db-postgresql",
+      "properties": {
+        "encryption_at_rest": false,
+        "managed": false,
+        "version": "14.5"
+      },
+      "dataAssetsStored": ["customer-pii", "user-credentials"],
+      "dataAssetsProcessed": ["customer-pii", "user-credentials"]
+    }
+  ],
+  "trustBoundaries": [
+    { "id": "dmz", "name": "DMZ", "type": "network-cloud-security-group", "contains": ["frontend-proxy"] },
+    { "id": "private-net", "name": "Private network", "type": "network-cloud-security-group", "contains": ["web-app", "user-db"] }
+  ],
+  "dataFlows": [
+    {
+      "id": "frontend-proxy-to-web-app",
+      "sourceId": "frontend-proxy",
+      "targetId": "web-app",
+      "sourcePort": "upstream",
+      "targetPort": "client",
+      "protocol": "reverse-proxy-web-protocol-encrypted",
+      "authentication": "none",
+      "authorization": "none",
+      "dataSent": ["customer-pii"],
+      "dataReceived": ["customer-pii"]
+    },
+    {
+      "id": "web-app-to-user-db",
+      "sourceId": "web-app",
+      "targetId": "user-db",
+      "protocol": "sql-access-protocol",
+      "authentication": "credentials",
+      "authorization": "technical-user",
+      "dataSent": ["customer-pii", "user-credentials"],
+      "dataReceived": ["customer-pii", "user-credentials"],
+      "properties": { "contains_pii": true }
+    }
+  ],
+  "sharedRuntimes": [],
+  "riskTracking": [
+    {
+      "findingStableId": "0f1e2d3c4b5a69788796a5b4c3d2e1f0",
+      "status": "accepted",
+      "justification": "Internal tooling reachable only over the corporate VPN; compensating control documented in SEC-42.",
+      "ticket": "SEC-42",
+      "expiresAt": "2026-12-31",
+      "decidedBy": "a.tatulchenkov",
+      "decidedAt": "2026-08-15T10:00:00Z"
+    }
+  ]
+}
