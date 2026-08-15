@@ -20,6 +20,8 @@ class CommunicationLink
     public array $dataReceived = [];
     /** @var string[] */
     public array $tags = [];
+    /** KB component properties (§3.2) — never serialized to Threagile YAML. */
+    public PropertyBag $properties;
 
     public function __construct(
         public readonly string $id,
@@ -27,5 +29,7 @@ class CommunicationLink
         public Protocol $protocol = Protocol::Https,
         public Authentication $authentication = Authentication::None,
         public Authorization $authorization = Authorization::None,
-    ) {}
+    ) {
+        $this->properties = new PropertyBag();
+    }
 }

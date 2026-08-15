@@ -22,8 +22,11 @@ class DataAsset
     public string $justificationCiaRating = '';
     /** @var string[] */
     public array $tags = [];
+    /** KB component properties (§3.2) — never serialized to Threagile YAML. */
+    public PropertyBag $properties;
 
     public function __construct(public readonly string $id, public string $name = '') {
         if ($this->name === '') $this->name = $this->id;
+        $this->properties = new PropertyBag();
     }
 }

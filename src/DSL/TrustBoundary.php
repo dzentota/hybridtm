@@ -13,6 +13,8 @@ class TrustBoundary
     public array $trustBoundariesNested = [];
     /** @var string[] */
     public array $tags = [];
+    /** KB component properties (§3.2) — never serialized to Threagile YAML. */
+    public PropertyBag $properties;
 
     public function __construct(
         public readonly string $id,
@@ -20,6 +22,7 @@ class TrustBoundary
         public TrustBoundaryType $type = TrustBoundaryType::NetworkOnPrem,
     ) {
         if ($this->name === '') $this->name = $this->id;
+        $this->properties = new PropertyBag();
     }
 
     public function addAssets(string ...$assetIds): static
