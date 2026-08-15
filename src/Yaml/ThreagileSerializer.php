@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace HybridTM\Yaml;
 
+use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use Symfony\Component\Yaml\Yaml;
 
@@ -83,7 +84,7 @@ final class ThreagileSerializer
                 'out_of_scope' => $asset->outOfScope,
                 'justification_out_of_scope' => $asset->justificationOutOfScope,
                 'size' => $asset->size->value,
-                'technology' => $asset->technology->value,
+                ...$this->buildTechnology($asset),
                 'tags' => $asset->tags,
                 'internet' => $asset->internet,
                 'machine' => $asset->machine->value,
@@ -104,6 +105,22 @@ final class ThreagileSerializer
             ];
         }
         return $result;
+    }
+
+    /**
+     * ADR-10: a multi-value `technologies:` list is emitted only once the
+     * asset actually declares more than one — a single-item list still
+     * degrades to the legacy `technology:` scalar, so existing models
+     * (which never touch `$technologies`) produce byte-identical YAML.
+     *
+     * @return array{technology: string}|array{technologies: list<string>}
+     */
+    private function buildTechnology(TechnicalAsset $asset): array
+    {
+        if ($asset->technologies->count() > 1) {
+            return ['technologies' => $asset->technologies->values()];
+        }
+        return ['technology' => $asset->technology->value];
     }
 
     private function buildTrustBoundaries(ThreatModel $model): array

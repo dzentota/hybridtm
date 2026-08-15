@@ -14,6 +14,7 @@ use HybridTM\Enums\Machine;
 use HybridTM\Enums\Protocol;
 use HybridTM\Enums\Size;
 use HybridTM\Enums\Technology;
+use HybridTM\Enums\TechnologyList;
 
 class TechnicalAsset
 {
@@ -25,6 +26,8 @@ class TechnicalAsset
     public string $justificationOutOfScope = '';
     public Size $size = Size::Service;
     public Technology $technology = Technology::WebServiceRest;
+    /** Multi-value technology list (ADR-10). Empty by default — `$technology` alone still fully describes the asset. */
+    public TechnologyList $technologies;
     public bool $internet = false;
     public Machine $machine = Machine::Virtual;
     public Encryption $encryption = Encryption::None;
@@ -54,6 +57,7 @@ class TechnicalAsset
     public function __construct(public readonly string $id, public string $name = '') {
         if ($this->name === '') $this->name = $this->id;
         $this->properties = new PropertyBag();
+        $this->technologies = new TechnologyList();
     }
 
     /** True if this asset carries any of the given traits (OR semantics). */

@@ -406,6 +406,51 @@ final class ThreagileSerializerTest extends TestCase
         self::assertSame('Alice', $serialized['checked_by']);
     }
 
+    // ── TechnologyList (ADR-10, T-1.4) ──────────────────────────────────────────
+
+    public function testSingleTechnologyStillUsesLegacyScalarField(): void
+    {
+        $model = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('web');
+        $ta->technology = Technology::ReverseProxy;
+        $model->addTechnicalAsset($ta);
+
+        $data = $this->parse($model);
+        $asset = $data['technical_assets']['web'];
+
+        self::assertSame('reverse-proxy', $asset['technology']);
+        self::assertArrayNotHasKey('technologies', $asset);
+    }
+
+    public function testMultipleTechnologiesUseListField(): void
+    {
+        $model = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('nginx');
+        $ta->technologies->add(Technology::ReverseProxy)->add(Technology::WebServer)->add('load-balancer');
+        $model->addTechnicalAsset($ta);
+
+        $data = $this->parse($model);
+        $asset = $data['technical_assets']['nginx'];
+
+        self::assertSame(['reverse-proxy', 'web-server', 'load-balancer'], $asset['technologies']);
+        self::assertArrayNotHasKey('technology', $asset);
+    }
+
+    public function testUnusedTechnologiesFieldProducesByteIdenticalYaml(): void
+    {
+        // Backward compatibility (T-1.4 DoD): a model that never touches
+        // $technologies must serialize exactly as before this feature existed.
+        $before = $this->buildMinimalModel();
+        $before->addTechnicalAsset(new TechnicalAsset('svc'));
+
+        $after = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('svc');
+        self::assertSame(0, $ta->technologies->count());
+        $after->addTechnicalAsset($ta);
+
+        self::assertSame($this->serializer->serialize($before), $this->serializer->serialize($after));
+    }
+
     public function testGovernanceSectionsStillEmptyMapsWhenUnused(): void
     {
         $data = $this->parse($this->buildMinimalModel());

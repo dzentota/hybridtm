@@ -115,6 +115,16 @@ final class DslTest extends TestCase
         self::assertFalse($ta->multiTenant);
         self::assertFalse($ta->redundant);
         self::assertFalse($ta->customDevelopedParts);
+        self::assertCount(0, $ta->technologies);
+    }
+
+    public function testTechnicalAssetTechnologiesIsIndependentPerInstance(): void
+    {
+        $a = new TechnicalAsset('a');
+        $b = new TechnicalAsset('b');
+        $a->technologies->add(\HybridTM\Enums\Technology::ReverseProxy);
+
+        self::assertCount(0, $b->technologies, 'technology lists must not be shared between instances');
     }
 
     public function testTechnicalAssetCommunicatesTo(): void
