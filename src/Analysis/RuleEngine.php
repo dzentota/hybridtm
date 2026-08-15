@@ -2,6 +2,10 @@
 declare(strict_types=1);
 namespace HybridTM\Analysis;
 
+use HybridTM\Analysis\Rules\PhpRuleLoader;
+use HybridTM\Analysis\Rules\RuleContext;
+use HybridTM\Analysis\Rules\RuleContextGraph;
+use HybridTM\Analysis\Rules\RuleContextModel;
 use HybridTM\Analysis\Subjects\BoundarySubject;
 use HybridTM\Analysis\Subjects\ComponentSubject;
 use HybridTM\Analysis\Subjects\FlowSubject;
@@ -28,10 +32,9 @@ use HybridTM\Validation\ModelValidatorInterface;
  *  2. Validate    — ModelValidator; an Error-level issue stops the
  *                   pipeline here, matching §5.2 ("Error -> стоп").
  *  3. Derive      — DeriveEngine.
- *  4-7. *rules    — declarative (when/unless/then) rules only. `spec.impl`
- *                   PHP-implemented rules (T-3.6) are skipped: loading and
- *                   instantiating an arbitrary KB-referenced class is a
- *                   distinct, security-relevant feature of its own.
+ *  4-7. *rules    — declarative (when/unless/then) rules run per subject;
+ *                   `spec.impl` PHP rules (T-3.6) run once each, given the
+ *                   whole model, and decide their own subjects.
  *  8. Suppress    — `unless` is handled inline per rule (§ RuleEvaluator).
  *                   Resolved `riskTracking` entries additionally drop a
  *                   matching finding unless `includeSuppressed` is set.
@@ -55,10 +58,12 @@ final class RuleEngine implements AnalyzerInterface
 
     private RuleExpressionProvider $expressions;
     private ModelValidatorInterface $validator;
+    private PhpRuleLoader $phpRules;
 
     public function __construct(
         ?RuleExpressionProvider $expressions = null,
         ?ModelValidatorInterface $validator = null,
+        ?PhpRuleLoader $phpRules = null,
     ) {
         // Reuse across analyze() calls to benefit from the expression
         // language's internal parse cache (T-3.3) — construct one
@@ -66,6 +71,7 @@ final class RuleEngine implements AnalyzerInterface
         // fresh RuleEngine per run.
         $this->expressions = $expressions ?? new RuleExpressionProvider();
         $this->validator = $validator ?? new ModelValidator();
+        $this->phpRules = $phpRules ?? new PhpRuleLoader();
     }
 
     public function analyze(
@@ -124,6 +130,10 @@ final class RuleEngine implements AnalyzerInterface
         [$modelFindings, $evaluatedModel] = $this->evaluateModelRules($model, $kb, $evaluator, $options);
         $findings = [...$findings, ...$modelFindings];
         $rulesEvaluated += $evaluatedModel;
+
+        [$phpFindings, $evaluatedPhp] = $this->evaluatePhpRules($model, $kb, $index, $derived, $options);
+        $findings = [...$findings, ...$phpFindings];
+        $rulesEvaluated += $evaluatedPhp;
 
         $phaseDurations['rules'] = $this->elapsedMs($rulesStart);
 
@@ -247,6 +257,47 @@ final class RuleEngine implements AnalyzerInterface
             ++$evaluated;
             $result = $evaluator->evaluate($ruleId, $spec, SubjectRef::model(), $context);
             $findings = [...$findings, ...$result['findings']];
+        }
+
+        return [$findings, $evaluated];
+    }
+
+    /**
+     * Runs every `spec.impl` rule exactly once, across all scopes — unlike
+     * declarative rules, a PHP rule decides its own subjects (§4.6 level 3),
+     * so there is no per-asset/per-flow loop to run it inside.
+     *
+     * @return array{0: list<Finding>, 1: int}
+     */
+    private function evaluatePhpRules(ThreatModel $model, KnowledgeBaseInterface $kb, ModelIndex $index, DerivedTraits $derived, AnalysisOptions $options): array
+    {
+        $ruleIds = array_unique([
+            ...$this->selectRuleIds($kb, RuleScope::Component, $options),
+            ...$this->selectRuleIds($kb, RuleScope::Flow, $options),
+            ...$this->selectRuleIds($kb, RuleScope::Boundary, $options),
+            ...$this->selectRuleIds($kb, RuleScope::Model, $options),
+        ]);
+
+        $contextModel = new RuleContextModel($model, $derived);
+        $contextGraph = new RuleContextGraph($model, $index, $derived);
+        $findings = [];
+        $evaluated = 0;
+
+        foreach ($ruleIds as $ruleId) {
+            $spec = $kb->get(Kind::Rule, $ruleId);
+            if ($spec === null || !isset($spec['impl'])) {
+                continue;
+            }
+
+            ++$evaluated;
+            $rule = $this->phpRules->load((string) $spec['impl']);
+            $ctx = new RuleContext($ruleId, $contextModel, $contextGraph, $kb, (array) ($spec['config'] ?? []));
+
+            foreach ($rule->evaluate($ctx) as $finding) {
+                if ($finding !== null) {
+                    $findings[] = $finding;
+                }
+            }
         }
 
         return [$findings, $evaluated];

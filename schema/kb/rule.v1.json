@@ -54,6 +54,11 @@
           "type": "string",
           "pattern": "^[A-Za-z_][A-Za-z0-9_]*(\\\\[A-Za-z_][A-Za-z0-9_]*)+$",
           "description": "Fully-qualified PHP class implementing RuleInterface."
+        },
+        "config": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Passed through verbatim to RuleContext::config()."
         }
       }
     },

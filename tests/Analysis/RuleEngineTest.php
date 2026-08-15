@@ -340,6 +340,41 @@ final class RuleEngineTest extends TestCase
         self::assertCount(2, $result->findings[0]->trace);
     }
 
+    public function testPhpImplRuleRunsWithinTheFullPipeline(): void
+    {
+        $kb = new InMemoryKnowledgeBase([
+            Kind::Threat->value => [
+                'THREAT-UNGUARDED-DATASTORE-EXPOSURE' => [
+                    'title' => 'Unguarded datastore exposure',
+                    'summary' => '', 'stride' => [],
+                    'metadata' => ['id' => 'THREAT-UNGUARDED-DATASTORE-EXPOSURE'],
+                ],
+            ],
+            Kind::Rule->value => [
+                'topology/unguarded-path-from-internet' => [
+                    'scope' => 'model',
+                    'impl' => \HybridTM\Kb\Rules\UnguardedPathFromInternetRule::class,
+                    'config' => ['max_hops' => 4],
+                    'metadata' => ['id' => 'topology/unguarded-path-from-internet'],
+                ],
+            ],
+        ], 'test-kb');
+
+        $model = new ThreatModel('App');
+        $web = new TechnicalAsset('web');
+        $web->internet = true;
+        $web->communicatesTo('db');
+        $db = new TechnicalAsset('db');
+        $db->traits = ['datastore', 'handles_strictly_confidential'];
+        $model->addTechnicalAsset($web)->addTechnicalAsset($db);
+
+        $result = (new RuleEngine())->analyze($model, $kb);
+
+        self::assertCount(1, $result->findings);
+        self::assertSame('THREAT-UNGUARDED-DATASTORE-EXPOSURE', $result->findings[0]->threatId);
+        self::assertSame('component:db', (string) $result->findings[0]->subject);
+    }
+
     public function testStatsRecordEngineAndKbVersion(): void
     {
         $model = new ThreatModel('App');
