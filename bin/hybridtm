@@ -12,6 +12,7 @@ if (!file_exists($autoload)) {
 
 require $autoload;
 
+use HybridTM\Console\AnalyzeCommand;
 use HybridTM\Console\CompileCommand;
 use HybridTM\Console\InitCommand;
 use Symfony\Component\Console\Application;
@@ -19,5 +20,6 @@ use Symfony\Component\Console\Application;
 $app = new Application('HybridTM Threat Modeler', '0.1.0');
 $app->addCommand(new CompileCommand());
 $app->addCommand(new InitCommand());
+$app->addCommand(new AnalyzeCommand());
 $app->setDefaultCommand('compile');
 $app->run();
