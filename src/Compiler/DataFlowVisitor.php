@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace HybridTM\Compiler;
 
+use HybridTM\Analysis\CodeLocation;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
 use HybridTM\Enums\MitigationStatus;
@@ -25,6 +26,14 @@ final class DataFlowVisitor extends NodeVisitorAbstract
 
     private string $currentClass = '';
     private string $sourceAssetId = '';
+    private string $currentFile = '';
+    private string $currentMethod = '';
+
+    /** Which file the next `traverse()` call's nodes belong to (T-1.10). */
+    public function setCurrentFile(string $path): void
+    {
+        $this->currentFile = $path;
+    }
 
     public function enterNode(Node $node): null
     {
@@ -52,6 +61,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
             $methodName = (string) ($node->name ?? '');
             $context = $this->currentClass !== '' ? $this->currentClass . '::' . $methodName : $methodName;
+            $this->currentMethod = $methodName;
 
             foreach ($node->attrGroups as $attrGroup) {
                 foreach ($attrGroup->attrs as $attr) {
@@ -85,6 +95,9 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         if ($node instanceof Node\Stmt\Class_) {
             $this->currentClass = '';
             $this->sourceAssetId = '';
+        }
+        if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
+            $this->currentMethod = '';
         }
         return null;
     }
@@ -128,6 +141,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
             ipFiltered: (bool) ($args['ipFiltered'] ?? false),
             readonly: (bool) ($args['readonly'] ?? false),
             context: $context,
+            location: $this->currentLocation($attr),
         );
     }
 
@@ -139,7 +153,21 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         $statusRaw = $args['status'] ?? MitigationStatus::Mitigated;
         $status = $statusRaw instanceof MitigationStatus ? $statusRaw : MitigationStatus::tryFrom((string)$statusRaw) ?? MitigationStatus::Mitigated;
 
-        $this->mitigations[] = new DiscoveredMitigation($cwe, $description, $status, $context);
+        $this->mitigations[] = new DiscoveredMitigation($cwe, $description, $status, $context, $this->currentLocation($attr));
+    }
+
+    private function currentLocation(Node\Attribute $attr): ?CodeLocation
+    {
+        if ($this->currentFile === '') {
+            return null;
+        }
+
+        return new CodeLocation(
+            file: $this->currentFile,
+            line: $attr->getStartLine(),
+            class: $this->currentClass !== '' ? $this->currentClass : null,
+            method: $this->currentMethod !== '' ? $this->currentMethod : null,
+        );
     }
 
     /** @param Node\Arg[] $argNodes */

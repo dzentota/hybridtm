@@ -273,7 +273,23 @@ PHP);
         self::assertSame(MitigationStatus::Mitigated, $result->mitigations[0]->status);
     }
 
-    // ── AstScanner integration tests ───────────────────────────────────────────
+    public function testVisitorLocationIsNullWithoutCurrentFile(): void
+    {
+        // parse() drives the visitor directly, without AstScanner ever calling
+        // setCurrentFile() — there is no file path to attach.
+        $result = $this->parse(<<<'PHP'
+<?php
+use HybridTM\Attributes\DataFlow;
+
+class MyService {
+    #[DataFlow(target: 'db')]
+    public function save(): void {}
+}
+PHP);
+        self::assertNull($result->dataFlows[0]->location);
+    }
+
+    // ── AstScanner integration tests (T-1.10: CodeLocation collection) ─────────
 
     public function testScannerFindsDataFlowsInDirectory(): void
     {
@@ -294,6 +310,55 @@ PHP);
         self::assertCount(1, $result->dataFlows);
         self::assertSame('web', $result->dataFlows[0]->sourceAssetId);
         self::assertSame('db', $result->dataFlows[0]->targetAssetId);
+
+        $location = $result->dataFlows[0]->location;
+        self::assertNotNull($location);
+        self::assertSame($this->tmpDir . '/Controller.php', $location->file);
+        self::assertSame(7, $location->line, 'the #[DataFlow(...)] attribute itself is on line 7');
+        self::assertSame('Controller', $location->class);
+        self::assertSame('index', $location->method);
+    }
+
+    public function testScannerRecordsMitigationLocation(): void
+    {
+        $this->write('Repo.php', <<<'PHP'
+<?php
+use HybridTM\Attributes\Mitigation;
+
+class Repo {
+    #[Mitigation(cwe: 'CWE-89', description: 'Prepared statements')]
+    public function query(): void {}
+}
+PHP);
+        $scanner = new AstScanner();
+        $result = $scanner->scan($this->tmpDir);
+
+        $location = $result->mitigations[0]->location;
+        self::assertNotNull($location);
+        self::assertSame($this->tmpDir . '/Repo.php', $location->file);
+        self::assertSame(5, $location->line);
+        self::assertSame('Repo', $location->class);
+        self::assertSame('query', $location->method);
+    }
+
+    public function testScannerLocationsAreIndependentPerFile(): void
+    {
+        $this->write('A.php', <<<'PHP'
+<?php
+use HybridTM\Attributes\DataFlow;
+class A { #[DataFlow(target: 'x')] public function go(): void {} }
+PHP);
+        $this->write('B.php', <<<'PHP'
+<?php
+use HybridTM\Attributes\DataFlow;
+class B { #[DataFlow(target: 'y')] public function go(): void {} }
+PHP);
+        $scanner = new AstScanner();
+        $result = $scanner->scan($this->tmpDir);
+
+        $files = array_map(static fn ($f) => $f->location?->file, $result->dataFlows);
+        self::assertContains($this->tmpDir . '/A.php', $files);
+        self::assertContains($this->tmpDir . '/B.php', $files);
     }
 
     public function testScannerScansSubdirectories(): void

@@ -38,6 +38,7 @@ final class AstScanner
                 if ($stmts === null) continue;
             }
 
+            $visitor->setCurrentFile($file->getPathname());
             $traverser->traverse($stmts);
         }
 
