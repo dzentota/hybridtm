@@ -55,6 +55,24 @@ final class RuleEngineTest extends TestCase
         ], 'test-kb');
     }
 
+    public function testSeverityModifierBumpsSeverityForInternetReachableAsset(): void
+    {
+        $model = new ThreatModel('App');
+        $web = new TechnicalAsset('web');
+        $web->internet = true;
+        $web->traits = ['datastore'];
+        $model->addTechnicalAsset($web);
+
+        $result = (new RuleEngine())->analyze($model, $this->kbWithUnencryptedDatastoreRule());
+
+        self::assertCount(1, $result->findings);
+        // Base is likely x medium (weight 4 -> Elevated); internet-reachable
+        // bumps likelihood to very-likely (weight 6 -> still Elevated) —
+        // assert on the enum directly rather than severity, which wouldn't
+        // move a full bucket here.
+        self::assertSame(\HybridTM\Enums\Likelihood::VeryLikely, $result->findings[0]->likelihood);
+    }
+
     public function testFindsUnencryptedDatastore(): void
     {
         $model = new ThreatModel('App');

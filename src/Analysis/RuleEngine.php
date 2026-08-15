@@ -42,11 +42,12 @@ use HybridTM\Validation\ModelValidatorInterface;
  *                   AnalyzerInterface::analyze() has no parameter carrying
  *                   AstScanner output, so there is nothing to suppress with
  *                   yet — a signature change, not something to fake here.
- *  9. Score       — Finding::create() already computes severity from
- *                   likelihood x impact via Severity::calculate(). The 8
- *                   contextual modifiers from §5.3 (exposure, sensitivity,
- *                   volume, WAF, partial mitigation, off-the-shelf maturity)
- *                   are NOT applied — that table is T-3.8's own scope.
+ *  9. Score       — Finding::create() computes the base severity from
+ *                   likelihood x impact via Severity::calculate();
+ *                   SeverityModifierEngine then applies 5 of the 8 §5.3
+ *                   contextual modifiers (exposure x2, sensitivity x2,
+ *                   volume) — the other 3 need data this engine version
+ *                   doesn't have (see that class's docblock for why).
  * 10. Dedup&merge — findings this engine itself produced for the same
  *                   (rule, threat, subject) are merged via Finding::mergeWith().
  *                   Merging against a separate Threagile run is T-5.4 and
@@ -136,6 +137,14 @@ final class RuleEngine implements AnalyzerInterface
         $rulesEvaluated += $evaluatedPhp;
 
         $phaseDurations['rules'] = $this->elapsedMs($rulesStart);
+
+        $scoreStart = hrtime(true);
+        $modifiers = new SeverityModifierEngine();
+        $findings = array_map(
+            static fn (Finding $f): Finding => $modifiers->apply($f, $model, $index, $derived),
+            $findings,
+        );
+        $phaseDurations['score'] = $this->elapsedMs($scoreStart);
 
         $findings = $this->suppressResolvedRisks($model, $findings, $options);
         $findings = $this->dedupAndMerge($findings);
