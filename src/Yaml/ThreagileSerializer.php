@@ -16,16 +16,16 @@ final class ThreagileSerializer
             'author' => ['name' => $model->author !== '' ? $model->author : 'HybridTM'],
             'management_summary_comment' => $model->managementSummaryComment,
             'business_criticality' => $model->businessCriticality->value,
-            'questions' => (object)[],
-            'abuse_cases' => (object)[],
-            'security_requirements' => (object)[],
+            'questions' => $this->mapOrEmpty($model->getQuestions(), static fn ($q) => $q->answer ?? ''),
+            'abuse_cases' => $this->mapOrEmpty($model->getAbuseCases(), static fn ($c) => $c->description),
+            'security_requirements' => $this->mapOrEmpty($model->getSecurityRequirements(), static fn ($r) => $r->description),
             'tags_available' => [],
             'data_assets' => $this->buildDataAssets($model),
             'technical_assets' => $this->buildTechnicalAssets($model),
             'trust_boundaries' => $this->buildTrustBoundaries($model),
-            'shared_runtimes' => (object)[],
-            'individual_risk_categories' => (object)[],
-            'risk_tracking' => (object)[],
+            'shared_runtimes' => $this->buildSharedRuntimes($model),
+            'individual_risk_categories' => $this->buildIndividualRiskCategories($model),
+            'risk_tracking' => $this->buildRiskTracking($model),
         ];
 
         return Yaml::dump($data, 8, 2, Yaml::DUMP_OBJECT_AS_MAP | Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE);
@@ -118,6 +118,77 @@ final class ThreagileSerializer
                 'technical_assets_inside' => $boundary->technicalAssetsInside,
                 'trust_boundaries_nested' => $boundary->trustBoundariesNested,
             ];
+        }
+        return $result;
+    }
+
+    private function buildSharedRuntimes(ThreatModel $model): array|\stdClass
+    {
+        $result = [];
+        foreach ($model->getSharedRuntimes() as $id => $runtime) {
+            $result[$id] = [
+                'id' => $runtime->id,
+                'description' => $runtime->description,
+                'tags' => $runtime->tags,
+                'technical_assets_running' => $runtime->technicalAssetsRunning,
+            ];
+        }
+        return $result !== [] ? $result : (object) [];
+    }
+
+    private function buildIndividualRiskCategories(ThreatModel $model): array|\stdClass
+    {
+        $result = [];
+        foreach ($model->getIndividualRiskCategories() as $id => $category) {
+            $result[$id] = [
+                'id' => $category->id,
+                'title' => $category->title,
+                'description' => $category->description,
+                'impact' => $category->impact,
+                'asvs' => $category->asvs,
+                'cheat_sheet' => $category->cheatSheet,
+                'action' => $category->action,
+                'mitigation' => $category->mitigation,
+                'check' => $category->check,
+                'detection_logic' => $category->detectionLogic,
+                'risk_assessment' => $category->riskAssessment,
+                'false_positives' => $category->falsePositives,
+                'function' => $category->function->value,
+                'stride' => array_map(static fn ($s) => $s->value, $category->stride),
+                'cwe' => $category->cwe,
+            ];
+        }
+        return $result !== [] ? $result : (object) [];
+    }
+
+    private function buildRiskTracking(ThreatModel $model): array|\stdClass
+    {
+        $result = [];
+        foreach ($model->getRiskTracking() as $syntheticRiskId => $tracking) {
+            $result[$syntheticRiskId] = [
+                'status' => $tracking->status->value,
+                'justification' => $tracking->justification,
+                'ticket' => $tracking->ticket,
+                'date' => $tracking->date,
+                'checked_by' => $tracking->checkedBy,
+            ];
+        }
+        return $result !== [] ? $result : (object) [];
+    }
+
+    /**
+     * @param array<string, object{description?: string, answer?: ?string}> $items
+     * @param callable(object): string $value
+     */
+    private function mapOrEmpty(array $items, callable $value): array|\stdClass
+    {
+        if ($items === []) {
+            return (object) [];
+        }
+
+        $result = [];
+        foreach ($items as $id => $item) {
+            $result[$id] = $value($item);
         }
         return $result;
     }
