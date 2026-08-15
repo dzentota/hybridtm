@@ -51,4 +51,26 @@ enum Protocol: string {
     case JrmpEncrypted = 'jrmp-encrypted';
     case InProcessLibraryCall = 'in-process-library-call';
     case ContainerSpawning = 'container-spawning';
+
+    /**
+     * True for protocols that are encrypted in transit, either by an
+     * explicit "-encrypted" variant or because the protocol itself implies
+     * encryption (TLS-wrapped or SSH-based). Deliberately an exhaustive
+     * match rather than a name-suffix heuristic: several unencrypted
+     * protocols ('nfs', 'jms') happen to end in 's' too.
+     */
+    public function isEncrypted(): bool
+    {
+        return match ($this) {
+            self::Https, self::Wss,
+            self::ReverseProxyWebProtocolEncrypted,
+            self::JdbcEncrypted, self::OdbcEncrypted,
+            self::SqlAccessProtocolEncrypted, self::NosqlAccessProtocolEncrypted,
+            self::BinaryEncrypted, self::TextEncrypted,
+            self::SmtpEncrypted, self::Pop3Encrypted, self::ImapEncrypted,
+            self::SmbEncrypted, self::IiopEncrypted, self::JrmpEncrypted,
+            self::Ssh, self::SshTunnel, self::Ftps, self::Sftp, self::Scp, self::Ldaps => true,
+            default => false,
+        };
+    }
 }

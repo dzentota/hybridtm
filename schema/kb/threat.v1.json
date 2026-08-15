@@ -38,10 +38,10 @@
           "required": ["likelihood", "impact"],
           "properties": {
             "likelihood": {
-              "enum": ["unlikely", "possible", "likely", "very-likely", "frequent"]
+              "enum": ["unlikely", "likely", "very-likely", "frequent"]
             },
             "impact": {
-              "enum": ["low", "medium", "elevated", "high", "very-high"]
+              "enum": ["low", "medium", "high", "very-high"]
             }
           }
         },
