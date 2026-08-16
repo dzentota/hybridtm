@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: mobile_client
+spec:
+  label: 'Mobile client'
+  description: 'A native mobile application, as opposed to a browser — expected to pin its backend certificate since it ships its own network stack.'
+  category: exposure
+  derived: false
