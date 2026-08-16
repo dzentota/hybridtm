@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/serverless-no-vpc-isolation
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Serverless function is not isolated inside a restricted VPC.'
+  when:
+    all:
+      - "component.hasTrait('serverless_function')"
+      - "component.props.bool('vpc_isolated') == false"
+  then:
+    - raise: THREAT-SERVERLESS-NO-VPC-ISOLATION
+      evidence: "{{ component.name }} does not run inside a restricted VPC."
+      require: [CM-ISOLATE-SERVERLESS-VPC]
+    - suggest_fix:
+        set: { vpc_isolated: true }
+        label: 'Run inside a restricted VPC'

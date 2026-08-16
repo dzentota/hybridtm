@@ -1,0 +1,25 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-api-gateway
+  name: AWS API Gateway
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [web, edge, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/reverse-proxy
+  mapping:
+    type: process
+    technologies: [reverse-proxy]
+  traits: [api_gateway]
+  properties:
+    - id: rate_limiting_enabled
+      label: 'Rate limiting enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - api/rate-limiting-missing

@@ -1,0 +1,42 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/aws-compute
+  name: Abstract AWS Compute
+  version: 1.0.0
+  categories: [application, cloud]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [function]
+    machine: serverless
+    customDevelopedParts: true
+  traits: [aws_compute, processing_end_user_requests]
+  properties:
+    - id: least_privilege_iam_enabled
+      label: 'Execution role is scoped to least privilege'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: wildcard_permissions_used
+      label: 'Policy uses a wildcard action or resource'
+      type: boolean
+      default: true
+      group: 'Access control'
+    - id: permission_boundary_configured
+      label: 'Permission boundary is set on the role'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: secrets_via_secrets_manager
+      label: 'Secrets are fetched from a secrets manager at runtime'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - aws/excessive-iam-permissions
+    - aws/wildcard-iam-permissions
+    - aws/no-permission-boundary
+    - aws/secrets-in-env-vars

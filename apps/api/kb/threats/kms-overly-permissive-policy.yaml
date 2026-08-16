@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-KMS-OVERLY-PERMISSIVE-POLICY
+  version: 1.0.0
+spec:
+  title: 'Key policy grants broad decrypt access'
+  summary: 'The key policy allows a wide set of principals (e.g. the whole account, or a wildcard principal) to use the key for decryption, so any of those principals — not just the specific service that needs it — can decrypt data protected by this key.'
+  stride: [information-disclosure, elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-RESTRICT-KEY-POLICY

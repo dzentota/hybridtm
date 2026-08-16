@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-EXCESSIVE-IAM-PERMISSIONS
+  version: 1.0.0
+spec:
+  title: 'Compute resource runs with more IAM permissions than it needs'
+  summary: 'The execution role grants broad permissions (e.g. full-service access) rather than the specific actions and resources the function/service actually calls, so compromising this one resource grants an attacker far more reach than the resource itself needed.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [269, 284]
+  countermeasures:
+      - CM-APPLY-LEAST-PRIVILEGE-IAM

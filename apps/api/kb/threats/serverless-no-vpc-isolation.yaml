@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SERVERLESS-NO-VPC-ISOLATION
+  version: 1.0.0
+spec:
+  title: 'Serverless function handling sensitive data is not VPC-isolated'
+  summary: 'The function runs outside a VPC (or in a VPC with unrestricted egress), so it can reach — and be reached by — resources beyond what it actually needs, with no network-level containment if the function code itself is compromised.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-ISOLATE-SERVERLESS-VPC

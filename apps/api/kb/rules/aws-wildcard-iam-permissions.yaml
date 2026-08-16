@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/wildcard-iam-permissions
+  version: 1.0.0
+  priority: 40
+spec:
+  scope: component
+  description: 'Compute resource IAM policy uses a wildcard action or resource.'
+  when:
+    all:
+      - "component.hasTrait('aws_compute')"
+      - "component.props.bool('wildcard_permissions_used') == true"
+  then:
+    - raise: THREAT-WILDCARD-IAM-PERMISSIONS
+      evidence: "{{ component.name }}'s IAM policy uses a wildcard action or resource."
+      require: [CM-AVOID-WILDCARD-IAM]
+    - suggest_fix:
+        set: { wildcard_permissions_used: false }
+        label: 'Enumerate specific actions/resources'
