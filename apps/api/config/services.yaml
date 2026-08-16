@@ -43,10 +43,12 @@ services:
 
     HybridTM\Codec\ModelJsonCodec: ~
     HybridTM\Codec\PhpDslWriter: ~
+    HybridTM\Codec\PhpDslReader: ~
     HybridTM\Codec\LayoutCodec: ~
     HybridTM\Codec\OtmCodec: ~
     HybridTM\Codec\ModelMerger: ~
     HybridTM\Yaml\ThreagileSerializer: ~
+    HybridTM\Yaml\ThreagileDeserializer: ~
     HybridTM\Threagile\ThreagileRiskParser: ~
     HybridTM\Threagile\ThreagileCategoryMap: ~
     HybridTM\Threagile\ThreagileMerger: ~
