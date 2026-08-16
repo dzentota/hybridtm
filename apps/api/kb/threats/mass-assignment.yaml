@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-MASS-ASSIGNMENT
+  version: 1.0.0
+spec:
+  title: 'Application binds request fields directly to internal model attributes'
+  summary: 'Incoming request bodies are bound to model objects without an explicit allow-list of writable fields, so a client can set attributes it was never meant to control (e.g. `isAdmin`, `accountBalance`) simply by including them in the payload.'
+  stride: [tampering, elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [915]
+  countermeasures:
+      - CM-PREVENT-MASS-ASSIGNMENT

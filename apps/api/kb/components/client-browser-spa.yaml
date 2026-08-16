@@ -12,5 +12,12 @@ spec:
   mapping:
     type: external-entity
     technologies: [browser]
-  properties: []
-  rules: []
+  traits: [browser_client]
+  properties:
+    - id: subresource_integrity_verified
+      label: 'Third-party scripts/styles use Subresource Integrity'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - client/no-subresource-integrity

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CLOUDTRAIL-LOG-INTEGRITY-DISABLED
+  version: 1.0.0
+spec:
+  title: 'Audit trail has no log file integrity validation'
+  summary: 'Trail logs are not digitally signed/hashed for integrity validation, so an attacker with write access to the log storage could tamper with or delete entries covering their own activity with no way to detect the change.'
+  stride: [repudiation, tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [345]
+  countermeasures:
+      - CM-ENABLE-LOG-FILE-VALIDATION

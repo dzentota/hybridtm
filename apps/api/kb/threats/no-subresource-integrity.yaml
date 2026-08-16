@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-SUBRESOURCE-INTEGRITY
+  version: 1.0.0
+spec:
+  title: 'Client loads third-party scripts with no integrity check'
+  summary: 'Scripts/stylesheets loaded from a third-party CDN have no Subresource Integrity hash, so a compromise of that CDN (or a DNS/MITM attack against it) can silently serve malicious code that the browser runs with full trust in this site''s origin.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [353, 494]
+  countermeasures:
+      - CM-USE-SUBRESOURCE-INTEGRITY

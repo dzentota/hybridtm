@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: identity/auth-events-not-logged
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Identity provider does not log authentication events.'
+  when:
+    all:
+      - "component.hasTrait('identity_provider')"
+      - "component.props.bool('auth_events_logged') == false"
+  then:
+    - raise: THREAT-AUTH-EVENTS-NOT-LOGGED
+      evidence: "{{ component.name }} does not log authentication events."
+      require: [CM-LOG-AUTH-EVENTS]
+    - suggest_fix:
+        set: { auth_events_logged: true }
+        label: 'Log authentication events'

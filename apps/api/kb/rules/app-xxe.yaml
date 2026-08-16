@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/xxe
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Application XML parser has external entity resolution enabled.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('xxe_protection_enabled') == false"
+  then:
+    - raise: THREAT-XXE
+      evidence: "{{ component.name }} does not disable XML external entity resolution."
+      require: [CM-DISABLE-XML-EXTERNAL-ENTITIES]
+    - suggest_fix:
+        set: { xxe_protection_enabled: true }
+        label: 'Disable XML external entities'

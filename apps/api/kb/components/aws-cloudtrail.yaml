@@ -14,5 +14,18 @@ spec:
   mapping:
     type: process
     technologies: [monitoring]
-  properties: []
-  rules: []
+  traits: [audit_trail]
+  properties:
+    - id: log_file_validation_enabled
+      label: 'Log file integrity validation enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: multi_region_enabled
+      label: 'Trail covers all regions'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+  rules:
+    - audit/cloudtrail-log-integrity-disabled
+    - audit/cloudtrail-single-region

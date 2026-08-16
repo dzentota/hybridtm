@@ -25,6 +25,12 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: caa_record_configured
+      label: 'CAA record restricts certificate issuance'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - dns/dnssec-disabled
     - dns/zone-transfer-unrestricted
+    - dns/no-caa-record

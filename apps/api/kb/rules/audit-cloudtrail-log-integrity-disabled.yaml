@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: audit/cloudtrail-log-integrity-disabled
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Audit trail has no log file integrity validation.'
+  when:
+    all:
+      - "component.hasTrait('audit_trail')"
+      - "component.props.bool('log_file_validation_enabled') == false"
+  then:
+    - raise: THREAT-CLOUDTRAIL-LOG-INTEGRITY-DISABLED
+      evidence: "{{ component.name }} has no log file integrity validation."
+      require: [CM-ENABLE-LOG-FILE-VALIDATION]
+    - suggest_fix:
+        set: { log_file_validation_enabled: true }
+        label: 'Enable log file integrity validation'

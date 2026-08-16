@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-IDOR
+  version: 1.0.0
+spec:
+  title: 'Object access is not checked against the caller''s authorization'
+  summary: 'Endpoints that accept an object identifier (order ID, user ID, file ID) do not verify the authenticated caller is actually allowed to access that specific object, so incrementing or guessing an ID lets one user read or modify another user''s data.'
+  stride: [elevation-of-privilege, information-disclosure]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [639, 284]
+  countermeasures:
+      - CM-ENFORCE-OBJECT-LEVEL-AUTHORIZATION

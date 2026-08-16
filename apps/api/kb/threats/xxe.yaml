@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-XXE
+  version: 1.0.0
+spec:
+  title: 'XML parser resolves external entities'
+  summary: 'The application parses untrusted XML with external entity resolution enabled, so a crafted document can read local files, perform SSRF, or exhaust resources via entity expansion (billion laughs).'
+  stride: [information-disclosure, denial-of-service]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [611]
+  countermeasures:
+      - CM-DISABLE-XML-EXTERNAL-ENTITIES

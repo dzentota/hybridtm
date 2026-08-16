@@ -48,6 +48,11 @@ spec:
       type: boolean
       default: false
       group: 'Monitoring'
+    - id: auth_events_logged
+      label: 'Logs successful and failed authentication attempts'
+      type: boolean
+      default: false
+      group: 'Monitoring'
   rules:
     - identity/idp-without-mfa
     - identity/default-credentials
@@ -55,3 +60,4 @@ spec:
     - identity/account-lockout-disabled
     - identity/weak-password-policy
     - identity/no-anomalous-login-detection
+    - identity/auth-events-not-logged

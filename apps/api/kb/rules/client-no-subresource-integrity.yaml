@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: client/no-subresource-integrity
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Browser client loads third-party scripts/styles with no Subresource Integrity check.'
+  when:
+    all:
+      - "component.hasTrait('browser_client')"
+      - "component.props.bool('subresource_integrity_verified') == false"
+  then:
+    - raise: THREAT-NO-SUBRESOURCE-INTEGRITY
+      evidence: "{{ component.name }} does not verify Subresource Integrity for third-party assets."
+      require: [CM-USE-SUBRESOURCE-INTEGRITY]
+    - suggest_fix:
+        set: { subresource_integrity_verified: true }
+        label: 'Add Subresource Integrity hashes'

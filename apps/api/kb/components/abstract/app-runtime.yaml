@@ -80,6 +80,26 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: redirect_validation_enabled
+      label: 'Redirect targets validated against an allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: xxe_protection_enabled
+      label: 'XML parser has external entity resolution disabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: object_level_authorization_enforced
+      label: 'Object access checked against caller authorization'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: mass_assignment_protected
+      label: 'Request binding uses an explicit field allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - app/input-validation-missing
     - app/debug-mode-enabled
@@ -94,3 +114,7 @@ spec:
     - app/insecure-deserialization
     - app/session-fixation
     - app/unrestricted-file-upload
+    - app/open-redirect
+    - app/xxe
+    - app/idor
+    - app/mass-assignment

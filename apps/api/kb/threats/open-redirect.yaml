@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-OPEN-REDIRECT
+  version: 1.0.0
+spec:
+  title: 'Application redirects to attacker-controlled URLs'
+  summary: 'A redirect target taken from user input (e.g. a `?next=` or `?returnUrl=` parameter) is not validated against an allow-list, so an attacker can craft a link on this trusted domain that redirects victims to a phishing site.'
+  stride: [spoofing]
+  base:
+    likelihood: likely
+    impact: low
+  standards:
+      cwe: [601]
+  countermeasures:
+      - CM-VALIDATE-REDIRECT-TARGETS

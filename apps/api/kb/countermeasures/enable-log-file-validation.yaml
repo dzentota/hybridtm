@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENABLE-LOG-FILE-VALIDATION
+  version: 1.0.0
+spec:
+  title: 'Enable log file integrity validation'
+  description: 'Turn on the audit trail''s log file validation/digest signing feature so any post-write tampering with delivered log files is cryptographically detectable.'
+  cost: low
+  effort: low
+  effectiveness: medium
+  category: detective

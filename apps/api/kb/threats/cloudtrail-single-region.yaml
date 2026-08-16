@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CLOUDTRAIL-SINGLE-REGION
+  version: 1.0.0
+spec:
+  title: 'Audit trail only covers a single region'
+  summary: 'The trail is not configured to capture activity across all regions, so API calls made in a region the trail does not cover (including ones an attacker deliberately picks for that reason) leave no audit record.'
+  stride: [repudiation]
+  base:
+    likelihood: unlikely
+    impact: low
+  standards:
+      cwe: [778]
+  countermeasures:
+      - CM-ENABLE-MULTI-REGION-TRAIL
