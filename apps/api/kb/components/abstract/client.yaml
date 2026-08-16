@@ -22,5 +22,23 @@ spec:
       type: boolean
       default: false
       group: 'Cryptography'
+    - id: auto_update_enabled
+      label: 'Receives automatic security updates'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: local_secret_storage_secure
+      label: 'Stores secrets in platform keychain/keystore'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: jailbreak_root_detection_enabled
+      label: 'Detects jailbroken/rooted devices'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - mobile/certificate-pinning-missing
+    - client/no-auto-update
+    - client/insecure-local-secret-storage
+    - client/no-jailbreak-detection

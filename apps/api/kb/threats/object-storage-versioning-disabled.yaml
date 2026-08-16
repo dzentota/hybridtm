@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-OBJECT-STORAGE-VERSIONING-DISABLED
+  version: 1.0.0
+spec:
+  title: 'Object storage has versioning disabled'
+  summary: 'Objects can be overwritten or deleted with no previous version retained, so accidental deletion, a bug, or a compromised credential can destroy data with no way to recover it.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [404]
+  countermeasures:
+      - CM-ENABLE-OBJECT-VERSIONING

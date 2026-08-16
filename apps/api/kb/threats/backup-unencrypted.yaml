@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-BACKUP-UNENCRYPTED
+  version: 1.0.0
+spec:
+  title: 'Backups are stored unencrypted'
+  summary: 'Database backups are stored without encryption, so a stolen or misdirected backup copy exposes the full dataset just as completely as the live datastore would.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [311]
+  countermeasures:
+      - CM-ENCRYPT-BACKUPS

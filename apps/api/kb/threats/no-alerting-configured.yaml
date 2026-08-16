@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-ALERTING-CONFIGURED
+  version: 1.0.0
+spec:
+  title: 'Observability collector has no alerting configured'
+  summary: 'Telemetry is collected but nothing evaluates it against thresholds or anomalies in real time, so an active incident (or attack) can run for hours before anyone notices, relying entirely on someone happening to look at a dashboard.'
+  stride: [repudiation]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [778]
+  countermeasures:
+      - CM-CONFIGURE-ALERTING

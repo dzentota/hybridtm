@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: client/no-jailbreak-detection
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Client has no jailbreak/root detection.'
+  when:
+    all:
+      - "component.hasTrait('client_device')"
+      - "component.props.bool('jailbreak_root_detection_enabled') == false"
+  then:
+    - raise: THREAT-NO-JAILBREAK-DETECTION
+      evidence: "{{ component.name }} has no jailbreak/root detection."
+      require: [CM-DETECT-JAILBREAK-ROOT]
+    - suggest_fix:
+        set: { jailbreak_root_detection_enabled: true }
+        label: 'Enable jailbreak/root detection'

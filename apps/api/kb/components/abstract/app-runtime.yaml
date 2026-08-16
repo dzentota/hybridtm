@@ -45,6 +45,11 @@ spec:
       type: boolean
       default: true
       group: 'Access control'
+    - id: rate_limiting_enabled
+      label: 'Rate limits requests per client'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - app/input-validation-missing
     - app/debug-mode-enabled
@@ -52,3 +57,4 @@ spec:
     - web/session-cookie-insecure
     - app/dependency-audit-disabled
     - app/missing-authentication
+    - app/rate-limiting-missing

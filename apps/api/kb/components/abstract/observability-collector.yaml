@@ -29,7 +29,13 @@ spec:
       type: boolean
       default: false
       group: 'Cryptography'
+    - id: alerting_configured
+      label: 'Alerts are configured on collected telemetry'
+      type: boolean
+      default: false
+      group: 'Monitoring'
   rules:
     - web/admin-interface-exposed
     - observability/sensitive-data-in-logs
     - observability/telemetry-unencrypted
+    - observability/no-alerting-configured

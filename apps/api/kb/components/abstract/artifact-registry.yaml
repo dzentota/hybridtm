@@ -29,7 +29,13 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: retention_policy_configured
+      label: 'Deployed versions are retained'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - registry/image-scanning-disabled
     - registry/artifacts-unsigned
     - registry/public-write-access
+    - registry/artifacts-not-retained

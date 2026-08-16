@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-BRUTE-FORCE-NO-LOCKOUT
+  version: 1.0.0
+spec:
+  title: 'Identity provider has no account lockout after failed logins'
+  summary: 'Repeated failed login attempts against the same account are never rate-limited or locked out, so an attacker can brute-force or credential-stuff passwords at unlimited speed.'
+  stride: [spoofing]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [307]
+  countermeasures:
+      - CM-ENABLE-ACCOUNT-LOCKOUT

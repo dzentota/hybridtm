@@ -29,7 +29,13 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: sast_scanning_enabled
+      label: 'Runs static application security testing'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - cicd/secrets-in-build-logs
     - cicd/unpinned-dependencies
     - cicd/no-required-review
+    - cicd/no-sast-scanning

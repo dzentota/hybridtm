@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-WEAK-CIPHER-SUITES
+  version: 1.0.0
+spec:
+  title: 'Web server allows weak TLS cipher suites'
+  summary: 'The TLS configuration still accepts ciphers with known weaknesses (e.g. RC4, export-grade, or non-forward-secret suites), so traffic can be downgraded to a cipher an attacker can feasibly break.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [327]
+  countermeasures:
+      - CM-DISABLE-WEAK-CIPHERS

@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENFORCE-LEASE-TTL
+  version: 1.0.0
+spec:
+  title: 'Issue secrets with a bounded lease/TTL'
+  description: 'Configure the secrets manager to issue dynamic, short-lived credentials with an enforced time-to-live instead of long-lived static secrets, so an unused or forgotten lease expires automatically.'
+  cost: low
+  effort: medium
+  effectiveness: medium
+  category: preventive

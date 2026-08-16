@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/security-headers-missing
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'Web server does not send standard security headers.'
+  when:
+    all:
+      - "component.hasTrait('http_server')"
+      - "component.props.bool('security_headers_configured') == false"
+  then:
+    - raise: THREAT-SECURITY-HEADERS-MISSING
+      evidence: "{{ component.name }} does not send standard security headers."
+      require: [CM-CONFIGURE-SECURITY-HEADERS]
+    - suggest_fix:
+        set: { security_headers_configured: true }
+        label: 'Configure standard security headers'

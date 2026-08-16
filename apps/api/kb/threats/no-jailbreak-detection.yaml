@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-JAILBREAK-DETECTION
+  version: 1.0.0
+spec:
+  title: 'Mobile client has no jailbreak/root detection'
+  summary: 'The app runs the same on a jailbroken/rooted device as on a stock one, so device-level protections (sandboxing, keychain isolation) an attacker has already defeated are silently assumed to still hold.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [693]
+  countermeasures:
+      - CM-DETECT-JAILBREAK-ROOT

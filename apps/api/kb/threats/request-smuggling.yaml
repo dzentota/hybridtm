@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-REQUEST-SMUGGLING
+  version: 1.0.0
+spec:
+  title: 'Reverse proxy is not hardened against HTTP request smuggling'
+  summary: 'The proxy and its upstream can disagree on where one request ends and the next begins (ambiguous Content-Length/Transfer-Encoding handling), letting an attacker smuggle a second request that gets processed in another user''s context.'
+  stride: [tampering, spoofing]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [444]
+  countermeasures:
+      - CM-PREVENT-REQUEST-SMUGGLING

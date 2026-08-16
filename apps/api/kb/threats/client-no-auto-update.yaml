@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CLIENT-NO-AUTO-UPDATE
+  version: 1.0.0
+spec:
+  title: 'Client has no automatic update mechanism'
+  summary: 'The client application has no way to automatically receive security patches, so a disclosed vulnerability stays exploitable on every installed copy until each user manually updates — if they ever do.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [1104]
+  countermeasures:
+      - CM-ENABLE-AUTO-UPDATE

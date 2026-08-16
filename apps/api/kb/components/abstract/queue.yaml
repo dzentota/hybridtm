@@ -29,6 +29,18 @@ spec:
       type: boolean
       default: false
       group: 'Network'
+    - id: dead_letter_queue_configured
+      label: 'Dead-letter queue configured for failed messages'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: max_queue_length_enforced
+      label: 'Queue length/memory is bounded'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - integration/queue-auth-disabled
     - web/admin-interface-exposed
+    - integration/no-dead-letter-queue
+    - integration/queue-unbounded-growth

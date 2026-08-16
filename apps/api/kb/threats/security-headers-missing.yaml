@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SECURITY-HEADERS-MISSING
+  version: 1.0.0
+spec:
+  title: 'Web server does not send standard security headers'
+  summary: 'Responses lack headers such as Content-Security-Policy and X-Content-Type-Options, so browser-side defenses against XSS, clickjacking, and MIME-sniffing attacks are never engaged for this site.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [1021, 79]
+  countermeasures:
+      - CM-CONFIGURE-SECURITY-HEADERS

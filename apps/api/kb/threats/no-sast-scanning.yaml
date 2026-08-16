@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-SAST-SCANNING
+  version: 1.0.0
+spec:
+  title: 'CI/CD pipeline has no static application security testing'
+  summary: 'The pipeline builds and deploys code with no automated static analysis for common vulnerability classes, so bugs a SAST tool would catch (injection, hardcoded secrets, insecure deserialization) reach production undetected.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [1006]
+  countermeasures:
+      - CM-ENABLE-SAST-SCANNING

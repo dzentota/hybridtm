@@ -47,8 +47,14 @@ spec:
       type: boolean
       default: false
       group: 'Network'
+    - id: request_smuggling_protection_enabled
+      label: 'Hardened against HTTP request smuggling'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - web/hsts-missing
     - web/tls-version-obsolete
     - web/server-version-disclosure
     - web/admin-interface-exposed
+    - reverse-proxy/request-smuggling

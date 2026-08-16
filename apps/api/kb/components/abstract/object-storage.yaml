@@ -20,5 +20,17 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: versioning_enabled
+      label: 'Object versioning enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: access_logging_enabled
+      label: 'Access is logged'
+      type: boolean
+      default: false
+      group: 'Monitoring'
   rules:
     - storage/object-storage-public-read
+    - storage/object-storage-versioning-disabled
+    - storage/object-storage-no-access-logging

@@ -34,7 +34,20 @@ spec:
       type: boolean
       default: false
       group: 'Network'
+    - id: automated_backups_enabled
+      label: 'Automated backups enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: backup_encryption_enabled
+      label: 'Backups are encrypted'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+      show_if: 'props.automated_backups_enabled == true'
   rules:
     - storage/unencrypted-at-rest
     - storage/datastore-auth-disabled
     - storage/datastore-public-access
+    - storage/datastore-no-backups
+    - storage/backup-unencrypted

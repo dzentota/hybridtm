@@ -28,6 +28,24 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: session_timeout_minutes
+      label: 'Session idle timeout (minutes)'
+      type: number
+      default: 1440
+      group: 'Access control'
+    - id: account_lockout_enabled
+      label: 'Locks account after repeated failed logins'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: password_policy_enforced
+      label: 'Enforces a minimum password policy'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - identity/idp-without-mfa
     - identity/default-credentials
+    - identity/session-timeout-excessive
+    - identity/account-lockout-disabled
+    - identity/weak-password-policy

@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-DISABLE-TRACE-METHOD
+  version: 1.0.0
+spec:
+  title: 'Disable the HTTP TRACE method'
+  description: 'Configure the web server to reject TRACE (and TRACK) requests — there is essentially never a legitimate production use for them.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

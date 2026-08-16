@@ -24,6 +24,24 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: security_headers_configured
+      label: 'Sends standard security response headers'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: trace_method_enabled
+      label: 'Accepts the HTTP TRACE method'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: weak_ciphers_disabled
+      label: 'Weak/non-forward-secret TLS ciphers disabled'
+      type: boolean
+      default: false
+      group: 'Cryptography'
   rules:
     - web/server-version-disclosure
     - web/directory-listing-enabled
+    - web/security-headers-missing
+    - web/http-trace-enabled
+    - web/weak-cipher-suites
