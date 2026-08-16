@@ -1,0 +1,29 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/web-server
+  name: Abstract Web Server
+  version: 1.0.0
+  categories: [web, edge]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [web-server]
+    machine: container
+  traits: [http_server, processing_end_user_requests]
+  properties:
+    - id: server_version_disclosed
+      label: 'Server header discloses version'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: directory_listing_enabled
+      label: 'Directory listing enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - web/server-version-disclosure
+    - web/directory-listing-enabled

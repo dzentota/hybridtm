@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: sql_engine
+spec:
+  label: 'Relational (SQL) engine'
+  description: 'Query language is SQL; supports joins and transactions.'
+  category: storage
+  derived: false

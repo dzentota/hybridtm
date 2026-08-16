@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: nosql_engine
+spec:
+  label: 'Non-relational engine'
+  description: 'Document/key-value/columnar store without a fixed relational schema.'
+  category: storage
+  derived: false

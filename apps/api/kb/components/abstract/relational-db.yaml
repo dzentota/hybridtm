@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/relational-db
+  name: Abstract Relational Database
+  version: 1.0.0
+  categories: [storage, data]
+  maturity: stable
+  abstract: true
+spec:
+  extends: abstract/datastore
+  mapping:
+    type: datastore
+  traits: [sql_engine]
+  properties: []
+  rules: []

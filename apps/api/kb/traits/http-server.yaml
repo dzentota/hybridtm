@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: http_server
+spec:
+  label: 'Serves HTTP'
+  description: 'Speaks HTTP/HTTPS directly to clients or upstreams.'
+  category: network
+  derived: false

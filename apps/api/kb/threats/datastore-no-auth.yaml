@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATASTORE-NO-AUTH
+  version: 1.0.0
+spec:
+  title: 'Datastore reachable without client authentication'
+  summary: 'A datastore (relational, NoSQL, or cache) accepts connections without requiring client authentication, so anyone who can reach it on the network can read or write data.'
+  stride: [information-disclosure, tampering]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+    cwe: [306]
+  countermeasures:
+      - CM-REQUIRE-DATASTORE-AUTH

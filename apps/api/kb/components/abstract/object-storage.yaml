@@ -1,0 +1,24 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/object-storage
+  name: Abstract Object Storage
+  version: 1.0.0
+  categories: [storage]
+  maturity: stable
+  abstract: true
+spec:
+  extends: abstract/datastore
+  mapping:
+    type: datastore
+    technologies: [file-server]
+    machine: serverless
+  traits: [object_storage]
+  properties:
+    - id: public_read_access
+      label: 'Publicly readable without authentication'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - storage/object-storage-public-read

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/directly-exposed-datastore
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Datastore is reachable directly from an internet-facing component.'
+  when:
+    all:
+      - "component.hasTrait('directly_exposed_datastore')"
+  then:
+    - raise: THREAT-DIRECTLY-EXPOSED-DATASTORE
+      evidence: "{{ component.name }} is directly reachable from an internet-facing component."
+      require: [CM-NETWORK-SEGMENTATION]

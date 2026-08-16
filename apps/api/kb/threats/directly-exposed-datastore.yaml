@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DIRECTLY-EXPOSED-DATASTORE
+  version: 1.0.0
+spec:
+  title: 'Datastore is reachable directly from an internet-facing component'
+  summary: 'An internet-facing component has a direct communication link to a datastore with no intermediary (application/API layer) in between, so a compromise of the edge component gives immediate, unmediated datastore access.'
+  stride: [information-disclosure, tampering]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-NETWORK-SEGMENTATION

@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/unencrypted-at-rest
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Datastore holding data without encryption at rest.'
+  when:
+    all:
+      - "component.hasTrait('datastore')"
+      - "component.props.bool('encryption_at_rest') == false"
+  unless:
+    any:
+      - "component.hasMitigationFor('CWE-311')"
+  then:
+    - raise: THREAT-DATA-AT-REST-UNENCRYPTED
+      evidence: "{{ component.name }} stores data with encryption at rest disabled."
+      require: [CM-ENCRYPT-AT-REST]
+    - suggest_fix:
+        set: { encryption_at_rest: true }
+        label: 'Enable encryption at rest'

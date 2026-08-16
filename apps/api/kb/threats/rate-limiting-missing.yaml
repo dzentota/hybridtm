@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-RATE-LIMITING-MISSING
+  version: 1.0.0
+spec:
+  title: 'API accepts requests without rate limiting'
+  summary: 'There is no limit on request rate per client, so a single caller can exhaust downstream capacity, brute-force credentials, or scrape data at unlimited speed.'
+  stride: [denial-of-service]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [770]
+  countermeasures:
+      - CM-RATE-LIMITING

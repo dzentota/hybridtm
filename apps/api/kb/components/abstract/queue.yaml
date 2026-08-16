@@ -1,0 +1,34 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/queue
+  name: Abstract Message Queue
+  version: 1.0.0
+  categories: [integration]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [message-queue]
+    machine: container
+  traits: [message_broker]
+  properties:
+    - id: encryption_in_transit
+      label: 'Encrypts messages in transit'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: auth_required
+      label: 'Producer/consumer authentication required'
+      type: boolean
+      default: true
+      group: 'Access control'
+    - id: admin_interface_exposed
+      label: 'Admin/management console reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+  rules:
+    - integration/queue-auth-disabled
+    - web/admin-interface-exposed

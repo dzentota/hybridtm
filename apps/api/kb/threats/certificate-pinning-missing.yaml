@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CERTIFICATE-PINNING-MISSING
+  version: 1.0.0
+spec:
+  title: 'Mobile client does not pin server certificates'
+  summary: "The mobile app trusts any certificate signed by a public CA instead of pinning its own backend's certificate/key, making it vulnerable to interception via a mis-issued or compelled certificate."
+  stride: [spoofing, tampering]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [295]
+  countermeasures:
+      - CM-CERTIFICATE-PINNING

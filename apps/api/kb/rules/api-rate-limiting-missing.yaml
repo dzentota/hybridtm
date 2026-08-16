@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: api/rate-limiting-missing
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'API gateway accepts requests without rate limiting.'
+  when:
+    all:
+      - "component.hasTrait('api_gateway')"
+      - "component.props.bool('rate_limiting_enabled') == false"
+  then:
+    - raise: THREAT-RATE-LIMITING-MISSING
+      evidence: "{{ component.name }} has no rate limiting configured."
+      require: [CM-RATE-LIMITING]
+    - suggest_fix:
+        set: { rate_limiting_enabled: true }
+        label: 'Enable rate limiting'

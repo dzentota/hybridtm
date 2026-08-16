@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-ADMIN-INTERFACE-EXPOSED
+  version: 1.0.0
+spec:
+  title: 'Administrative interface is reachable from the internet'
+  summary: 'A management UI or API (proxy admin panel, queue console, etc.) is reachable from the public internet rather than being restricted to an internal network or VPN.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [284, 306]
+  countermeasures:
+      - CM-RESTRICT-ADMIN-INTERFACE

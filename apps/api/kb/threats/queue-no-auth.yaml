@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-QUEUE-NO-AUTH
+  version: 1.0.0
+spec:
+  title: 'Message broker accepts unauthenticated producers or consumers'
+  summary: 'A queue/topic can be published to or consumed from without authentication, allowing message injection, spoofed events, or silent eavesdropping.'
+  stride: [spoofing, tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [306]
+  countermeasures:
+      - CM-QUEUE-AUTHENTICATION

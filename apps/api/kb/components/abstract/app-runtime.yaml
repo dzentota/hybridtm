@@ -1,0 +1,54 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/app-runtime
+  name: Abstract Application Runtime
+  version: 1.0.0
+  categories: [application]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [web-application]
+    machine: container
+    customDevelopedParts: true
+  traits: [app_runtime, processing_end_user_requests]
+  properties:
+    - id: input_validation
+      label: 'Validates and sanitizes untrusted input'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: debug_mode
+      label: 'Debug/verbose error mode enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: csrf_protection_enabled
+      label: 'CSRF protection enabled'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: session_cookie_secure
+      label: 'Session cookie is Secure + HttpOnly'
+      type: boolean
+      default: true
+      group: 'Cryptography'
+    - id: dependency_audit_enabled
+      label: 'Dependencies are scanned for known vulnerabilities'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+    - id: requires_authentication
+      label: 'Requires authentication before processing requests'
+      type: boolean
+      default: true
+      group: 'Access control'
+  rules:
+    - app/input-validation-missing
+    - app/debug-mode-enabled
+    - app/csrf-protection-disabled
+    - web/session-cookie-insecure
+    - app/dependency-audit-disabled
+    - app/missing-authentication

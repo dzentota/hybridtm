@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: app_runtime
+spec:
+  label: 'Application runtime'
+  description: 'Executes custom business logic, not a generic proxy or datastore.'
+  category: compute
+  derived: false

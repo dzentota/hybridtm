@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: identity_provider
+spec:
+  label: 'Identity provider'
+  description: 'Issues or validates authentication tokens or assertions for other components.'
+  category: identity
+  derived: false

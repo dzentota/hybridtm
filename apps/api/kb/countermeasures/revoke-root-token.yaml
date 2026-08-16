@@ -1,0 +1,13 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-REVOKE-ROOT-TOKEN
+  version: 1.0.0
+spec:
+  title: 'Revoke the initial root token after setup'
+  description: 'Generate scoped tokens/policies for ongoing operations and revoke the initial root token once setup is complete.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive
+  applies_property: { id: root_token_revoked, value: true }

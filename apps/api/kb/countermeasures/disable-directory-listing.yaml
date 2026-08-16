@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-DISABLE-DIRECTORY-LISTING
+  version: 1.0.0
+spec:
+  title: 'Disable directory listing'
+  description: 'Turn off autoindex/directory browsing in the web server configuration for every directory that does not require it.'
+  cost: low
+  effort: low
+  effectiveness: medium
+  category: preventive

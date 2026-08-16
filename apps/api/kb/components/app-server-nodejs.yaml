@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: app-server-nodejs
+  name: Node.js
+  version: 1.0.0
+  vendor: OpenJS Foundation
+  categories: [application]
+  icon: simple-icons:nodedotjs
+  color: '#339933'
+  maturity: stable
+spec:
+  extends: abstract/app-runtime
+  mapping:
+    type: process
+    technologies: [web-application]
+  properties: []
+  rules: []

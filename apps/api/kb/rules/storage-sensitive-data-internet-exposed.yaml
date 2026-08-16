@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/sensitive-data-internet-exposed
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Internet-reachable component processes or stores strictly confidential data.'
+  when:
+    all:
+      - "component.hasTrait('internet_reachable')"
+      - "component.storesConfidentialityAtLeast('strictly-confidential')"
+  then:
+    - raise: THREAT-SENSITIVE-DATA-INTERNET-EXPOSED
+      evidence: "{{ component.name }} is internet-reachable and handles strictly confidential data."
+      require: [CM-ENCRYPT-AT-REST, CM-ENFORCE-TLS, CM-WAF-BLOCK-MODE]

@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: db-mysql
+  name: MySQL
+  version: 1.0.0
+  vendor: Oracle
+  categories: [data, datastore]
+  icon: simple-icons:mysql
+  color: '#4479A1'
+  maturity: stable
+spec:
+  extends: abstract/relational-db
+  mapping:
+    type: datastore
+    technologies: [database]
+  properties:
+    - id: version
+      label: 'MySQL version'
+      type: string
+      pattern: '^\\d+\\.\\d+$'
+      group: 'General'
+  rules: []

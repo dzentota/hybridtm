@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-WAF-BLOCK-MODE
+  version: 1.0.0
+spec:
+  title: 'Switch the WAF to blocking mode'
+  description: 'Move the web application firewall from detection/log-only mode to actively blocking requests that match high-confidence rules.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: directory-ldap
+  name: LDAP / Active Directory
+  version: 1.0.0
+  categories: [identity]
+  icon: material-symbols:folder-shared-outline
+  maturity: stable
+spec:
+  extends: abstract/idp
+  mapping:
+    type: process
+    technologies: [identity-store-ldap]
+  traits: [directory_service]
+  properties:
+    - id: anonymous_bind_enabled
+      label: 'Anonymous bind permitted'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - identity/ldap-anonymous-bind

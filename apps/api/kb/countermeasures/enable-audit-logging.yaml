@@ -1,0 +1,13 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENABLE-AUDIT-LOGGING
+  version: 1.0.0
+spec:
+  title: 'Enable audit logging for secrets access'
+  description: "Turn on the secrets store's audit log backend and ship logs to a tamper-evident, centrally monitored location."
+  cost: low
+  effort: low
+  effectiveness: medium
+  category: detective
+  applies_property: { id: audit_logging_enabled, value: true }

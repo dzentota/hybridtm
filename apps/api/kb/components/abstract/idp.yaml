@@ -1,0 +1,33 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/idp
+  name: Abstract Identity Provider
+  version: 1.0.0
+  categories: [identity]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [identity-provider]
+    machine: container
+    defaults:
+      confidentiality: strictly-confidential
+      integrity: mission-critical
+      availability: critical
+  traits: [identity_provider, admin_interface]
+  properties:
+    - id: mfa_enforced
+      label: 'Enforces multi-factor authentication'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: default_admin_credentials_changed
+      label: 'Default administrative credentials changed'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - identity/idp-without-mfa
+    - identity/default-credentials

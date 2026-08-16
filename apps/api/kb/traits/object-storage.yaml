@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: object_storage
+spec:
+  label: 'Object storage'
+  description: 'Stores blobs/files addressed by key, not a relational or document engine.'
+  category: storage
+  derived: false

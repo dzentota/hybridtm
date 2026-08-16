@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: identity/ldap-anonymous-bind
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Directory service permits anonymous LDAP bind.'
+  when:
+    all:
+      - "component.hasTrait('directory_service')"
+      - "component.props.bool('anonymous_bind_enabled') == true"
+  then:
+    - raise: THREAT-LDAP-ANONYMOUS-BIND
+      evidence: "{{ component.name }} permits anonymous bind."
+      require: [CM-DISABLE-ANONYMOUS-LDAP-BIND]
+    - suggest_fix:
+        set: { anonymous_bind_enabled: false }
+        label: 'Disable anonymous bind'

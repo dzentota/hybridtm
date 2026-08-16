@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-mobile-app
+  name: Mobile App
+  version: 1.0.0
+  categories: [client]
+  icon: material-symbols:smartphone
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [mobile-app]
+  traits: [mobile_client]
+  properties: []
+  rules: []

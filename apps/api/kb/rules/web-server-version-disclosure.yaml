@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/server-version-disclosure
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Web server discloses its software version in responses.'
+  when:
+    all:
+      - "component.hasTrait('http_server')"
+      - "component.props.bool('server_version_disclosed') == true"
+  then:
+    - raise: THREAT-SERVER-VERSION-DISCLOSURE
+      evidence: "{{ component.name }} discloses its version in server headers/error pages."
+    - suggest_fix:
+        set: { server_version_disclosed: false }
+        label: 'Suppress version disclosure'

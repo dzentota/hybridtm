@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: waf
+spec:
+  label: 'Web application firewall'
+  description: 'Filters HTTP traffic against known attack signatures before it reaches an origin.'
+  category: network
+  derived: false

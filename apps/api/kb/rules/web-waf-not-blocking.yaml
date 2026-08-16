@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/waf-not-blocking
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'WAF deployed but not configured to block.'
+  when:
+    all:
+      - "component.hasTrait('waf')"
+      - "component.props.string('waf_mode') != 'block'"
+  then:
+    - raise: THREAT-WAF-NOT-BLOCKING
+      evidence: "{{ component.name }} is not in blocking mode."
+      require: [CM-WAF-BLOCK-MODE]
+    - suggest_fix:
+        set: { waf_mode: block }
+        label: 'Switch WAF to blocking mode'

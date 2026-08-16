@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: object-storage-generic
+  name: Object Storage
+  version: 1.0.0
+  categories: [data, datastore]
+  icon: material-symbols:cloud-outline
+  maturity: stable
+spec:
+  extends: abstract/object-storage
+  mapping:
+    type: datastore
+    technologies: [file-server]
+  properties: []
+  rules: []

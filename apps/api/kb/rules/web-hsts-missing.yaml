@@ -2,10 +2,11 @@ apiVersion: hybridtm.io/kb/v1
 kind: Rule
 metadata:
   id: web/hsts-missing
-  priority: 80
+  version: 1.0.0
+  priority: 50
 spec:
   scope: component
-  description: TLS-terminating component without HSTS enabled.
+  description: 'TLS-terminating component without HSTS enabled.'
   when:
     all:
       - "component.hasTrait('tls_terminator')"
@@ -13,3 +14,7 @@ spec:
       - "component.props.bool('hsts_enabled') == false"
   then:
     - raise: THREAT-HSTS-MISSING
+      evidence: "{{ component.name }} terminates TLS without sending Strict-Transport-Security."
+    - suggest_fix:
+        set: { hsts_enabled: true }
+        label: 'Enable HSTS'

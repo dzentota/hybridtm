@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: cache-redis
+  name: Redis
+  version: 1.0.0
+  vendor: Redis Ltd.
+  categories: [data, datastore]
+  icon: simple-icons:redis
+  color: '#DC382D'
+  maturity: stable
+spec:
+  extends: abstract/cache
+  mapping:
+    type: datastore
+    technologies: [database]
+  properties: []
+  rules: []

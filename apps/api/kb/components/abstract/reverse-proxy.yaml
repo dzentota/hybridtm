@@ -1,0 +1,54 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/reverse-proxy
+  name: Abstract Reverse Proxy
+  version: 1.0.0
+  categories: [web, edge]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [reverse-proxy]
+    machine: container
+  traits: [traffic_forwarding, tls_terminator, http_server, processing_end_user_requests, less_protected_type]
+  properties:
+    - id: internet_facing
+      label: 'Accepts internet traffic'
+      type: boolean
+      default: false
+      group: 'Network'
+    - id: tls_terminated
+      label: 'Terminates TLS'
+      type: boolean
+      default: true
+      group: 'Cryptography'
+    - id: hsts_enabled
+      label: 'Sends Strict-Transport-Security'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+      show_if: 'props.tls_terminated == true'
+    - id: tls_min_version
+      label: 'Minimum TLS version'
+      type: enum
+      values: ['1.0', '1.1', '1.2', '1.3']
+      default: '1.2'
+      group: 'Cryptography'
+      show_if: 'props.tls_terminated == true'
+    - id: server_version_disclosed
+      label: 'Server header discloses version'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: admin_interface_exposed
+      label: 'Admin/status interface reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+  rules:
+    - web/hsts-missing
+    - web/tls-version-obsolete
+    - web/server-version-disclosure
+    - web/admin-interface-exposed

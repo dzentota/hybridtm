@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DEBUG-MODE-ENABLED
+  version: 1.0.0
+spec:
+  title: 'Debug/verbose error mode enabled in production'
+  summary: "Stack traces, SQL queries, or internal paths are returned to clients in error responses, giving an attacker a detailed map of the application's internals."
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [489, 209]
+  countermeasures:
+      - CM-DISABLE-DEBUG-MODE

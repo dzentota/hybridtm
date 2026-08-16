@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: tls_terminator
+spec:
+  label: 'Terminates TLS'
+  description: 'Decrypts inbound TLS before forwarding traffic upstream.'
+  category: network
+  derived: false

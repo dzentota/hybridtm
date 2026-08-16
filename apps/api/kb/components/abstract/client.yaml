@@ -1,0 +1,26 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/client
+  name: Abstract Client
+  version: 1.0.0
+  categories: [client]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+    machine: physical
+    customDevelopedParts: false
+    defaults:
+      confidentiality: internal
+  traits: [client_device, processing_end_user_requests]
+  properties:
+    - id: certificate_pinning_enabled
+      label: 'Pins server certificate/public key'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - mobile/certificate-pinning-missing

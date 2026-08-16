@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: processing_end_user_requests
+spec:
+  label: 'Processes end-user requests'
+  description: 'Directly handles requests originating from a human end user.'
+  category: exposure
+  derived: false

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-IDP-NO-MFA
+  version: 1.0.0
+spec:
+  title: 'Identity provider does not enforce multi-factor authentication'
+  summary: 'Authentication relies on a single factor (password), so a leaked or guessed credential is sufficient to fully impersonate the user.'
+  stride: [spoofing, elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [308]
+  countermeasures:
+      - CM-ENFORCE-MFA

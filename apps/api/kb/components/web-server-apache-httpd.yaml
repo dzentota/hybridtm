@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: web-server-apache-httpd
+  name: Apache HTTP Server
+  version: 1.0.0
+  vendor: Apache Software Foundation
+  categories: [web]
+  icon: simple-icons:apache
+  color: '#D22128'
+  maturity: stable
+spec:
+  extends: abstract/web-server
+  mapping:
+    type: process
+    technologies: [web-server]
+  properties: []
+  rules: []

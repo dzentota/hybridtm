@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: identity/idp-without-mfa
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Identity provider that authenticates end users does not enforce MFA.'
+  when:
+    all:
+      - "component.hasTrait('identity_provider')"
+      - "component.hasTrait('processing_end_user_requests')"
+      - "component.props.bool('mfa_enforced') == false"
+  then:
+    - raise: THREAT-IDP-NO-MFA
+      evidence: "{{ component.name }} does not enforce multi-factor authentication."
+      require: [CM-ENFORCE-MFA]
+    - suggest_fix:
+        set: { mfa_enforced: true }
+        label: 'Enforce MFA'

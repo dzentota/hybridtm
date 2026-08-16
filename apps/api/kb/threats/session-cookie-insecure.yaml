@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SESSION-COOKIE-INSECURE
+  version: 1.0.0
+spec:
+  title: 'Session cookie missing Secure/HttpOnly attributes'
+  summary: 'The session cookie can be sent over plaintext HTTP or read by client-side script, letting it be intercepted on the network or stolen via XSS.'
+  stride: [information-disclosure, tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [614, 1004]
+  countermeasures:
+      - CM-SECURE-SESSION-COOKIES

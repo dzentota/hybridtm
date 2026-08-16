@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-MISSING-AUTHENTICATION
+  version: 1.0.0
+spec:
+  title: 'Endpoint processes requests without authentication'
+  summary: "A component accepts and processes requests without verifying the caller's identity first, so anyone who can reach it can act as any user or as a trusted service."
+  stride: [spoofing]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [306]
+  countermeasures:
+      - CM-REQUIRE-AUTHENTICATION

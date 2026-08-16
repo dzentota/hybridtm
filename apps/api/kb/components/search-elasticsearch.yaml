@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: search-elasticsearch
+  name: Elasticsearch
+  version: 1.0.0
+  vendor: Elastic
+  categories: [data, datastore]
+  icon: simple-icons:elasticsearch
+  color: '#005571'
+  maturity: stable
+spec:
+  extends: abstract/nosql-db
+  mapping:
+    type: datastore
+    technologies: [search-index]
+  properties: []
+  rules: []

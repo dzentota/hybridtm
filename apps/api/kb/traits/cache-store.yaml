@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: cache_store
+spec:
+  label: 'In-memory cache'
+  description: 'Data is typically ephemeral and optimized for low-latency reads.'
+  category: storage
+  derived: false

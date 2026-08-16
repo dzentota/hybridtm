@@ -1,0 +1,13 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-DISABLE-ANONYMOUS-LDAP-BIND
+  version: 1.0.0
+spec:
+  title: 'Disable anonymous LDAP bind'
+  description: 'Require authenticated binds for all directory queries and remove the anonymous read ACL.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive
+  applies_property: { id: anonymous_bind_enabled, value: false }

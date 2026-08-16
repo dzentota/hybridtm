@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: api-gateway-generic
+  name: API Gateway
+  version: 1.0.0
+  categories: [web, edge]
+  icon: material-symbols:api
+  maturity: stable
+spec:
+  extends: abstract/reverse-proxy
+  mapping:
+    type: process
+    technologies: [reverse-proxy]
+  traits: [api_gateway]
+  properties:
+    - id: rate_limiting_enabled
+      label: 'Rate limiting enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - api/rate-limiting-missing

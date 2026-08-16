@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/missing-authentication
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Application runtime processes requests without requiring authentication.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('requires_authentication') == false"
+  then:
+    - raise: THREAT-MISSING-AUTHENTICATION
+      evidence: "{{ component.name }} does not require authentication."
+      require: [CM-REQUIRE-AUTHENTICATION]

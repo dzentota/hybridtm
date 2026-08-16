@@ -6,15 +6,20 @@ metadata:
   version: 1.4.0
   vendor: F5 NGINX
   categories: [web, edge, proxy]
+  icon: simple-icons:nginx
+  color: '#009639'
+  docs: https://nginx.org/en/docs/
   maturity: stable
 spec:
+  extends: abstract/reverse-proxy
   mapping:
     type: process
-    technologies: [reverse-proxy, web-server]
-    machine: container
-  traits: [traffic_forwarding, tls_terminator, http_server]
-  properties:
-    - { id: internet_facing, label: Accepts internet traffic, type: boolean, default: false }
-    - { id: tls_terminated, label: Terminates TLS, type: boolean, default: true }
-  rules:
-    - web/hsts-missing
+    technologies: [reverse-proxy, web-server, load-balancer]
+    size: component
+  ports:
+    inbound:
+      - { id: client, label: 'Client traffic', protocols: [http, https, ws, wss], cardinality: many }
+    outbound:
+      - { id: upstream, label: 'Upstream', protocols: [http, https], cardinality: many }
+  properties: []
+  rules: []

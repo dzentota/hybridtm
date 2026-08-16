@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: datastore
+spec:
+  label: 'Stores data at rest'
+  description: 'The component persists data beyond a single request/session.'
+  category: storage
+  derived: false
