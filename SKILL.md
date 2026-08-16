@@ -1,9 +1,26 @@
 # HybridTM — AI Agent Reference Guide
 
-HybridTM is a PHP threat-modeling compiler that generates [Threagile](https://threagile.io)-compatible YAML from two sources:
+HybridTM is a PHP threat-modeling platform. Two things live in this
+repository:
 
-1. **Infrastructure DSL** — a PHP file declaring assets, data flows, and trust boundaries.
-2. **Code attributes** — PHP 8 attributes (`#[DataFlow]`, `#[Mitigation]`, etc.) annotating the real source code.
+1. **The `hybridtm/hybridtm` library** (`src/`) — the DSL, code
+   attributes, Knowledge Base loader, and Rule Engine described below.
+   It generates [Threagile](https://threagile.io)-compatible YAML and
+   also runs its own rule-based analysis directly.
+2. **HybridTM Studio** — `apps/api/` (a Symfony + API Platform REST API:
+   multi-tenancy, RBAC, model workflow, reports) and `apps/studio/` (a
+   React canvas editor). Both consume the library; neither duplicates
+   its logic. If you're asked to touch the API or Studio, the library
+   sections below (Knowledge Base, Rule Engine) are what they're built
+   on top of — read those first.
+
+A model is built from up to three sources, layered:
+
+1. **Infrastructure DSL** (`threat-model.php`) — assets, data flows, trust boundaries.
+2. **Code attributes** (`#[DataFlow]`, `#[Mitigation]`, etc.) — annotating real source code, scanned statically.
+3. **Knowledge Base components** (YAML, `kind: Component`) — a palette entry a DSL `TechnicalAsset` can link to via traits/properties, carrying its own rules. This is what the Rule Engine (as opposed to the Threagile compiler) actually runs against.
+
+Which of these to use depends on the task: annotating an existing PHP app → attributes; describing infrastructure that has no corresponding KB component yet → plain DSL properties/traits; adding a new reusable component type (e.g. "we now support Kafka") → author a KB Component (see the **Knowledge Base** section below) so every future model gets it from the palette instead of hand-rolling traits each time.
 
 ---
 
@@ -171,6 +188,18 @@ $asset->dataAssetsProcessed = ['asset-id'];
 $asset->dataAssetsStored    = ['asset-id'];
 $asset->tags               = [];
 
+// Traits and properties (§ Knowledge Base below) — what KB rules
+// actually match against. `traits` is a plain list of strings; a rule
+// checks them with `component.hasTrait('datastore')` in its `when`.
+// `properties` is a PropertyBag: typed key/value pairs a rule reads via
+// `component.props.bool('encryption_at_rest')` / `.string(...)` /
+// `.int(...)`. An unset property key reads back as the type's zero
+// value (false / '' / 0) — rule authors write conditions knowing this,
+// so leaving a property unset is never "unknown", it's "off".
+$asset->traits = ['datastore', 'sql_engine'];
+$asset->properties->set('encryption_at_rest', false);
+$asset->properties->set('version', '16.2');
+
 // Add a communication link fluently:
 $link = $asset->communicatesTo('target-id', Protocol::Https, Authentication::Token, Authorization::TechnicalUser, 'description');
 $link->dataSent = ['data-id'];
@@ -206,6 +235,152 @@ $link->ipFiltered     = false;
 $link->readonly       = false;
 $link->usage          = DataUsage::Business;
 $link->tags           = [];
+```
+
+---
+
+## Knowledge Base (KB)
+
+The KB is a directory tree of YAML files, one entity per file, validated
+against JSON Schemas in `schema/kb/*.json` (canonical examples in
+`examples/kb/*.json` — copy one as a starting point rather than writing
+a file from scratch). Loaded via `HybridTM\Kb\YamlKbLoader`, which also
+resolves `spec.extends` chains (a concrete component inheriting traits/
+properties/rules from an abstract parent).
+
+Five kinds, identified by `kind:` in the YAML:
+
+| Kind | Id pattern | Purpose |
+|---|---|---|
+| `Component` | `web-server-nginx`, `abstract/reverse-proxy` | A palette entry: traits, properties, ports, which rules apply |
+| `Threat` | `THREAT-SOME-NAME` | Title, summary, STRIDE, base likelihood/impact, standards mappings (CWE/CAPEC/OWASP/...) |
+| `Countermeasure` | `CM-SOME-NAME` | Remediation: cost/effort/effectiveness, per-product implementation hints |
+| `Rule` | `category/some-rule` | `when`/`unless`/`then` condition — see **Rule Engine** below |
+| `Trait` | `snake_case_name` | Documents a trait string (label/description) — optional; `hasTrait()` works without one, this is for the Studio palette's benefit |
+
+### Authoring a component
+
+```yaml
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: db-mysql
+  name: MySQL
+  version: 1.0.0
+  categories: [data, datastore]
+  maturity: stable
+spec:
+  extends: abstract/relational-db   # inherits traits/properties/rules from the parent
+  mapping:
+    type: datastore                 # REQUIRED on every file, even with extends — the
+                                     # schema validates each file standalone, before extends
+                                     # resolution ever runs, so the parent's `type` doesn't count
+    technologies: [database]
+  traits: []                        # extra traits beyond what's inherited, if any
+  properties:
+    - { id: version, label: 'MySQL version', type: string, group: 'General' }
+  rules: []                         # extra rule ids beyond what's inherited — see caveat below
+```
+
+**The one rule-scoping mistake to avoid:** a component's `rules:` list is
+palette-display metadata only (the Studio "N rules" badge) — the Rule
+Engine evaluates *every* component-scope rule in the KB against *every*
+technical asset in the model, filtered only by the rule's own `when`
+condition. If you give a component a property that only *it* declares
+(say `server_tokens_off` on one nginx-like component) and scope the
+rule via a trait that *other* components sharing that trait also have
+(`hasTrait('http_server')`), every other http_server component gets
+evaluated against a property it never declared — and since an unset
+property reads as its zero value, a `== false` check spuriously fires
+on all of them. Fix: put the property on the shared abstract ancestor
+(making it genuinely universal to everything with that trait), or
+scope the rule with a trait specific enough that only the intended
+components have it (add a new, narrower trait to just those
+components — traits have no such false-positive risk, since
+`hasTrait()` is a real membership check, not a property read with a
+type-zero fallback).
+
+### Authoring a rule
+
+```yaml
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/unencrypted-at-rest
+  priority: 100
+spec:
+  scope: component   # component | flow | boundary | model
+  description: 'Datastore holding data without encryption at rest.'
+  when:
+    all:
+      - "component.hasTrait('datastore')"
+      - "component.props.bool('encryption_at_rest') == false"
+  unless:
+    any:
+      - "component.hasMitigationFor('CWE-311')"
+  then:
+    - raise: THREAT-DATA-AT-REST-UNENCRYPTED
+      require: [CM-ENCRYPT-AT-REST]
+    - suggest_fix:
+        set: { encryption_at_rest: true }
+        label: 'Enable encryption at rest'
+```
+
+Condition expressions are sandboxed (symfony/expression-language) —
+the sandbox is structural, not a runtime interceptor: `component`
+(component/flow scope) exposes only `HybridTM\Analysis\Subjects\ComponentSubject`'s
+public surface (`id`, `name`, `encryption`, `internet`, `redundant`,
+`multiTenant`, `customDevelopedParts`, `outOfScope`, `props`,
+`hasTrait(...)`, `hasAllTraits(...)`, `storesConfidentialityAtLeast(...)`,
+`hasMitigationFor(...)`); `flow` scope additionally exposes `source`/
+`target` (each a `ComponentSubject`), `protocol` (`.value`, `.isEncrypted()`),
+`vpn`, `ipFiltered`, `readonly`, `crossesTrustBoundary()`,
+`carriesDataAtLeast(...)`. Nothing else is reachable — don't invent new
+fields without adding them to the relevant `*Subject` class first.
+
+Real derived traits available to any rule via `hasTrait(...)` (computed
+by `HybridTM\Analysis\DeriveEngine`, not declared by any component):
+`internet_reachable`, `stores_pii`, `handles_strictly_confidential`,
+`single_point_of_failure`, `directly_exposed_datastore`, `behind_waf`.
+
+---
+
+## Rule Engine & Analysis
+
+`HybridTM\Analysis\RuleEngine::analyze(ThreatModel $model, KnowledgeBaseInterface $kb, AnalysisOptions $options): AnalysisResult`
+is the pure-function entry point — construct once and reuse across
+calls (it caches parsed rule expressions internally). Pipeline: expand →
+normalize → validate → derive → component/flow/boundary/model rules →
+suppress (via `RiskTracking`) → score → dedup/merge. `AnalysisResult`
+carries `findings` (list of `Finding`), `validation` (a
+`ValidationReport` — `hasErrors()` stops analysis before rules run),
+`stats`, and `inputHash` (sha256 of the canonical model + KB version,
+for caching/reproducibility).
+
+```bash
+php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=table
+php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=json
+php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=sarif > results.sarif
+php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --fail-on=critical  # exit 1 if any Critical finding
+```
+
+`--kb` is repeatable; later paths override earlier ones (KB layering:
+`kb-core` → `kb-aws` → an org's own overrides). Omit it entirely to
+analyze against an empty KB (DSL-only fields still get validated, but
+no component-scope rules can match since no component/trait/rule
+content is loaded).
+
+Accepting or deferring a finding: `HybridTM\DSL\RiskTracking`, keyed by
+a `Finding::$stableId` (not a human-readable label — get the real value
+by running analysis once and reading the finding back, the same way
+`threat-model.php`'s own risk-tracking entry does it).
+
+```php
+$decision = new RiskTracking($finding->stableId);
+$decision->status = DecisionStatus::Deferred;   // Accepted | Mitigated | FalsePositive | Deferred
+$decision->justification = '...';
+$decision->expiresAt = '2026-12-31';             // required for Accepted/Deferred — never a permanent acceptance
+$model->addRiskTracking($decision);
 ```
 
 ---
