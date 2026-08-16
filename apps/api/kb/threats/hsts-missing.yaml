@@ -1,0 +1,14 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-HSTS-MISSING
+  version: 1.0.0
+spec:
+  title: HSTS header missing
+  summary: A TLS-terminating edge component does not send Strict-Transport-Security, allowing protocol downgrade.
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: low
+  standards:
+    cwe: [319]
