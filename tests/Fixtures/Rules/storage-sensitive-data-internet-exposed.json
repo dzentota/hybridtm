@@ -1,0 +1,97 @@
+{
+    "ruleId": "storage/sensitive-data-internet-exposed",
+    "expectedThreatId": "THREAT-SENSITIVE-DATA-INTERNET-EXPOSED",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "pii",
+                "name": "PII",
+                "usage": "business",
+                "origin": "unknown",
+                "quantity": "many",
+                "confidentiality": "strictly-confidential",
+                "integrity": "operational",
+                "availability": "operational"
+            }
+        ],
+        "components": [
+            {
+                "id": "edge",
+                "name": "edge",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": true
+                },
+                "dataAssetsProcessed": [
+                    "pii"
+                ]
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "pii",
+                "name": "PII",
+                "usage": "business",
+                "origin": "unknown",
+                "quantity": "many",
+                "confidentiality": "strictly-confidential",
+                "integrity": "operational",
+                "availability": "operational"
+            }
+        ],
+        "components": [
+            {
+                "id": "edge",
+                "name": "edge",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                },
+                "dataAssetsProcessed": [
+                    "pii"
+                ]
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

@@ -1,0 +1,215 @@
+{
+    "ruleId": "availability/single-point-of-failure",
+    "expectedThreatId": "THREAT-SINGLE-POINT-OF-FAILURE",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "core",
+                "name": "core",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "c1",
+                "name": "c1",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "c2",
+                "name": "c2",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "c3",
+                "name": "c3",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "c1-to-core",
+                "sourceId": "c1",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            },
+            {
+                "id": "c2-to-core",
+                "sourceId": "c2",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            },
+            {
+                "id": "c3-to-core",
+                "sourceId": "c3",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "core",
+                "name": "core",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "redundant": true
+                }
+            },
+            {
+                "id": "c1",
+                "name": "c1",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "c2",
+                "name": "c2",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "c3",
+                "name": "c3",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "c1-to-core",
+                "sourceId": "c1",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            },
+            {
+                "id": "c2-to-core",
+                "sourceId": "c2",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            },
+            {
+                "id": "c3-to-core",
+                "sourceId": "c3",
+                "targetId": "core",
+                "protocol": "https",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}
