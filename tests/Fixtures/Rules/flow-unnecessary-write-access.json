@@ -1,0 +1,176 @@
+{
+    "ruleId": "flow/unnecessary-write-access",
+    "expectedThreatId": "THREAT-UNNECESSARY-WRITE-ACCESS",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "secret",
+                "name": "Secret",
+                "confidentiality": "strictly-confidential"
+            }
+        ],
+        "components": [
+            {
+                "id": "source",
+                "name": "source",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "ba",
+                "name": "A",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "source"
+                ]
+            },
+            {
+                "id": "bb",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "target"
+                ]
+            }
+        ],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "source",
+                "targetId": "target",
+                "protocol": "https",
+                "dataSent": [],
+                "dataReceived": [
+                    "secret"
+                ],
+                "readonly": false
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "secret",
+                "name": "Secret",
+                "confidentiality": "strictly-confidential"
+            }
+        ],
+        "components": [
+            {
+                "id": "source",
+                "name": "source",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "ba",
+                "name": "A",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "source"
+                ]
+            },
+            {
+                "id": "bb",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "target"
+                ]
+            }
+        ],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "source",
+                "targetId": "target",
+                "protocol": "https",
+                "dataSent": [],
+                "dataReceived": [
+                    "secret"
+                ],
+                "readonly": true
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: observability-otel-collector
+  name: OpenTelemetry Collector
+  version: 1.0.0
+  vendor: CNCF
+  categories: [observability]
+  icon: simple-icons:opentelemetry
+  color: '#425CC7'
+  maturity: stable
+spec:
+  extends: abstract/observability-collector
+  mapping:
+    type: process
+    technologies: [monitoring]
+  properties: []
+  rules: []

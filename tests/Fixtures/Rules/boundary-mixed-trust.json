@@ -1,0 +1,141 @@
+{
+    "ruleId": "boundary/mixed-trust",
+    "expectedThreatId": "THREAT-MIXED-TRUST-BOUNDARY",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "web",
+                "name": "web",
+                "properties": [],
+                "traits": [
+                    "internet_reachable"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "db",
+                "name": "db",
+                "properties": [],
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "Mixed",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "web",
+                    "db"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "web",
+                "name": "web",
+                "properties": [],
+                "traits": [
+                    "internet_reachable"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "db",
+                "name": "db",
+                "properties": [],
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "DMZ",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "web"
+                ]
+            },
+            {
+                "id": "b2",
+                "name": "Internal",
+                "type": "network-cloud-security-group",
+                "contains": [
+                    "db"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

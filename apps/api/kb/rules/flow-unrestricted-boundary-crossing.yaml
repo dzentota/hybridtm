@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/unrestricted-boundary-crossing
+  version: 1.0.0
+  priority: 40
+spec:
+  scope: flow
+  description: 'A link that crosses a trust boundary has no VPN requirement or IP filtering.'
+  when:
+    all:
+      - "flow.crossesTrustBoundary()"
+      - "!flow.vpn"
+      - "!flow.ipFiltered"
+  then:
+    - raise: THREAT-UNRESTRICTED-BOUNDARY-CROSSING
+      evidence: "The link from {{ flow.source.name }} to {{ flow.target.name }} crosses a trust boundary with no VPN or IP filtering."
+      require: [CM-RESTRICT-NETWORK-PATH]
+    - suggest_fix:
+        set: { ipFiltered: true }
+        label: 'Restrict this link to allow-listed source IPs'

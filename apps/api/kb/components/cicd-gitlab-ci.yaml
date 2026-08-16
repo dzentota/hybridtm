@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: cicd-gitlab-ci
+  name: GitLab CI
+  version: 1.0.0
+  vendor: GitLab
+  categories: [cicd]
+  icon: simple-icons:gitlab
+  color: '#FC6D26'
+  maturity: stable
+spec:
+  extends: abstract/cicd-pipeline
+  mapping:
+    type: process
+    technologies: [build-pipeline]
+  properties: []
+  rules: []

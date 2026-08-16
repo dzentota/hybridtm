@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: db-clickhouse
+  name: ClickHouse
+  version: 1.0.0
+  vendor: ClickHouse Inc.
+  categories: [data, datastore]
+  icon: simple-icons:clickhouse
+  color: '#FFCC01'
+  maturity: stable
+spec:
+  extends: abstract/relational-db
+  mapping:
+    type: datastore
+    technologies: [database, big-data-platform]
+  properties: []
+  rules: []

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNNECESSARY-WRITE-ACCESS
+  version: 1.0.0
+spec:
+  title: 'Write access granted to a flow that only needs to read strictly confidential data'
+  summary: 'A cross-boundary link carrying strictly confidential data is not marked read-only, so a compromised caller on either end can modify data it should only ever be able to read, widening the blast radius of that compromise.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-MINIMIZE-WRITE-ACCESS

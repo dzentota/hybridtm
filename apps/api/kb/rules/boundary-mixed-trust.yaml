@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: boundary/mixed-trust
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: boundary
+  description: 'A trust boundary contains both an internet-reachable component and a datastore.'
+  when:
+    all:
+      - "boundary.anyAssetHasTrait('internet_reachable')"
+      - "boundary.anyAssetHasTrait('datastore')"
+  then:
+    - raise: THREAT-MIXED-TRUST-BOUNDARY
+      evidence: "Trust boundary \"{{ boundary.name }}\" contains both an internet-reachable component and a datastore."
+      require: [CM-SEGMENT-TRUST-BOUNDARIES]

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-iot-device
+  name: IoT device
+  version: 1.0.0
+  categories: [client]
+  icon: mdi:chip
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [iot-device]
+  properties: []
+  rules: []

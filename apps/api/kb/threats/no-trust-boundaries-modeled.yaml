@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-TRUST-BOUNDARIES-MODELED
+  version: 1.0.0
+spec:
+  title: 'Non-trivial model has no trust boundaries at all'
+  summary: 'A model with a meaningful number of components declares zero trust boundaries, so either the architecture genuinely has no network segmentation (a real finding) or the model is incomplete — either way, every other boundary-crossing rule in the KB is silently inert for this model.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-DEFINE-TRUST-BOUNDARIES

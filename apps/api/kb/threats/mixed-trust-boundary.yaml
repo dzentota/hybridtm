@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-MIXED-TRUST-BOUNDARY
+  version: 1.0.0
+spec:
+  title: 'Trust boundary mixes internet-facing and data-storing components'
+  summary: 'The same trust boundary contains both an internet-reachable component and a datastore, so compromising the exposed component gives an attacker network-level proximity to the data store with no additional boundary to cross.'
+  stride: [elevation-of-privilege, information-disclosure]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-SEGMENT-TRUST-BOUNDARIES

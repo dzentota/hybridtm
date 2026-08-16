@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: boundary/oversized
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: boundary
+  description: 'A trust boundary contains an unusually large number of components.'
+  when:
+    all:
+      - "boundary.assetCount() > 12"
+  then:
+    - raise: THREAT-OVERSIZED-TRUST-BOUNDARY
+      evidence: "Trust boundary \"{{ boundary.name }}\" contains {{ boundary.assetCount() }} components."
+      require: [CM-LIMIT-BOUNDARY-SIZE]

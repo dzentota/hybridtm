@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-PAYMENT-DATA-NOT-ISOLATED
+  version: 1.0.0
+spec:
+  title: 'Payment processing is not isolated into its own PCI scope'
+  summary: 'The component that talks to a payment provider shares its network/trust boundary with unrelated systems instead of being isolated into a minimal PCI DSS scope, so a compromise anywhere in that shared scope becomes a cardholder-data-environment compromise.'
+  stride: [elevation-of-privilege, information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: very-high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-ISOLATE-PCI-SCOPE

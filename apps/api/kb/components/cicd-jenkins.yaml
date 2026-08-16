@@ -1,0 +1,25 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: cicd-jenkins
+  name: Jenkins
+  version: 1.0.0
+  vendor: Jenkins project
+  categories: [cicd]
+  icon: simple-icons:jenkins
+  color: '#D24939'
+  maturity: stable
+spec:
+  extends: abstract/cicd-pipeline
+  mapping:
+    type: process
+    technologies: [build-pipeline]
+  traits: [admin_interface]
+  properties:
+    - id: admin_interface_exposed
+      label: 'Web console reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+  rules:
+    - web/admin-interface-exposed

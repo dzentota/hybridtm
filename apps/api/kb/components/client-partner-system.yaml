@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-partner-system
+  name: Partner system (B2B integration)
+  version: 1.0.0
+  categories: [client]
+  icon: mdi:handshake-outline
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+  properties: []
+  rules: []
