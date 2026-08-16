@@ -1,0 +1,35 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/observability-collector
+  name: Abstract Observability Collector
+  version: 1.0.0
+  categories: [observability]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [monitoring]
+    machine: container
+  traits: [observability_collector, admin_interface]
+  properties:
+    - id: admin_interface_exposed
+      label: 'Dashboard reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+    - id: pii_scrubbing_enabled
+      label: 'Scrubs secrets/PII before storing telemetry'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: encryption_in_transit
+      label: 'Ingests telemetry over an encrypted connection'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - web/admin-interface-exposed
+    - observability/sensitive-data-in-logs
+    - observability/telemetry-unencrypted

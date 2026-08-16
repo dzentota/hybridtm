@@ -1,0 +1,36 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: messaging-smtp-server
+  name: SMTP Server (generic)
+  version: 1.0.0
+  categories: [integration]
+  icon: mdi:email-outline
+  color: '#0EA5E9'
+  maturity: stable
+spec:
+  mapping:
+    type: process
+    technologies: [mail-server]
+    machine: container
+  traits: [mail_relay, admin_interface]
+  properties:
+    - id: open_relay
+      label: 'Relays mail for unauthenticated/unauthorized senders'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: starttls_required
+      label: 'Requires STARTTLS before accepting mail'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: admin_interface_exposed
+      label: 'Admin console reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+  rules:
+    - smtp/open-relay
+    - smtp/starttls-not-enforced
+    - web/admin-interface-exposed

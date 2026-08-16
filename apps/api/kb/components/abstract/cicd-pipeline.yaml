@@ -1,0 +1,35 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/cicd-pipeline
+  name: Abstract CI/CD Pipeline
+  version: 1.0.0
+  categories: [cicd]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [build-pipeline]
+    machine: container
+  traits: [cicd_pipeline]
+  properties:
+    - id: secrets_in_logs_prevented
+      label: 'Build logs are scrubbed of secrets'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: third_party_actions_pinned
+      label: 'Third-party steps pinned to an immutable digest'
+      type: boolean
+      default: false
+      group: 'Supply chain'
+    - id: required_review_enabled
+      label: 'Deploys require a reviewed approval'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - cicd/secrets-in-build-logs
+    - cicd/unpinned-dependencies
+    - cicd/no-required-review

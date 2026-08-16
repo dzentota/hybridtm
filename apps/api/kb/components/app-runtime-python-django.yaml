@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: app-runtime-python-django
+  name: Python (Django/FastAPI)
+  version: 1.0.0
+  vendor: Django Software Foundation
+  categories: [application]
+  icon: simple-icons:django
+  color: '#092E20'
+  maturity: stable
+spec:
+  extends: abstract/app-runtime
+  mapping:
+    type: process
+    technologies: [web-application]
+  properties: []
+  rules: []

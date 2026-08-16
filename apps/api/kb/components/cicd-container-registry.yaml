@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: cicd-container-registry
+  name: Container Registry (generic)
+  version: 1.0.0
+  categories: [cicd]
+  icon: mdi:package-variant-closed
+  color: '#1D4ED8'
+  maturity: stable
+spec:
+  extends: abstract/artifact-registry
+  mapping:
+    type: process
+    technologies: [artifact-registry]
+  properties: []
+  rules: []

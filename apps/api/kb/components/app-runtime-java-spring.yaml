@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: app-runtime-java-spring
+  name: Java (Spring)
+  version: 1.0.0
+  vendor: VMware / Spring
+  categories: [application]
+  icon: simple-icons:spring
+  color: '#6DB33F'
+  maturity: stable
+spec:
+  extends: abstract/app-runtime
+  mapping:
+    type: process
+    technologies: [application-server, web-application]
+  properties: []
+  rules: []

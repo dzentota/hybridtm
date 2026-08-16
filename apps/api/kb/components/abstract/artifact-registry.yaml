@@ -1,0 +1,35 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/artifact-registry
+  name: Abstract Artifact Registry
+  version: 1.0.0
+  categories: [cicd]
+  maturity: stable
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [artifact-registry]
+    machine: container
+  traits: [artifact_registry]
+  properties:
+    - id: image_scanning_enabled
+      label: 'Images/packages are scanned for known vulnerabilities'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: artifact_signing_enabled
+      label: 'Artifacts are signed and signatures verified on pull'
+      type: boolean
+      default: false
+      group: 'Supply chain'
+    - id: public_write_access
+      label: 'Unauthenticated pushes are allowed'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - registry/image-scanning-disabled
+    - registry/artifacts-unsigned
+    - registry/public-write-access

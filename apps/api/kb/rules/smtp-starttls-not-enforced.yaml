@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: smtp/starttls-not-enforced
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Mail server accepts SMTP sessions without requiring STARTTLS.'
+  when:
+    all:
+      - "component.hasTrait('mail_relay')"
+      - "component.props.bool('starttls_required') == false"
+  then:
+    - raise: THREAT-STARTTLS-NOT-ENFORCED
+      evidence: "{{ component.name }} does not require STARTTLS."
+      require: [CM-ENFORCE-TLS]
+    - suggest_fix:
+        set: { starttls_required: true }
+        label: 'Require STARTTLS'

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: registry/public-write-access
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Artifact registry allows unauthenticated pushes.'
+  when:
+    all:
+      - "component.hasTrait('artifact_registry')"
+      - "component.props.bool('public_write_access') == true"
+  then:
+    - raise: THREAT-REGISTRY-PUBLIC-WRITE
+      evidence: "{{ component.name }} allows unauthenticated pushes."
+      require: [CM-RESTRICT-REGISTRY-WRITE]
+    - suggest_fix:
+        set: { public_write_access: false }
+        label: 'Require authentication for pushes'

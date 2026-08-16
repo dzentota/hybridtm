@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: queue-nats
+  name: NATS
+  version: 1.0.0
+  vendor: Synadia
+  categories: [integration]
+  icon: simple-icons:natsdotio
+  color: '#27AAE1'
+  maturity: stable
+spec:
+  extends: abstract/queue
+  mapping:
+    type: process
+    technologies: [message-queue]
+  properties: []
+  rules: []

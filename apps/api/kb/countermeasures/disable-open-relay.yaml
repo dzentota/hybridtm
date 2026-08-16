@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-DISABLE-OPEN-RELAY
+  version: 1.0.0
+spec:
+  title: 'Restrict SMTP relay to authenticated/authorized senders'
+  description: 'Configure the mail server to relay only for authenticated users or explicitly allow-listed internal networks, and verify with an external open-relay test after any mail configuration change.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-STARTTLS-NOT-ENFORCED
+  version: 1.0.0
+spec:
+  title: 'Mail server accepts unencrypted SMTP sessions'
+  summary: 'The mail server does not require STARTTLS before accepting mail, so message content and credentials can be read or altered by anyone on the network path between sender and server.'
+  stride: [information-disclosure, tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [319]
+  countermeasures:
+      - CM-ENFORCE-TLS

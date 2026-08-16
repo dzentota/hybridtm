@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNSIGNED-ARTIFACTS
+  version: 1.0.0
+spec:
+  title: 'Registry accepts and serves unsigned artifacts'
+  summary: 'Images or packages in the registry are not cryptographically signed, so a deployment pipeline that pulls from it has no way to verify an artifact came from the expected build and was not tampered with in transit or storage.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [494]
+  countermeasures:
+      - CM-SIGN-ARTIFACTS

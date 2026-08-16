@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: observability/sensitive-data-in-logs
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Observability collector has no secret/PII scrubbing before storing telemetry.'
+  when:
+    all:
+      - "component.hasTrait('observability_collector')"
+      - "component.props.bool('pii_scrubbing_enabled') == false"
+  then:
+    - raise: THREAT-SENSITIVE-DATA-IN-LOGS
+      evidence: "{{ component.name }} does not scrub secrets/PII from ingested telemetry."
+      require: [CM-SCRUB-SENSITIVE-DATA]
+    - suggest_fix:
+        set: { pii_scrubbing_enabled: true }
+        label: 'Enable secret/PII scrubbing'

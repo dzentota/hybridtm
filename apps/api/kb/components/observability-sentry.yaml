@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: observability-sentry
+  name: Sentry
+  version: 1.0.0
+  vendor: Sentry
+  categories: [observability]
+  icon: simple-icons:sentry
+  color: '#362D59'
+  maturity: stable
+spec:
+  extends: abstract/observability-collector
+  mapping:
+    type: process
+    technologies: [monitoring]
+  properties: []
+  rules: []
