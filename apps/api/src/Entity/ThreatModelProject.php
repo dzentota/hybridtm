@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -52,15 +53,26 @@ class ThreatModelProject
     #[ORM\Column(type: Types::TEXT, nullable: true)]
     public ?string $description = null;
 
+    #[ApiProperty(writable: false)]
     #[ORM\Column]
     public \DateTimeImmutable $createdAt;
 
+    #[ApiProperty(writable: false)]
     #[ORM\Column]
     public \DateTimeImmutable $updatedAt;
 
     public function __construct()
     {
         $this->id = Uuid::v7();
+        // Set here, not only in #[ORM\PrePersist]: API Platform's write
+        // processor reflects over a bare `new self()` before persisting
+        // (for its ETag/If-Match handling), and a typed property with no
+        // default throws "must not be accessed before initialization" the
+        // moment anything reads it uninitialized — PrePersist runs too
+        // late to prevent that. PrePersist still overwrites this with the
+        // real persist-time value.
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = $this->createdAt;
     }
 
     public function getId(): Uuid

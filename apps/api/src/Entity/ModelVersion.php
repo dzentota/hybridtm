@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -60,9 +61,18 @@ class ModelVersion
     #[ORM\Column(length: 100, nullable: true)]
     public ?string $kbVersion = null;
 
+    #[ApiProperty(writable: false)]
     #[ORM\Column]
     public \DateTimeImmutable $createdAt;
 
+    /**
+     * Doctrine's optimistic-lock column — must never be settable from a
+     * client payload. If it were, a PUT body that simply echoes back
+     * whatever it last read (or omits the field, leaving a fresh-request
+     * default) would silently overwrite the real current version instead
+     * of the actual database row's version taking part in the lock check.
+     */
+    #[ApiProperty(writable: false)]
     #[ORM\Version]
     #[ORM\Column(type: 'integer')]
     public int $version = 1;
@@ -70,6 +80,9 @@ class ModelVersion
     public function __construct()
     {
         $this->id = Uuid::v7();
+        // See ThreatModelProject::__construct() for why this can't wait for
+        // #[ORM\PrePersist] alone.
+        $this->createdAt = new \DateTimeImmutable();
     }
 
     public function getId(): Uuid

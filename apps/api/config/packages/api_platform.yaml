@@ -1,7 +1,16 @@
 api_platform:
-    title: Hello API Platform
+    title: HybridTM API
+    description: Multi-tenant threat-modeling platform API — Studio and the CLI both talk to this.
     version: 1.0.0
     defaults:
         stateless: true
         cache_headers:
             vary: ['Content-Type', 'Authorization', 'Origin']
+    formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+    docs_formats:
+        jsonld: ['application/ld+json']
+        json: ['application/json']
+        jsonopenapi: ['application/vnd.openapi+json']
+        html: ['text/html']

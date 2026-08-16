@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Entity;
 
+use ApiPlatform\Metadata\ApiProperty;
 use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\Delete;
 use ApiPlatform\Metadata\Get;
@@ -71,12 +72,16 @@ class RiskDecisionRecord
     #[Assert\NotBlank]
     public string $decidedBy = '';
 
+    #[ApiProperty(writable: false)]
     #[ORM\Column]
     public \DateTimeImmutable $decidedAt;
 
     public function __construct()
     {
         $this->id = Uuid::v7();
+        // See ThreatModelProject::__construct() for why this can't wait for
+        // #[ORM\PrePersist] alone.
+        $this->decidedAt = new \DateTimeImmutable();
     }
 
     public function getId(): Uuid
