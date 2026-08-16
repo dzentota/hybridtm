@@ -52,6 +52,9 @@ services:
     HybridTM\Codec\LayoutCodec: ~
     HybridTM\Codec\OtmCodec: ~
     HybridTM\Codec\ModelMerger: ~
+    HybridTM\Codec\SarifCodec: ~
+    HybridTM\Codec\MermaidExporter: ~
+    HybridTM\Codec\GraphvizExporter: ~
     HybridTM\Yaml\ThreagileSerializer: ~
     HybridTM\Yaml\ThreagileDeserializer: ~
     HybridTM\Threagile\ThreagileRiskParser: ~

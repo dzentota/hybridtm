@@ -115,8 +115,19 @@ YAML);
     public function testFailsOnUnsupportedFormat(): void
     {
         $path = $this->writeDsl("return new ThreatModel('App');");
-        $exit = $this->tester()->execute(['--infra' => $path, '--format' => 'sarif']);
+        $exit = $this->tester()->execute(['--infra' => $path, '--format' => 'xml']);
         self::assertSame(1, $exit);
+    }
+
+    public function testSarifFormatSucceeds(): void
+    {
+        $path = $this->writeDsl("return new ThreatModel('App');");
+        $tester = $this->tester();
+        $exit = $tester->execute(['--infra' => $path, '--format' => 'sarif']);
+
+        self::assertSame(0, $exit);
+        $output = json_decode($tester->getDisplay(), true);
+        self::assertSame('2.1.0', $output['version']);
     }
 
     public function testFailsOnModelValidationError(): void

@@ -5,6 +5,7 @@ namespace HybridTM\Console;
 use HybridTM\Analysis\AnalysisOptions;
 use HybridTM\Analysis\Finding;
 use HybridTM\Analysis\RuleEngine;
+use HybridTM\Codec\SarifCodec;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\Enums\Severity;
 use HybridTM\Kb\InMemoryKnowledgeBase;
@@ -24,7 +25,8 @@ use Symfony\Component\Console\Style\SymfonyStyle;
  * `--fail-on` only decides the process exit code, so a CI pipeline can
  * show every finding while gating on just the severe ones.
  *
- * SARIF output (T-10.1) is not implemented here — only `table` and `json`.
+ * `--format sarif` (T-10.1) exports via HybridTM\Codec\SarifCodec, for
+ * GitHub Advanced Security and other SARIF-consuming code-scanning UIs.
  */
 #[AsCommand(
     name: 'analyze',
@@ -73,8 +75,8 @@ final class AnalyzeCommand extends Command
         }
 
         $format = (string) $input->getOption('format');
-        if (!in_array($format, ['table', 'json'], true)) {
-            $io->error("Unsupported --format: {$format} (expected 'table' or 'json')");
+        if (!in_array($format, ['table', 'json', 'sarif'], true)) {
+            $io->error("Unsupported --format: {$format} (expected 'table', 'json', or 'sarif')");
             return Command::FAILURE;
         }
 
@@ -97,6 +99,9 @@ final class AnalyzeCommand extends Command
 
         if ($format === 'json') {
             $output->writeln((string) json_encode($result, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
+        } elseif ($format === 'sarif') {
+            $sarif = (new SarifCodec())->export($result);
+            $output->writeln((string) json_encode($sarif, JSON_PRETTY_PRINT | JSON_THROW_ON_ERROR));
         } else {
             $this->renderTable($io, $result->findings);
         }
