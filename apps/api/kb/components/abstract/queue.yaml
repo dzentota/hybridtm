@@ -39,8 +39,20 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: encryption_at_rest
+      label: 'Persisted messages encrypted at rest'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: message_ttl_configured
+      label: 'Messages expire after a bounded time'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - integration/queue-auth-disabled
     - web/admin-interface-exposed
     - integration/no-dead-letter-queue
     - integration/queue-unbounded-growth
+    - integration/queue-unencrypted-at-rest
+    - integration/queue-no-message-ttl

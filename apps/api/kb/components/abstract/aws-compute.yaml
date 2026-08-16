@@ -35,8 +35,20 @@ spec:
       type: boolean
       default: false
       group: 'Cryptography'
+    - id: runs_as_non_root
+      label: 'Runs as a dedicated unprivileged user'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: resource_limits_configured
+      label: 'CPU/memory limits configured'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - aws/excessive-iam-permissions
     - aws/wildcard-iam-permissions
     - aws/no-permission-boundary
     - aws/secrets-in-env-vars
+    - aws/container-runs-as-root
+    - aws/no-resource-limits

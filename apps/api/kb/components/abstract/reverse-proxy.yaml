@@ -52,9 +52,15 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: access_logs_enabled
+      label: 'Logs requests passing through'
+      type: boolean
+      default: false
+      group: 'Monitoring'
   rules:
     - web/hsts-missing
     - web/tls-version-obsolete
     - web/server-version-disclosure
     - web/admin-interface-exposed
     - reverse-proxy/request-smuggling
+    - reverse-proxy/no-access-logs

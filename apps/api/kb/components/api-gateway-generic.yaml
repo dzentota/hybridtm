@@ -24,6 +24,12 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: credentials_in_header_only
+      label: 'Requires API keys/tokens in a header, not the URL'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - api/rate-limiting-missing
     - api/no-request-validation
+    - api/key-in-url

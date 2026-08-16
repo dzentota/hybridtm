@@ -50,6 +50,11 @@ spec:
       type: boolean
       default: false
       group: 'Cryptography'
+    - id: least_privilege_db_role_used
+      label: 'Application connects with a scoped, least-privilege role'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - storage/unencrypted-at-rest
     - storage/datastore-auth-disabled
@@ -57,3 +62,4 @@ spec:
     - storage/datastore-no-backups
     - storage/backup-unencrypted
     - storage/datastore-connections-unencrypted
+    - storage/excessive-db-privileges

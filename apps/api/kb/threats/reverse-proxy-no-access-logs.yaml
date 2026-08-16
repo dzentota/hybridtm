@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-REVERSE-PROXY-NO-ACCESS-LOGS
+  version: 1.0.0
+spec:
+  title: 'Reverse proxy/load balancer does not log access'
+  summary: 'Requests passing through the proxy are not logged, so there is no record of what was requested, by whom, or when — the first place an incident investigation would look for evidence of reconnaissance or exploitation is empty.'
+  stride: [repudiation]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [778]
+  countermeasures:
+      - CM-ENABLE-ACCESS-LOGS

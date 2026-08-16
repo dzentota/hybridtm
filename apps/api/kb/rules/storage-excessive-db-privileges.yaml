@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/excessive-db-privileges
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Application connects to the datastore with more privileges than it needs.'
+  when:
+    all:
+      - "component.hasTrait('datastore')"
+      - "component.props.bool('least_privilege_db_role_used') == false"
+  then:
+    - raise: THREAT-DATASTORE-EXCESSIVE-DB-PRIVILEGES
+      evidence: "{{ component.name }} is not accessed via a least-privilege role."
+      require: [CM-USE-LEAST-PRIVILEGE-DB-ROLE]
+    - suggest_fix:
+        set: { least_privilege_db_role_used: true }
+        label: 'Use a least-privilege database role'

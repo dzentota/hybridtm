@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CONTAINER-RUNS-AS-ROOT
+  version: 1.0.0
+spec:
+  title: 'Compute resource runs its process as root/UID 0'
+  summary: 'The function/container runs as root instead of a dedicated unprivileged user, so a code-execution vulnerability in the application gives the attacker root inside the container, widening what a subsequent container-escape or misconfiguration can reach.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [250]
+  countermeasures:
+      - CM-RUN-AS-NON-ROOT

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: api/key-in-url
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'API gateway accepts credentials in the URL query string instead of requiring a header.'
+  when:
+    all:
+      - "component.hasTrait('api_gateway')"
+      - "component.props.bool('credentials_in_header_only') == false"
+  then:
+    - raise: THREAT-API-KEY-IN-URL
+      evidence: "{{ component.name }} accepts credentials as a query parameter."
+      require: [CM-USE-HEADER-FOR-CREDENTIALS]
+    - suggest_fix:
+        set: { credentials_in_header_only: true }
+        label: 'Require credentials in a header'

@@ -100,6 +100,16 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: session_cookie_samesite
+      label: 'Session cookie has SameSite=Lax or Strict'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: secrets_externalized
+      label: 'Credentials are externalized, not hardcoded in source'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - app/input-validation-missing
     - app/debug-mode-enabled
@@ -118,3 +128,5 @@ spec:
     - app/xxe
     - app/idor
     - app/mass-assignment
+    - app/cookie-samesite-missing
+    - app/hardcoded-secrets

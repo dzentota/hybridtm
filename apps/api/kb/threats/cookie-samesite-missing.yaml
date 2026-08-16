@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-COOKIE-SAMESITE-MISSING
+  version: 1.0.0
+spec:
+  title: 'Session cookie has no SameSite restriction'
+  summary: 'The session cookie is not set with SameSite=Lax/Strict, so it is sent along with cross-site requests, which combined with a CSRF gap (or even without one, for some attack classes) lets other sites trigger authenticated actions on the user''s behalf.'
+  stride: [tampering, spoofing]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [352]
+  countermeasures:
+      - CM-SET-COOKIE-SAMESITE

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-IOT-FIRMWARE-UNSIGNED
+  version: 1.0.0
+spec:
+  title: 'IoT device does not verify firmware signatures'
+  summary: 'The device installs firmware updates without verifying a cryptographic signature from the manufacturer, so anyone who can intercept or spoof the update channel can push malicious firmware and gain persistent, low-level control of the device.'
+  stride: [tampering, elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [494, 347]
+  countermeasures:
+      - CM-VERIFY-FIRMWARE-SIGNATURE

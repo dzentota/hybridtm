@@ -12,5 +12,12 @@ spec:
   mapping:
     type: external-entity
     technologies: [iot-device]
-  properties: []
-  rules: []
+  traits: [iot_device]
+  properties:
+    - id: firmware_signature_verified
+      label: 'Verifies firmware update signatures'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - iot/firmware-unsigned

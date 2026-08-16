@@ -44,6 +44,11 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: artifact_provenance_generated
+      label: 'Generates verifiable build provenance'
+      type: boolean
+      default: false
+      group: 'Supply chain'
   rules:
     - cicd/secrets-in-build-logs
     - cicd/unpinned-dependencies
@@ -51,3 +56,4 @@ spec:
     - cicd/no-sast-scanning
     - cicd/no-secret-scanning
     - cicd/excessive-runner-permissions
+    - cicd/no-artifact-provenance

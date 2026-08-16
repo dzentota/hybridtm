@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/cookie-samesite-missing
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Session cookie has no SameSite restriction.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('session_cookie_samesite') == false"
+  then:
+    - raise: THREAT-COOKIE-SAMESITE-MISSING
+      evidence: "{{ component.name }}'s session cookie has no SameSite restriction."
+      require: [CM-SET-COOKIE-SAMESITE]
+    - suggest_fix:
+        set: { session_cookie_samesite: true }
+        label: 'Set SameSite=Lax'
