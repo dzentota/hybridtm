@@ -20,6 +20,7 @@ export function useCommands(
   onRunAnalysis: () => void,
   onOpenTemplates: () => void,
   onOpenDiff: () => void,
+  onToggleCode: () => void,
 ): Command[] {
   const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
   const addBoundary = useModelStore((s) => s.addBoundary)
@@ -45,6 +46,7 @@ export function useCommands(
       { id: 'add-boundary', label: 'Add trust boundary', group: 'Canvas', run: () => addBoundary(centerPosition()) },
       { id: 'browse-templates', label: 'Browse architecture templates', group: 'Canvas', run: onOpenTemplates },
       { id: 'compare-versions', label: 'Compare model versions', group: 'Canvas', run: onOpenDiff },
+      { id: 'toggle-code', label: 'Toggle PHP DSL code view', group: 'Canvas', run: onToggleCode },
       {
         id: 'clear-canvas',
         label: 'Clear canvas',
@@ -86,6 +88,7 @@ export function useCommands(
     onRunAnalysis,
     onOpenTemplates,
     onOpenDiff,
+    onToggleCode,
     addComponentFromKb,
     addBoundary,
     setOverlayMode,

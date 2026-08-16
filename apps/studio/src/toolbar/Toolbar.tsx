@@ -42,10 +42,12 @@ export function Toolbar({
   kb: _kb,
   onOpenTemplates,
   onOpenDiff,
+  onToggleCode,
 }: {
   kb: KbBundle | undefined
   onOpenTemplates: () => void
   onOpenDiff: () => void
+  onToggleCode: () => void
 }) {
   const { t, i18n } = useTranslation()
   const { undo, redo, canUndo, canRedo } = useTemporalStore()
@@ -59,8 +61,8 @@ export function Toolbar({
 
   return (
     <div
-      className="px-3 py-2 flex items-center gap-3 text-sm"
-      style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)' }}
+      className="px-3 py-2 flex items-center gap-3 text-sm overflow-x-auto"
+      style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
     >
       <input
         aria-label={t('toolbar.title')}
@@ -130,6 +132,16 @@ export function Toolbar({
         style={{ border: '1px solid var(--border)' }}
       >
         Diff
+      </button>
+      <button
+        type="button"
+        aria-label="Toggle PHP DSL code view"
+        title="Code"
+        onClick={onToggleCode}
+        className="px-2 py-1 rounded"
+        style={{ border: '1px solid var(--border)' }}
+      >
+        Code
       </button>
       <label className="flex items-center gap-1.5">
         <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.overlay')}</span>

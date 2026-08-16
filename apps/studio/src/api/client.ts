@@ -77,6 +77,16 @@ export function createProject(slug: string, title: string): Promise<ProjectSumma
   })
 }
 
+export const DEMO_PROJECT_SLUG = 'studio-demo'
+
+// Shared find-or-create used by every feature that needs a project to save
+// against (run analysis, PHP sync, ...) — one place to fix if/when the demo
+// project flow changes.
+export async function ensureDemoProject(): Promise<ProjectSummary> {
+  const projects = await listProjects()
+  return projects.find((p) => p.slug === DEMO_PROJECT_SLUG) ?? createProject(DEMO_PROJECT_SLUG, 'Studio demo')
+}
+
 export interface ModelVersionSummary {
   id: string
   project: string
@@ -101,8 +111,35 @@ export function listModelVersions(): Promise<ModelVersionSummary[]> {
   return request<ModelVersionSummary[]>('/api/model_versions')
 }
 
+export function getModelVersion(id: string): Promise<ModelVersionSummary> {
+  return request<ModelVersionSummary>(`/api/model_versions/${id}`)
+}
+
 export function analyze(modelVersionId: string): Promise<AnalysisResult> {
   return request<AnalysisResult>(`/model-versions/${modelVersionId}/analyze`, { method: 'POST' })
+}
+
+// Not JSON (Content-Type: text/x-php) — can't go through request()'s res.json().
+export async function exportModelAsPhp(modelVersionId: string): Promise<string> {
+  const token = getToken()
+  const headers = new Headers()
+  if (token) headers.set('Authorization', `Bearer ${token}`)
+  const res = await fetch(`/model-versions/${modelVersionId}/export/php`, { headers })
+  if (!res.ok) throw new ApiError(res.status, res.statusText)
+  return res.text()
+}
+
+export interface ImportResult {
+  id: string
+  warnings: string[]
+}
+
+export function importPhp(projectId: string, code: string): Promise<ImportResult> {
+  return request<ImportResult>(`/threat-model-projects/${projectId}/import/php`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/x-php' },
+    body: code,
+  })
 }
 
 export { ApiError }

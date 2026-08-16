@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { ReactFlowProvider } from '@xyflow/react'
-import { analyze, createModelVersion, createProject, getKbBundle, getToken, listProjects } from './api/client'
+import { analyze, createModelVersion, ensureDemoProject, getKbBundle, getToken } from './api/client'
 import { useModelStore, useTemporalStore, restoreAutosave, clearAutosave } from './store/model.store'
 import { FlowCanvas } from './canvas/FlowCanvas'
 import { ComponentPalette } from './palette/ComponentPalette'
@@ -13,8 +13,7 @@ import { Toolbar } from './toolbar/Toolbar'
 import { CommandPalette } from './command/CommandPalette'
 import { TemplateGallery } from './templates/TemplateGallery'
 import { DiffView } from './diff/DiffView'
-
-const DEMO_PROJECT_SLUG = 'studio-demo'
+import { PhpSyncPanel } from './phpsync/PhpSyncPanel'
 
 function useUndoRedoHotkeys() {
   const { undo, redo } = useTemporalStore()
@@ -78,13 +77,12 @@ function Studio() {
   const applyFindings = useModelStore((s) => s.applyFindings)
   const [templatesOpen, setTemplatesOpen] = useState(false)
   const [diffOpen, setDiffOpen] = useState(false)
+  const [codeOpen, setCodeOpen] = useState(false)
   useUndoRedoHotkeys()
 
   const runAnalysis = useMutation({
     mutationFn: async () => {
-      const projects = await listProjects()
-      const project =
-        projects.find((p) => p.slug === DEMO_PROJECT_SLUG) ?? (await createProject(DEMO_PROJECT_SLUG, 'Studio demo'))
+      const project = await ensureDemoProject()
       const modelVersion = await createModelVersion(`/api/threat_model_projects/${project.id}`, toCanonicalModel())
       return analyze(modelVersion.id)
     },
@@ -99,14 +97,21 @@ function Studio() {
         onRunAnalysis={() => runAnalysis.mutate()}
         onOpenTemplates={() => setTemplatesOpen(true)}
         onOpenDiff={() => setDiffOpen(true)}
+        onToggleCode={() => setCodeOpen((v) => !v)}
       />
       <TemplateGallery kb={kb} open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
       <DiffView open={diffOpen} onClose={() => setDiffOpen(false)} />
       <ComponentPalette kb={kb} />
       <div className="flex flex-col h-full min-w-0">
-        <Toolbar kb={kb} onOpenTemplates={() => setTemplatesOpen(true)} onOpenDiff={() => setDiffOpen(true)} />
-        <div className="flex-1 min-h-0">
+        <Toolbar
+          kb={kb}
+          onOpenTemplates={() => setTemplatesOpen(true)}
+          onOpenDiff={() => setDiffOpen(true)}
+          onToggleCode={() => setCodeOpen((v) => !v)}
+        />
+        <div className="flex-1 min-h-0 grid" style={{ gridTemplateColumns: codeOpen ? '1fr 1fr' : '1fr' }}>
           <FlowCanvas kb={kb} />
+          {codeOpen && <PhpSyncPanel />}
         </div>
       </div>
       <div className="grid h-full min-h-0" style={{ gridTemplateRows: '1fr 1fr' }}>
