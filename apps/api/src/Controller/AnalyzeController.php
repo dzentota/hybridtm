@@ -10,6 +10,7 @@ use HybridTM\Analysis\AnalysisOptions;
 use HybridTM\Analysis\RuleEngine;
 use HybridTM\Codec\ModelJsonCodec;
 use HybridTM\Enums\Severity;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -28,6 +29,7 @@ final class AnalyzeController
         private readonly ModelJsonCodec $codec,
         private readonly KbProvider $kbProvider,
         private readonly RuleEngine $engine,
+        private readonly Security $security,
     ) {
     }
 
@@ -37,6 +39,10 @@ final class AnalyzeController
         $modelVersion = $this->modelVersions->find($id);
         if ($modelVersion === null) {
             return new JsonResponse(['error' => 'Model version not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->security->isGranted('PROJECT_VIEW', $modelVersion->project)) {
+            return new JsonResponse(['error' => 'Access Denied.'], Response::HTTP_FORBIDDEN);
         }
 
         $model = $this->codec->decode($modelVersion->data);

@@ -12,11 +12,11 @@ use HybridTM\Codec\OtmCodec;
 use HybridTM\Codec\PhpDslReader;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\Yaml\ThreagileDeserializer;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * POST /threat-model-projects/{id}/import/{format} (T-6.8): creates a new
@@ -38,11 +38,11 @@ final class ImportController
         private readonly PhpDslReader $phpReader,
         private readonly ThreagileDeserializer $threagileDeserializer,
         private readonly OtmCodec $otmCodec,
+        private readonly Security $security,
     ) {
     }
 
     #[Route('/threat-model-projects/{id}/import/{format}', name: 'project_import', methods: ['POST'])]
-    #[IsGranted('ROLE_EDITOR')]
     public function __invoke(string $id, string $format, Request $request): Response
     {
         if (!\in_array($format, self::FORMATS, true)) {
@@ -55,6 +55,10 @@ final class ImportController
         $project = $this->projects->find($id);
         if ($project === null) {
             return new JsonResponse(['error' => 'Project not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->security->isGranted('PROJECT_EDIT_MODEL', $project)) {
+            return new JsonResponse(['error' => 'Access Denied.'], Response::HTTP_FORBIDDEN);
         }
 
         $body = $request->getContent();

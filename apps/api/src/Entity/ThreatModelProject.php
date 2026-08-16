@@ -27,10 +27,17 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(),
-        new Get(),
-        new Post(security: "is_granted('ROLE_EDITOR')"),
-        new Put(security: "is_granted('ROLE_EDITOR')"),
-        new Delete(security: "is_granted('ROLE_ADMIN')"),
+        new Get(security: "is_granted('PROJECT_VIEW', object)"),
+        // Any authenticated user may create a project — they become its
+        // Admin automatically (ProjectMembershipListener). Collection
+        // reads are scoped by tenant via Postgres RLS only, not by
+        // per-project membership — a known, disclosed simplification
+        // (see ThreatModelProjectRepository/CHANGELOG note); Get/Put/
+        // Delete on a specific project are enforced by ProjectVoter
+        // regardless.
+        new Post(),
+        new Put(security: "is_granted('PROJECT_EDIT_MODEL', object)"),
+        new Delete(security: "is_granted('PROJECT_DELETE', object)"),
     ],
     order: ['createdAt' => 'DESC'],
     security: "is_granted('ROLE_USER')",
@@ -40,6 +47,12 @@ class ThreatModelProject
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private Uuid $id;
+
+    /** Which org this project belongs to (T-9.1); server-derived, never client-writable. */
+    #[ApiProperty(writable: false)]
+    #[ORM\ManyToOne(targetEntity: Tenant::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    public ?Tenant $tenant = null;
 
     #[ORM\Column(length: 80, unique: true)]
     #[Assert\NotBlank]

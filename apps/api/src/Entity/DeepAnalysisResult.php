@@ -27,6 +27,11 @@ class DeepAnalysisResult
     #[ORM\Column(type: 'uuid', unique: true)]
     private Uuid $id;
 
+    /** Copied from `modelVersion.project.tenant` on persist (TenantAssignmentListener). */
+    #[ORM\ManyToOne(targetEntity: Tenant::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    public ?Tenant $tenant = null;
+
     #[ORM\ManyToOne(targetEntity: ModelVersion::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     public ?ModelVersion $modelVersion = null;

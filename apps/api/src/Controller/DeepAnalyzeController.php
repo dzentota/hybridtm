@@ -9,11 +9,11 @@ use App\Message\RunDeepAnalysis;
 use App\Repository\DeepAnalysisResultRepository;
 use App\Repository\ModelVersionRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
-use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * POST /model-versions/{id}/analyze/deep (T-6.5): kicks off a Threagile-
@@ -35,16 +35,20 @@ final class DeepAnalyzeController
         private readonly DeepAnalysisResultRepository $results,
         private readonly EntityManagerInterface $em,
         private readonly MessageBusInterface $bus,
+        private readonly Security $security,
     ) {
     }
 
     #[Route('/model-versions/{id}/analyze/deep', name: 'model_version_analyze_deep', methods: ['POST'])]
-    #[IsGranted('ROLE_EDITOR')]
     public function __invoke(string $id): Response
     {
         $modelVersion = $this->modelVersions->find($id);
         if ($modelVersion === null) {
             return new JsonResponse(['error' => 'Model version not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->security->isGranted('PROJECT_EDIT_MODEL', $modelVersion->project)) {
+            return new JsonResponse(['error' => 'Access Denied.'], Response::HTTP_FORBIDDEN);
         }
 
         $existing = $this->results->findOneBy(['modelVersion' => $modelVersion], ['createdAt' => 'DESC']);

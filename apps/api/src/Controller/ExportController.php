@@ -9,6 +9,7 @@ use HybridTM\Codec\ModelJsonCodec;
 use HybridTM\Codec\OtmCodec;
 use HybridTM\Codec\PhpDslWriter;
 use HybridTM\Yaml\ThreagileSerializer;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -30,6 +31,7 @@ final class ExportController
         private readonly PhpDslWriter $phpWriter,
         private readonly ThreagileSerializer $threagileSerializer,
         private readonly OtmCodec $otmCodec,
+        private readonly Security $security,
     ) {
     }
 
@@ -46,6 +48,10 @@ final class ExportController
         $modelVersion = $this->modelVersions->find($id);
         if ($modelVersion === null) {
             return new JsonResponse(['error' => 'Model version not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        if (!$this->security->isGranted('PROJECT_VIEW', $modelVersion->project)) {
+            return new JsonResponse(['error' => 'Access Denied.'], Response::HTTP_FORBIDDEN);
         }
 
         $model = $this->jsonCodec->decode($modelVersion->data);

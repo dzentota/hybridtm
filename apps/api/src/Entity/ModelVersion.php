@@ -28,10 +28,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ApiResource(
     operations: [
         new GetCollection(),
-        new Get(),
-        new Post(security: "is_granted('ROLE_EDITOR')"),
-        new Put(security: "is_granted('ROLE_EDITOR')"),
-        new Delete(security: "is_granted('ROLE_ADMIN')"),
+        new Get(security: "is_granted('PROJECT_VIEW', object.project)"),
+        new Post(securityPostDenormalize: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
+        new Put(securityPostDenormalize: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
+        new Delete(security: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
     ],
     order: ['createdAt' => 'DESC'],
     security: "is_granted('ROLE_USER')",
@@ -41,6 +41,12 @@ class ModelVersion
     #[ORM\Id]
     #[ORM\Column(type: 'uuid', unique: true)]
     private Uuid $id;
+
+    /** Copied from `project.tenant` on persist (TenantAssignmentListener); never client-writable. */
+    #[ApiProperty(writable: false)]
+    #[ORM\ManyToOne(targetEntity: Tenant::class)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    public ?Tenant $tenant = null;
 
     #[ORM\ManyToOne(targetEntity: ThreatModelProject::class)]
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
