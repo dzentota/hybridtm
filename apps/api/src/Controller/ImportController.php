@@ -16,6 +16,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * POST /threat-model-projects/{id}/import/{format} (T-6.8): creates a new
@@ -41,6 +42,7 @@ final class ImportController
     }
 
     #[Route('/threat-model-projects/{id}/import/{format}', name: 'project_import', methods: ['POST'])]
+    #[IsGranted('ROLE_EDITOR')]
     public function __invoke(string $id, string $format, Request $request): Response
     {
         if (!\in_array($format, self::FORMATS, true)) {

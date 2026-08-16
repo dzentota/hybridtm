@@ -9,3 +9,10 @@
 
 controllers:
     resource: routing.controllers
+
+# Never actually reached by a controller — the "login" firewall's
+# json_login listener intercepts requests to this path before routing
+# resolves a controller. The route must still exist, or Symfony's
+# RouterListener 404s before the firewall gets a chance to intercept.
+login_check:
+    path: /login_check

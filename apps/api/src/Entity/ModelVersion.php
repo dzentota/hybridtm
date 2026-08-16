@@ -29,11 +29,12 @@ use Symfony\Component\Validator\Constraints as Assert;
     operations: [
         new GetCollection(),
         new Get(),
-        new Post(),
-        new Put(),
-        new Delete(),
+        new Post(security: "is_granted('ROLE_EDITOR')"),
+        new Put(security: "is_granted('ROLE_EDITOR')"),
+        new Delete(security: "is_granted('ROLE_ADMIN')"),
     ],
     order: ['createdAt' => 'DESC'],
+    security: "is_granted('ROLE_USER')",
 )]
 class ModelVersion
 {

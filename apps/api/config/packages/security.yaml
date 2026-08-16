@@ -5,27 +5,44 @@ security:
 
     # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
     providers:
-        users_in_memory: { memory: null }
+        app_user_provider:
+            id: App\Repository\UserRepository
 
     firewalls:
         dev:
             # Ensure dev tools and static assets are always allowed
             pattern: ^/(_profiler|_wdt|assets|build)/
             security: false
-        main:
-            lazy: true
-            provider: users_in_memory
 
-            # Activate different ways to authenticate:
-            # https://symfony.com/doc/current/security.html#the-firewall
+        # Interactive login: POST {"email":..., "password":...} to
+        # /login_check, get back a short-lived JWT. Stateless, since every
+        # subsequent request re-authenticates via that JWT (or an ApiToken)
+        # rather than a session cookie.
+        login:
+            pattern: ^/login
+            stateless: true
+            provider: app_user_provider
+            json_login:
+                check_path: /login_check
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
 
-            # https://symfony.com/doc/current/security/impersonating_user.html
-            # switch_user: true
+        # Everything else: a JWT or a long-lived ApiToken, both handled by
+        # one authenticator (see its docblock for why they can't be two
+        # separate authenticators on the same firewall).
+        api:
+            pattern: ^/
+            stateless: true
+            provider: app_user_provider
+            custom_authenticators:
+                - App\Security\BearerTokenAuthenticator
 
     # Note: Only the *first* matching rule is applied
     access_control:
-        # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
 
 when@test:
     security:

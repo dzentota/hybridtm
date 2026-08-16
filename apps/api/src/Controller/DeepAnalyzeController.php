@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 /**
  * POST /model-versions/{id}/analyze/deep (T-6.5): kicks off a Threagile-
@@ -38,6 +39,7 @@ final class DeepAnalyzeController
     }
 
     #[Route('/model-versions/{id}/analyze/deep', name: 'model_version_analyze_deep', methods: ['POST'])]
+    #[IsGranted('ROLE_EDITOR')]
     public function __invoke(string $id): Response
     {
         $modelVersion = $this->modelVersions->find($id);
