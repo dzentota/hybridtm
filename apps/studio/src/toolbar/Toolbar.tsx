@@ -38,7 +38,7 @@ function SavedIndicator() {
   )
 }
 
-export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
+export function Toolbar({ kb: _kb, onOpenTemplates }: { kb: KbBundle | undefined; onOpenTemplates: () => void }) {
   const { t, i18n } = useTranslation()
   const { undo, redo, canUndo, canRedo } = useTemporalStore()
   const title = useModelStore((s) => s.title)
@@ -102,6 +102,16 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
         style={{ border: '1px solid var(--border)' }}
       >
         {laying ? t('toolbar.layingOut') : `⇉ ${t('toolbar.autoLayout')}`}
+      </button>
+      <button
+        type="button"
+        aria-label="Browse architecture templates"
+        title="Templates"
+        onClick={onOpenTemplates}
+        className="px-2 py-1 rounded"
+        style={{ border: '1px solid var(--border)' }}
+      >
+        Templates
       </button>
       <label className="flex items-center gap-1.5">
         <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.overlay')}</span>

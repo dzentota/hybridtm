@@ -45,6 +45,30 @@ function freshId(prefix: string): string {
   return `${prefix}-${nextId++}`
 }
 
+function buildComponentNode(kbId: string, kb: KbComponent, position: { x: number; y: number }): StudioNode {
+  const id = freshId(kbId.replace(/[^a-z0-9]/gi, '-'))
+  const properties: PropertyBag = {}
+  for (const prop of kb.properties) {
+    if (prop.default !== undefined) properties[prop.id] = prop.default
+  }
+  return {
+    id,
+    type: 'component',
+    position,
+    ariaLabel: `${kb.metadata.name} component, no findings yet`,
+    data: {
+      kind: 'component',
+      name: kb.metadata.name,
+      kbComponentId: kbId,
+      kbName: kb.metadata.name,
+      kbVersion: kb.metadata.version,
+      traits: kb.traits,
+      properties,
+      findingCount: 0,
+    },
+  }
+}
+
 const AUTOSAVE_KEY = 'hybridtm.studio.autosave.v1'
 
 interface AutosavePayload {
@@ -70,6 +94,10 @@ interface ModelState {
   setOverlayMode: (mode: OverlayMode) => void
 
   addComponentFromKb: (kbId: string, kb: KbComponent, position: { x: number; y: number }) => void
+  insertTemplate: (
+    items: { kbId: string; kb: KbComponent; position: { x: number; y: number } }[],
+    edges: { from: number; to: number }[],
+  ) => void
   addBoundary: (position: { x: number; y: number }) => void
   updateProperty: (nodeId: string, propertyId: string, value: PropertyValue) => void
   connect: (sourceId: string, targetId: string) => void
@@ -100,28 +128,27 @@ export const useModelStore = create<ModelState>()(
       setOverlayMode: (overlayMode) => set({ overlayMode }),
 
       addComponentFromKb: (kbId, kb, position) => {
-        const id = freshId(kbId.replace(/[^a-z0-9]/gi, '-'))
-        const properties: PropertyBag = {}
-        for (const prop of kb.properties) {
-          if (prop.default !== undefined) properties[prop.id] = prop.default
-        }
-        const node: StudioNode = {
-          id,
-          type: 'component',
-          position,
-          ariaLabel: `${kb.metadata.name} component, no findings yet`,
-          data: {
-            kind: 'component',
-            name: kb.metadata.name,
-            kbComponentId: kbId,
-            kbName: kb.metadata.name,
-            kbVersion: kb.metadata.version,
-            traits: kb.traits,
-            properties,
-            findingCount: 0,
-          },
-        }
+        const node = buildComponentNode(kbId, kb, position)
         set((s) => ({ nodes: [...s.nodes, node] }))
+      },
+
+      insertTemplate: (items, edgeSpecs) => {
+        const newNodes = items.map(({ kbId, kb, position }) => buildComponentNode(kbId, kb, position))
+        const newEdges: StudioEdge[] = edgeSpecs.map(({ from, to }) => ({
+          id: freshId('flow'),
+          source: newNodes[from].id,
+          target: newNodes[to].id,
+          // ComponentNode has two named handles ("out" source, "in" target)
+          // rather than one default of each — xyflow can't infer which to
+          // use for a programmatically-created edge, so it silently fails
+          // to render without these (found while verifying the gallery:
+          // nodes appeared, edges didn't).
+          sourceHandle: 'out',
+          targetHandle: 'in',
+          type: 'dataflow',
+          data: {},
+        }))
+        set((s) => ({ nodes: [...s.nodes, ...newNodes], edges: [...s.edges, ...newEdges] }))
       },
 
       addBoundary: (position) => {

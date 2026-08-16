@@ -7,13 +7,21 @@ import type { KbBundle } from '../api/types'
 /** Cmd/Ctrl+K command palette (T-7.18). Fuzzy-filters the full command list
  * (static canvas/view actions + one "Add <component>" entry per KB
  * component) and runs the selected one on Enter. */
-export function CommandPalette({ kb, onRunAnalysis }: { kb: KbBundle | undefined; onRunAnalysis: () => void }) {
+export function CommandPalette({
+  kb,
+  onRunAnalysis,
+  onOpenTemplates,
+}: {
+  kb: KbBundle | undefined
+  onRunAnalysis: () => void
+  onOpenTemplates: () => void
+}) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const commands = useCommands(kb, onRunAnalysis)
+  const commands = useCommands(kb, onRunAnalysis, onOpenTemplates)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
