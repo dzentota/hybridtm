@@ -15,7 +15,12 @@ export interface Command {
 /** Builds the full T-7.18 command list: static canvas/view actions plus one
  * "Add <component>" entry per KB component, so the count and coverage scale
  * with the KB rather than being hand-maintained. */
-export function useCommands(kb: KbBundle | undefined, onRunAnalysis: () => void, onOpenTemplates: () => void): Command[] {
+export function useCommands(
+  kb: KbBundle | undefined,
+  onRunAnalysis: () => void,
+  onOpenTemplates: () => void,
+  onOpenDiff: () => void,
+): Command[] {
   const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
   const addBoundary = useModelStore((s) => s.addBoundary)
   const setOverlayMode = useModelStore((s) => s.setOverlayMode)
@@ -39,6 +44,7 @@ export function useCommands(kb: KbBundle | undefined, onRunAnalysis: () => void,
       { id: 'auto-layout', label: 'Auto-layout canvas (ELK)', group: 'Canvas', run: () => void runLayout() },
       { id: 'add-boundary', label: 'Add trust boundary', group: 'Canvas', run: () => addBoundary(centerPosition()) },
       { id: 'browse-templates', label: 'Browse architecture templates', group: 'Canvas', run: onOpenTemplates },
+      { id: 'compare-versions', label: 'Compare model versions', group: 'Canvas', run: onOpenDiff },
       {
         id: 'clear-canvas',
         label: 'Clear canvas',
@@ -79,6 +85,7 @@ export function useCommands(kb: KbBundle | undefined, onRunAnalysis: () => void,
     kb,
     onRunAnalysis,
     onOpenTemplates,
+    onOpenDiff,
     addComponentFromKb,
     addBoundary,
     setOverlayMode,

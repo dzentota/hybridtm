@@ -12,6 +12,7 @@ import { LoginScreen } from './auth/LoginScreen'
 import { Toolbar } from './toolbar/Toolbar'
 import { CommandPalette } from './command/CommandPalette'
 import { TemplateGallery } from './templates/TemplateGallery'
+import { DiffView } from './diff/DiffView'
 
 const DEMO_PROJECT_SLUG = 'studio-demo'
 
@@ -76,6 +77,7 @@ function Studio() {
   const toCanonicalModel = useModelStore((s) => s.toCanonicalModel)
   const applyFindings = useModelStore((s) => s.applyFindings)
   const [templatesOpen, setTemplatesOpen] = useState(false)
+  const [diffOpen, setDiffOpen] = useState(false)
   useUndoRedoHotkeys()
 
   const runAnalysis = useMutation({
@@ -92,11 +94,17 @@ function Studio() {
   return (
     <div className="w-full h-full grid relative" style={{ gridTemplateColumns: '260px 1fr 320px', gridTemplateRows: '1fr' }}>
       <AutosaveRestorePrompt />
-      <CommandPalette kb={kb} onRunAnalysis={() => runAnalysis.mutate()} onOpenTemplates={() => setTemplatesOpen(true)} />
+      <CommandPalette
+        kb={kb}
+        onRunAnalysis={() => runAnalysis.mutate()}
+        onOpenTemplates={() => setTemplatesOpen(true)}
+        onOpenDiff={() => setDiffOpen(true)}
+      />
       <TemplateGallery kb={kb} open={templatesOpen} onClose={() => setTemplatesOpen(false)} />
+      <DiffView open={diffOpen} onClose={() => setDiffOpen(false)} />
       <ComponentPalette kb={kb} />
       <div className="flex flex-col h-full min-w-0">
-        <Toolbar kb={kb} onOpenTemplates={() => setTemplatesOpen(true)} />
+        <Toolbar kb={kb} onOpenTemplates={() => setTemplatesOpen(true)} onOpenDiff={() => setDiffOpen(true)} />
         <div className="flex-1 min-h-0">
           <FlowCanvas kb={kb} />
         </div>

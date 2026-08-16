@@ -81,6 +81,8 @@ export interface ModelVersionSummary {
   id: string
   project: string
   data: CanonicalModel
+  createdAt?: string
+  status?: string
 }
 
 export function createModelVersion(projectIri: string, data: CanonicalModel): Promise<ModelVersionSummary> {
@@ -89,6 +91,14 @@ export function createModelVersion(projectIri: string, data: CanonicalModel): Pr
     headers: { 'Content-Type': 'application/ld+json' },
     body: JSON.stringify({ project: projectIri, schemaVersion: 1, data }),
   })
+}
+
+// No `project` ApiFilter is declared server-side, so this returns every
+// version this tenant's RLS makes visible — fine for the single demo
+// project Studio currently works against; the diff view (T-7.22) filters
+// client-side by project IRI.
+export function listModelVersions(): Promise<ModelVersionSummary[]> {
+  return request<ModelVersionSummary[]>('/api/model_versions')
 }
 
 export function analyze(modelVersionId: string): Promise<AnalysisResult> {

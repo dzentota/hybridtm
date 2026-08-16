@@ -11,17 +11,19 @@ export function CommandPalette({
   kb,
   onRunAnalysis,
   onOpenTemplates,
+  onOpenDiff,
 }: {
   kb: KbBundle | undefined
   onRunAnalysis: () => void
   onOpenTemplates: () => void
+  onOpenDiff: () => void
 }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
-  const commands = useCommands(kb, onRunAnalysis, onOpenTemplates)
+  const commands = useCommands(kb, onRunAnalysis, onOpenTemplates, onOpenDiff)
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {

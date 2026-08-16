@@ -45,6 +45,48 @@ function freshId(prefix: string): string {
   return `${prefix}-${nextId++}`
 }
 
+/** Pure CanonicalModel → {nodes, edges} conversion, shared by
+ * `loadCanonicalModel` and the version-diff preview canvases (T-7.22) —
+ * neither should re-derive this layout logic independently. */
+export function canonicalModelToGraph(model: CanonicalModel): { nodes: StudioNode[]; edges: StudioEdge[] } {
+  const boundaryNodes: StudioNode[] = model.trustBoundaries.map((b, i) => ({
+    id: b.id,
+    type: 'boundary',
+    position: { x: 40 + i * 40, y: 40 + i * 40 },
+    style: { width: 420, height: 260 },
+    data: { kind: 'boundary', name: b.name, boundaryType: b.type },
+  }))
+  const boundaryOfComponent = new Map<string, string>()
+  for (const b of model.trustBoundaries) {
+    for (const cid of b.contains) boundaryOfComponent.set(cid, b.id)
+  }
+  const componentNodes: StudioNode[] = model.components.map((c, i) => ({
+    id: c.id,
+    type: 'component',
+    position: { x: 80 + (i % 5) * 180, y: 340 + Math.floor(i / 5) * 140 },
+    parentId: boundaryOfComponent.get(c.id),
+    data: {
+      kind: 'component',
+      name: c.name,
+      kbComponentId: c.kbComponent,
+      kbVersion: c.kbVersion,
+      traits: c.traits,
+      properties: c.properties,
+      findingCount: 0,
+    },
+  }))
+  const edges: StudioEdge[] = model.dataFlows.map((f) => ({
+    id: f.id ?? freshId('flow'),
+    source: f.sourceId,
+    target: f.targetId,
+    sourceHandle: 'out',
+    targetHandle: 'in',
+    type: 'dataflow',
+    data: { protocol: f.protocol },
+  }))
+  return { nodes: [...boundaryNodes, ...componentNodes], edges }
+}
+
 function buildComponentNode(kbId: string, kb: KbComponent, position: { x: number; y: number }): StudioNode {
   const id = freshId(kbId.replace(/[^a-z0-9]/gi, '-'))
   const properties: PropertyBag = {}
@@ -272,42 +314,10 @@ export const useModelStore = create<ModelState>()(
       },
 
       loadCanonicalModel: (model) => {
-        const boundaryNodes: StudioNode[] = model.trustBoundaries.map((b, i) => ({
-          id: b.id,
-          type: 'boundary',
-          position: { x: 40 + i * 40, y: 40 + i * 40 },
-          style: { width: 420, height: 260 },
-          data: { kind: 'boundary', name: b.name, boundaryType: b.type },
-        }))
-        const boundaryOfComponent = new Map<string, string>()
-        for (const b of model.trustBoundaries) {
-          for (const cid of b.contains) boundaryOfComponent.set(cid, b.id)
-        }
-        const componentNodes: StudioNode[] = model.components.map((c, i) => ({
-          id: c.id,
-          type: 'component',
-          position: { x: 80 + (i % 5) * 180, y: 340 + Math.floor(i / 5) * 140 },
-          parentId: boundaryOfComponent.get(c.id),
-          data: {
-            kind: 'component',
-            name: c.name,
-            kbComponentId: c.kbComponent,
-            kbVersion: c.kbVersion,
-            traits: c.traits,
-            properties: c.properties,
-            findingCount: 0,
-          },
-        }))
-        const edges: StudioEdge[] = model.dataFlows.map((f) => ({
-          id: f.id ?? freshId('flow'),
-          source: f.sourceId,
-          target: f.targetId,
-          type: 'dataflow',
-          data: { protocol: f.protocol },
-        }))
+        const { nodes, edges } = canonicalModelToGraph(model)
         set({
           title: model.model.title,
-          nodes: [...boundaryNodes, ...componentNodes],
+          nodes,
           edges,
           selectedId: null,
           findings: [],
