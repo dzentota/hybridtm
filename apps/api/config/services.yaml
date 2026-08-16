@@ -36,6 +36,11 @@ services:
     # hybridtm/hybridtm package), and not everything the library exposes
     # has a matching interface binding — these are exactly what this app's
     # controllers/handlers currently need.
+    # Constructed once and reused across requests — RuleEngine caches parsed
+    # rule expressions internally, so re-creating it per-request would throw
+    # that cache away every time.
+    HybridTM\Analysis\RuleEngine: ~
+
     HybridTM\Codec\ModelJsonCodec: ~
     HybridTM\Codec\PhpDslWriter: ~
     HybridTM\Codec\LayoutCodec: ~
