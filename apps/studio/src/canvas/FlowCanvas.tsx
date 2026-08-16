@@ -12,7 +12,6 @@ import {
   type EdgeChange,
   type OnNodeDrag,
   useReactFlow,
-  ReactFlowProvider,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useModelStore, type StudioNode } from '../store/model.store'
@@ -127,10 +126,9 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
   )
 }
 
+// Rendered inside a <ReactFlowProvider> that App.tsx owns — Toolbar needs
+// useReactFlow() too (for PNG/SVG export, T-7.19), so the provider has to
+// wrap both siblings rather than live inside this component alone.
 export function FlowCanvas({ kb }: { kb: KbBundle | undefined }) {
-  return (
-    <ReactFlowProvider>
-      <CanvasInner kb={kb} />
-    </ReactFlowProvider>
-  )
+  return <CanvasInner kb={kb} />
 }

@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
+import { ReactFlowProvider } from '@xyflow/react'
 import { analyze, createModelVersion, createProject, getKbBundle, getToken, listProjects } from './api/client'
 import { useModelStore, useTemporalStore, restoreAutosave, clearAutosave } from './store/model.store'
 import { FlowCanvas } from './canvas/FlowCanvas'
@@ -112,7 +113,11 @@ function App() {
     return <LoginScreen onLoggedIn={() => setAuthed(true)} />
   }
 
-  return <Studio />
+  return (
+    <ReactFlowProvider>
+      <Studio />
+    </ReactFlowProvider>
+  )
 }
 
 export default App

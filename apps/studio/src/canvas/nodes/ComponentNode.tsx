@@ -1,5 +1,5 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
-import type { ComponentNodeData, StudioNode } from '../../store/model.store'
+import { useModelStore, type ComponentNodeData, type StudioNode } from '../../store/model.store'
 
 const severityGlyph: Record<string, string> = {
   critical: '⬢',
@@ -9,16 +9,48 @@ const severityGlyph: Record<string, string> = {
   low: '─',
 }
 
-export function ComponentNode({ data, selected }: NodeProps<StudioNode>) {
+const DATA_TRAIT_HINTS = ['datastore', 'data', 'pii', 'cache', 'storage', 'secrets']
+
+/** Overlay modes (T-7.17) restyle nodes from data already on hand — no
+ * extra KB lookups, so switching modes never touches the graph layout.
+ * 'data'/'coverage' are necessarily approximations of what a full
+ * server-computed overlay would show: 'data' flags components whose
+ * declared traits merely *suggest* they handle data, and 'coverage' flags
+ * components with no traits at all as a proxy for "nothing rules can key
+ * off of yet" — both disclosed simplifications, not real KB queries. */
+function overlayHighlight(mode: string, d: ComponentNodeData): { color: string; label: string } | null {
+  if (mode === 'data') {
+    const isDataish = d.traits.some((t) => DATA_TRAIT_HINTS.some((hint) => t.includes(hint)))
+    return isDataish ? { color: 'var(--accent)', label: 'handles data' } : null
+  }
+  if (mode === 'coverage') {
+    return d.traits.length === 0 ? { color: 'var(--severity-medium)', label: 'no traits declared' } : null
+  }
+  return null
+}
+
+export function ComponentNode({ data, selected, parentId }: NodeProps<StudioNode>) {
   const d = data as ComponentNodeData
+  const overlayMode = useModelStore((s) => s.overlayMode)
   const propertyChips = Object.entries(d.properties)
     .filter(([, v]) => v === true || (typeof v === 'string' && v !== ''))
     .slice(0, 3)
 
+  const highlight =
+    overlayMode === 'exposure'
+      ? !parentId
+        ? { color: 'var(--severity-high)', label: 'not in any trust boundary' }
+        : null
+      : overlayHighlight(overlayMode, d)
+
   return (
     <div
       className="rounded-[10px] border bg-(--surface-0) shadow-[var(--shadow-node)] px-3 py-2 w-[220px] h-[96px] flex flex-col justify-between"
-      style={{ borderColor: selected ? 'var(--accent)' : 'var(--border)', borderWidth: selected ? 2 : 1 }}
+      style={{
+        borderColor: selected ? 'var(--accent)' : highlight ? highlight.color : 'var(--border)',
+        borderWidth: selected || highlight ? 2 : 1,
+      }}
+      title={highlight?.label}
     >
       <Handle type="target" position={Position.Left} id="in" style={{ top: '50%' }} />
       <Handle type="source" position={Position.Right} id="out" style={{ top: '50%' }} />

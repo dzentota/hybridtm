@@ -33,11 +33,12 @@ export type StudioNode = Node<ComponentNodeData | BoundaryNodeData>
 
 export interface DataFlowEdgeData extends Record<string, unknown> {
   protocol?: string
-  crossesBoundary?: boolean
   maxSeverity?: Finding['severity']
 }
 
 export type StudioEdge = Edge<DataFlowEdgeData>
+
+export type OverlayMode = 'risks' | 'data' | 'exposure' | 'coverage'
 
 let nextId = 1
 function freshId(prefix: string): string {
@@ -60,11 +61,13 @@ interface ModelState {
   selectedId: string | null
   findings: Finding[]
   lastSavedAt: string | null
+  overlayMode: OverlayMode
 
   setNodes: (updater: (nodes: StudioNode[]) => StudioNode[]) => void
   setEdges: (updater: (edges: StudioEdge[]) => StudioEdge[]) => void
   select: (id: string | null) => void
   setTitle: (title: string) => void
+  setOverlayMode: (mode: OverlayMode) => void
 
   addComponentFromKb: (kbId: string, kb: KbComponent, position: { x: number; y: number }) => void
   addBoundary: (position: { x: number; y: number }) => void
@@ -88,11 +91,13 @@ export const useModelStore = create<ModelState>()(
       selectedId: null,
       findings: [],
       lastSavedAt: null,
+      overlayMode: 'risks',
 
       setNodes: (updater) => set((s) => ({ nodes: updater(s.nodes) })),
       setEdges: (updater) => set((s) => ({ edges: updater(s.edges) })),
       select: (id) => set({ selectedId: id }),
       setTitle: (title) => set({ title }),
+      setOverlayMode: (overlayMode) => set({ overlayMode }),
 
       addComponentFromKb: (kbId, kb, position) => {
         const id = freshId(kbId.replace(/[^a-z0-9]/gi, '-'))

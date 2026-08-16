@@ -1,5 +1,5 @@
 import { BaseEdge, EdgeLabelRenderer, getBezierPath, type EdgeProps } from '@xyflow/react'
-import type { DataFlowEdgeData, StudioEdge } from '../../store/model.store'
+import { useModelStore, type DataFlowEdgeData, type StudioEdge } from '../../store/model.store'
 
 const severityColor: Record<string, string> = {
   critical: 'var(--severity-critical)',
@@ -11,6 +11,8 @@ const severityColor: Record<string, string> = {
 
 export function DataFlowEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -21,6 +23,16 @@ export function DataFlowEdge({
   selected,
 }: EdgeProps<StudioEdge>) {
   const d = data as DataFlowEdgeData
+  const overlayMode = useModelStore((s) => s.overlayMode)
+  // Computed live off current node parentage rather than trusting a stale
+  // `data.crossesBoundary` flag — nothing ever wrote that field (T-7.6's
+  // "edges crossing a boundary look different" claim had no data behind it
+  // until this fix).
+  const crossesBoundary = useModelStore((s) => {
+    const sourceNode = s.nodes.find((n) => n.id === source)
+    const targetNode = s.nodes.find((n) => n.id === target)
+    return (sourceNode?.parentId ?? null) !== (targetNode?.parentId ?? null)
+  })
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -30,7 +42,12 @@ export function DataFlowEdge({
     targetPosition,
   })
 
-  const color = d.maxSeverity ? severityColor[d.maxSeverity] : 'var(--text-secondary)'
+  const color =
+    overlayMode === 'exposure' && crossesBoundary
+      ? 'var(--severity-high)'
+      : d.maxSeverity
+        ? severityColor[d.maxSeverity]
+        : 'var(--text-secondary)'
 
   return (
     <>
@@ -40,7 +57,7 @@ export function DataFlowEdge({
         style={{
           stroke: color,
           strokeWidth: selected ? 2.5 : 1.5,
-          strokeDasharray: d.crossesBoundary ? '6 4' : undefined,
+          strokeDasharray: crossesBoundary ? '6 4' : undefined,
         }}
       />
       {d.protocol && (

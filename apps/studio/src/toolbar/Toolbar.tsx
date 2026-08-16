@@ -1,7 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useModelStore, useTemporalStore } from '../store/model.store'
+import { useModelStore, useTemporalStore, type OverlayMode } from '../store/model.store'
 import { useElkLayout } from '../layout/useElkLayout'
+import { useExportCanvas } from '../canvas/useExportCanvas'
 import type { KbBundle } from '../api/types'
+
+const OVERLAY_LABELS: Record<OverlayMode, string> = {
+  risks: 'Risks',
+  data: 'Data',
+  exposure: 'Exposure',
+  coverage: 'Coverage',
+}
 
 function SavedIndicator() {
   const lastSavedAt = useModelStore((s) => s.lastSavedAt)
@@ -28,6 +36,9 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
   const title = useModelStore((s) => s.title)
   const setTitle = useModelStore((s) => s.setTitle)
   const { runLayout } = useElkLayout()
+  const { exportAs } = useExportCanvas()
+  const overlayMode = useModelStore((s) => s.overlayMode)
+  const setOverlayMode = useModelStore((s) => s.setOverlayMode)
   const [laying, setLaying] = useState(false)
 
   return (
@@ -84,6 +95,44 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
       >
         {laying ? 'Laying out…' : '⇉ Auto-layout'}
       </button>
+      <label className="flex items-center gap-1.5">
+        <span style={{ color: 'var(--text-secondary)' }}>Overlay:</span>
+        <select
+          aria-label="Canvas overlay mode"
+          value={overlayMode}
+          onChange={(e) => setOverlayMode(e.target.value as OverlayMode)}
+          className="px-1.5 py-1 rounded text-sm"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
+        >
+          {(Object.keys(OVERLAY_LABELS) as OverlayMode[]).map((mode) => (
+            <option key={mode} value={mode}>
+              {OVERLAY_LABELS[mode]}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className="flex items-center gap-1" role="group" aria-label="Export canvas">
+        <button
+          type="button"
+          aria-label="Export canvas as PNG"
+          title="Export PNG"
+          onClick={() => void exportAs('png')}
+          className="px-2 py-1 rounded"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          PNG
+        </button>
+        <button
+          type="button"
+          aria-label="Export canvas as SVG"
+          title="Export SVG"
+          onClick={() => void exportAs('svg')}
+          className="px-2 py-1 rounded"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          SVG
+        </button>
+      </div>
       <div className="ml-auto flex items-center gap-3">
         <SavedIndicator />
       </div>
