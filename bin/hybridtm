@@ -14,12 +14,18 @@ require $autoload;
 
 use HybridTM\Console\AnalyzeCommand;
 use HybridTM\Console\CompileCommand;
+use HybridTM\Console\ExportCommand;
+use HybridTM\Console\ImportCommand;
 use HybridTM\Console\InitCommand;
+use HybridTM\Console\NormalizeCommand;
 use Symfony\Component\Console\Application;
 
 $app = new Application('HybridTM Threat Modeler', '0.1.0');
 $app->addCommand(new CompileCommand());
 $app->addCommand(new InitCommand());
 $app->addCommand(new AnalyzeCommand());
+$app->addCommand(new ExportCommand());
+$app->addCommand(new ImportCommand());
+$app->addCommand(new NormalizeCommand());
 $app->setDefaultCommand('compile');
 $app->run();
