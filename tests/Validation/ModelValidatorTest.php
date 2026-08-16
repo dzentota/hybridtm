@@ -39,9 +39,10 @@ final class ModelValidatorTest extends TestCase
         self::assertNotEmpty($report->bySeverity(ValidationSeverity::Info));
     }
 
-    public function testDefaultRegistryHasTwelveRules(): void
+    public function testDefaultRegistryHasThirteenRules(): void
     {
-        self::assertCount(12, ValidatorRegistry::default()->all());
+        // The 12 checks from §3.6 plus RiskTrackingValidityRule (§5.7).
+        self::assertCount(13, ValidatorRegistry::default()->all());
     }
 
     public function testCustomRegistryIsRespected(): void

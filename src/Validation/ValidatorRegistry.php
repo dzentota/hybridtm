@@ -12,6 +12,7 @@ use HybridTM\Validation\Rules\InternetFacingInSecurityGroupRule;
 use HybridTM\Validation\Rules\InvalidIdSlugRule;
 use HybridTM\Validation\Rules\IsolatedDatastoreRule;
 use HybridTM\Validation\Rules\PropertyNotInKbSchemaRule;
+use HybridTM\Validation\Rules\RiskTrackingValidityRule;
 use HybridTM\Validation\Rules\UnknownKbComponentVersionRule;
 use HybridTM\Validation\Rules\UnusedDataAssetRule;
 
@@ -29,7 +30,7 @@ final class ValidatorRegistry
         }
     }
 
-    /** The 12 checks from §3.6, in dependency-free order. */
+    /** The 12 checks from §3.6 plus RiskTrackingValidityRule (§5.7), in dependency-free order. */
     public static function default(): self
     {
         return new self([
@@ -45,6 +46,7 @@ final class ValidatorRegistry
             new PropertyNotInKbSchemaRule(),
             new UnusedDataAssetRule(),
             new UnknownKbComponentVersionRule(),
+            new RiskTrackingValidityRule(),
         ]);
     }
 

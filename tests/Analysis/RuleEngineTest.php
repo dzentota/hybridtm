@@ -199,6 +199,8 @@ final class RuleEngineTest extends TestCase
 
         $tracking = new RiskTracking($baseline->stableId);
         $tracking->status = DecisionStatus::Accepted;
+        $tracking->justification = 'Compensating control already in place.';
+        $tracking->expiresAt = '2099-01-01';
         $model->addRiskTracking($tracking);
 
         $result = (new RuleEngine())->analyze($model, $kb);
@@ -217,6 +219,7 @@ final class RuleEngineTest extends TestCase
 
         $tracking = new RiskTracking($baseline->stableId);
         $tracking->status = DecisionStatus::Mitigated;
+        $tracking->justification = 'Encryption at rest was enabled in production.';
         $model->addRiskTracking($tracking);
 
         $result = (new RuleEngine())->analyze($model, $kb, new AnalysisOptions(includeSuppressed: true));
