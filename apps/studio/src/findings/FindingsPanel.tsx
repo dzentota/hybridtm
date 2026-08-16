@@ -1,0 +1,88 @@
+import { useMemo, useState } from 'react'
+import { useModelStore } from '../store/model.store'
+import { FindingCard } from './FindingCard'
+
+const severityOrder = ['critical', 'high', 'elevated', 'medium', 'low'] as const
+
+/** Findings list with severity filter + grouping, wired to canvas selection
+ * (T-7.10): clicking a card selects the node/edge it's about. */
+export function FindingsPanel({
+  onRunAnalysis,
+  isAnalyzing,
+}: {
+  onRunAnalysis: () => void
+  isAnalyzing: boolean
+}) {
+  const { findings, select } = useModelStore()
+  const [minSeverity, setMinSeverity] = useState<(typeof severityOrder)[number]>('low')
+
+  const visible = useMemo(() => {
+    const cutoff = severityOrder.indexOf(minSeverity)
+    return findings.filter((f) => severityOrder.indexOf(f.severity as (typeof severityOrder)[number]) <= cutoff)
+  }, [findings, minSeverity])
+
+  const grouped = useMemo(() => {
+    const map = new Map<string, typeof findings>()
+    for (const f of visible) {
+      const list = map.get(f.severity) ?? []
+      list.push(f)
+      map.set(f.severity, list)
+    }
+    return map
+  }, [visible])
+
+  return (
+    <div className="flex flex-col h-full" style={{ background: 'var(--surface-1)', borderLeft: '1px solid var(--border)' }}>
+      <div className="p-3 flex flex-col gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+        <button
+          onClick={onRunAnalysis}
+          disabled={isAnalyzing}
+          className="text-sm font-medium px-3 py-1.5 rounded"
+          style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
+        >
+          {isAnalyzing ? 'Analyzing…' : 'Run analysis'}
+        </button>
+        <select
+          value={minSeverity}
+          onChange={(e) => setMinSeverity(e.target.value as (typeof severityOrder)[number])}
+          className="text-xs px-2 py-1 rounded border"
+          style={{ background: 'var(--surface-0)', borderColor: 'var(--border)' }}
+        >
+          {severityOrder.map((s) => (
+            <option key={s} value={s}>
+              min severity: {s}
+            </option>
+          ))}
+        </select>
+      </div>
+      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+        {findings.length === 0 && (
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            No findings yet — run analysis to check the model.
+          </div>
+        )}
+        {severityOrder
+          .filter((s) => grouped.has(s))
+          .map((severity) => (
+            <div key={severity}>
+              <div className="text-xs font-semibold uppercase tracking-wide mb-1.5" style={{ color: 'var(--text-secondary)' }}>
+                {severity} ({grouped.get(severity)!.length})
+              </div>
+              <div className="flex flex-col gap-2">
+                {grouped.get(severity)!.map((f) => (
+                  <FindingCard
+                    key={f.stableId}
+                    finding={f}
+                    onSelectSubject={(subject) => {
+                      const id = subject.split(':')[1]
+                      if (id) select(id)
+                    }}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+      </div>
+    </div>
+  )
+}

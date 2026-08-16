@@ -1,0 +1,87 @@
+/* Design tokens (T-7.2). Severity never relies on color alone (WCAG 1.4.1,
+   §8.4 of the plan) — each severity also carries a distinct icon glyph and
+   fill pattern, applied via the data-severity attribute on badges/nodes. */
+
+:root {
+  --surface-0: #ffffff;
+  --surface-1: #f8fafc;
+  --surface-2: #eef2f6;
+  --border: #d8dee6;
+  --text-primary: #0f172a;
+  --text-secondary: #55606f;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+
+  --severity-critical: #b91c1c;
+  --severity-high: #ea580c;
+  --severity-elevated: #ca8a04;
+  --severity-medium: #0891b2;
+  --severity-low: #64748b;
+
+  --shadow-node: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --radius-node: 10px;
+}
+
+:root[data-theme='dark'] {
+  --surface-0: #0f1420;
+  --surface-1: #161d2b;
+  --surface-2: #1e2738;
+  --border: #2c3648;
+  --text-primary: #e8edf5;
+  --text-secondary: #9aa7ba;
+  --accent: #5b8def;
+  --accent-contrast: #0b1220;
+
+  --severity-critical: #f87171;
+  --severity-high: #fb923c;
+  --severity-elevated: #facc15;
+  --severity-medium: #22d3ee;
+  --severity-low: #94a3b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface-0: #0f1420;
+    --surface-1: #161d2b;
+    --surface-2: #1e2738;
+    --border: #2c3648;
+    --text-primary: #e8edf5;
+    --text-secondary: #9aa7ba;
+    --accent: #5b8def;
+    --accent-contrast: #0b1220;
+
+    --severity-critical: #f87171;
+    --severity-high: #fb923c;
+    --severity-elevated: #facc15;
+    --severity-medium: #22d3ee;
+    --severity-low: #94a3b8;
+  }
+}
+
+body {
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+/* Severity badge: color + glyph + pattern together, never color alone. */
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  color: var(--accent-contrast);
+}
+.severity-badge[data-severity='critical'] { background: var(--severity-critical); }
+.severity-badge[data-severity='high'] { background: var(--severity-high); }
+.severity-badge[data-severity='elevated'] { background: var(--severity-elevated); color: #1c1400; }
+.severity-badge[data-severity='medium'] { background: var(--severity-medium); }
+.severity-badge[data-severity='low'] { background: var(--severity-low); }
+
+.severity-badge[data-severity='critical']::before { content: '⬢'; }
+.severity-badge[data-severity='high']::before { content: '⬤'; }
+.severity-badge[data-severity='elevated']::before { content: '◐'; }
+.severity-badge[data-severity='medium']::before { content: '◯'; }
+.severity-badge[data-severity='low']::before { content: '─'; }
