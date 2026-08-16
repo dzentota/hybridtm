@@ -1,10 +1,17 @@
 import { useMemo, useState } from 'react'
+import { useReactFlow } from '@xyflow/react'
+import { cascadeOffset, useModelStore } from '../store/model.store'
 import type { KbBundle } from '../api/types'
 
 /** Category tree + search over the KB bundle (T-7.8). Drag a row onto the
- * canvas to place it; FlowCanvas reads the id back off the drag event. */
+ * canvas to place it, or focus a row with Tab and press Enter/Space — drag
+ * handles alone aren't operable without a pointer (T-7.20). FlowCanvas
+ * reads the id back off the drag event for the drag path; the keyboard
+ * path calls the same store action directly. */
 export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
   const [query, setQuery] = useState('')
+  const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
+  const { screenToFlowPosition } = useReactFlow()
 
   const grouped = useMemo(() => {
     if (!kb) return new Map<string, [string, KbBundle['components'][string]][]>()
@@ -47,12 +54,22 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
               <div
                 key={id}
                 draggable
+                role="button"
+                tabIndex={0}
+                aria-label={`Add ${component.metadata.name} to canvas`}
                 onDragStart={(e) => {
                   e.dataTransfer.setData('application/hybridtm-kb-component', id)
                   e.dataTransfer.effectAllowed = 'move'
                 }}
-                className="flex items-center justify-between text-sm px-2 py-1.5 rounded cursor-grab hover:bg-(--surface-2)"
-                style={{ color: 'var(--text-primary)' }}
+                onKeyDown={(e) => {
+                  if (e.key !== 'Enter' && e.key !== ' ') return
+                  e.preventDefault()
+                  const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+                  const offset = cascadeOffset(useModelStore.getState().nodes.length)
+                  addComponentFromKb(id, component, { x: center.x + offset.x, y: center.y + offset.y })
+                }}
+                className="flex items-center justify-between text-sm px-2 py-1.5 rounded cursor-grab hover:bg-(--surface-2) focus-visible:outline focus-visible:outline-2"
+                style={{ color: 'var(--text-primary)', outlineColor: 'var(--accent)' }}
               >
                 <span>{component.metadata.name}</span>
                 <span className="text-[10px] px-1.5 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>

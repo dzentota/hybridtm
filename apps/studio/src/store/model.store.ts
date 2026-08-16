@@ -109,6 +109,7 @@ export const useModelStore = create<ModelState>()(
           id,
           type: 'component',
           position,
+          ariaLabel: `${kb.metadata.name} component, no findings yet`,
           data: {
             kind: 'component',
             name: kb.metadata.name,
@@ -130,6 +131,7 @@ export const useModelStore = create<ModelState>()(
           type: 'boundary',
           position,
           style: { width: 420, height: 260 },
+          ariaLabel: 'Trust boundary, network cloud provider',
           data: { kind: 'boundary', name: 'Trust boundary', boundaryType: 'network-cloud-provider' },
         }
         set((s) => ({ nodes: [...s.nodes, node] }))
@@ -180,9 +182,14 @@ export const useModelStore = create<ModelState>()(
           nodes: s.nodes.map((n) => {
             if (n.data.kind !== 'component') return n
             const list = bySubject.get(`component:${n.id}`) ?? []
+            const maxSeverity = list.length ? maxOf(list) : undefined
+            const ariaLabel = list.length
+              ? `${n.data.name} component, ${list.length} finding${list.length === 1 ? '' : 's'}, highest severity ${maxSeverity}`
+              : `${n.data.name} component, no findings yet`
             return {
               ...n,
-              data: { ...n.data, findingCount: list.length, maxSeverity: list.length ? maxOf(list) : undefined },
+              ariaLabel,
+              data: { ...n.data, findingCount: list.length, maxSeverity },
             }
           }),
           edges: s.edges.map((e) => {
@@ -332,3 +339,13 @@ useModelStore.subscribe((state, prevState) => {
     useModelStore.getState().markSaved(savedAt)
   }, 800)
 })
+
+/** Keyboard-add (palette Enter/Space) and the command palette both drop new
+ * nodes at the same viewport-center point — without this, repeated
+ * additions would stack exactly on top of each other. Cascades in an
+ * 8-step diagonal and wraps, rather than growing unbounded. */
+export function cascadeOffset(nodeCount: number): { x: number; y: number } {
+  const step = 28
+  const i = nodeCount % 8
+  return { x: i * step, y: i * step }
+}

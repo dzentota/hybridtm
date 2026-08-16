@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useReactFlow } from '@xyflow/react'
-import { useModelStore, useTemporalStore } from '../store/model.store'
+import { cascadeOffset, useModelStore, useTemporalStore } from '../store/model.store'
 import { useElkLayout } from '../layout/useElkLayout'
 import { useExportCanvas } from '../canvas/useExportCanvas'
 import type { KbBundle } from '../api/types'
@@ -27,7 +27,11 @@ export function useCommands(kb: KbBundle | undefined, onRunAnalysis: () => void)
   const { screenToFlowPosition } = useReactFlow()
 
   return useMemo(() => {
-    const centerPosition = () => screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+    const centerPosition = () => {
+      const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+      const offset = cascadeOffset(useModelStore.getState().nodes.length)
+      return { x: center.x + offset.x, y: center.y + offset.y }
+    }
 
     const commands: Command[] = [
       { id: 'undo', label: 'Undo', group: 'Edit', run: () => undo() },
