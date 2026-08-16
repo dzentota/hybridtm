@@ -18,6 +18,10 @@ parameters:
     kb_paths:
         - '%kernel.project_dir%/kb'
 
+    # Policy-as-code (T-9.7): rules WorkflowController checks before
+    # letting a ModelVersion move In Review -> Approved.
+    policy_path: '%kernel.project_dir%/policy.yaml'
+
 services:
     # default configuration for services in *this* file
     _defaults:
@@ -26,6 +30,7 @@ services:
         bind:
             string $threagileWorkDir: '%threagile_work_dir%'
             array $kbPaths: '%kb_paths%'
+            string $policyPath: '%policy_path%'
 
     # makes classes in src/ available to be used as services
     # this creates a service per class whose id is the fully-qualified class name

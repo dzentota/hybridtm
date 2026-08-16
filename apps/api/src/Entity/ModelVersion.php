@@ -30,7 +30,10 @@ use Symfony\Component\Validator\Constraints as Assert;
         new GetCollection(),
         new Get(security: "is_granted('PROJECT_VIEW', object.project)"),
         new Post(securityPostDenormalize: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
-        new Put(securityPostDenormalize: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
+        // Approved/Superseded versions are immutable (T-9.6) — PUT is
+        // blocked regardless of role; editing means creating a new
+        // ModelVersion (always born Draft), not mutating this one.
+        new Put(securityPostDenormalize: "is_granted('PROJECT_EDIT_MODEL', object.project) and !object.status.isImmutable()"),
         new Delete(security: "is_granted('PROJECT_EDIT_MODEL', object.project)"),
     ],
     order: ['createdAt' => 'DESC'],
@@ -67,6 +70,11 @@ class ModelVersion
 
     #[ORM\Column(length: 100, nullable: true)]
     public ?string $kbVersion = null;
+
+    /** Draft -> InReview -> Approved -> Superseded (T-9.6); transitions only via WorkflowController. */
+    #[ApiProperty(writable: false)]
+    #[ORM\Column(length: 20, enumType: ModelVersionStatus::class)]
+    public ModelVersionStatus $status = ModelVersionStatus::Draft;
 
     #[ApiProperty(writable: false)]
     #[ORM\Column]

@@ -1,0 +1,29 @@
+# Policy-as-code (T-9.7): rules enforced before a ModelVersion may move
+# In Review -> Approved. A violation blocks the transition with a
+# human-readable reason; it never silently downgrades severity or
+# auto-fixes anything.
+policies:
+  - id: no-critical-findings
+    description: >-
+      No model version with an open Critical-severity finding may be
+      approved.
+    type: max_severity
+    max_severity: high
+
+  - id: pii-requires-encryption-at-rest
+    description: >-
+      Every component that processes or stores data tagged "pii" must have
+      encryption_at_rest enabled.
+    type: required_property_for_data_tag
+    data_tag: pii
+    property: encryption_at_rest
+    value: true
+
+  - id: strictly-confidential-requires-datastore-auth
+    description: >-
+      Every datastore holding strictly-confidential data must require
+      client authentication.
+    type: required_property_for_confidentiality
+    min_confidentiality: strictly-confidential
+    property: auth_required
+    value: true
