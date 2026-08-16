@@ -97,6 +97,35 @@ final class FindingTest extends TestCase
         $this->finding()->mergeWith($this->finding(subjectId: 'other-db'));
     }
 
+    public function testMergeKeepsThisOnEqualSeverityRatherThanSwitchingToOther(): void
+    {
+        $mine = $this->finding(likelihood: Likelihood::Likely, impact: Impact::Medium, evidence: ['mine']);
+        $theirs = $this->finding(likelihood: Likelihood::Likely, impact: Impact::Medium, source: FindingSource::Threagile, evidence: ['theirs']);
+
+        $merged = $mine->mergeWith($theirs);
+
+        // Equal severity must not flip the "winner" to $other — only a
+        // strictly higher one should. This distinguishes `>` from `>=` in
+        // the tie-break, which otherwise looks identical from the outside
+        // since both severities are Elevated either way.
+        self::assertSame($mine->likelihood, $merged->likelihood);
+        self::assertSame($mine->impact, $merged->impact);
+    }
+
+    public function testMergeDoesNotDuplicateASourceThatMatchesThisFindingsSource(): void
+    {
+        $mine = $this->finding(source: FindingSource::HybridTM);
+        $theirs = $this->finding(source: FindingSource::HybridTM);
+
+        $merged = $mine->mergeWith($theirs);
+
+        // $other->source === $this->source here, so the accumulation
+        // condition's second operand is false — with a correct `&&` this
+        // means corroboratedBy stays empty; a `||` mutant would add it
+        // anyway, producing a spurious duplicate corroborating source.
+        self::assertSame([], $merged->corroboratedBy);
+    }
+
     public function testWithSeverityRecomputes(): void
     {
         $rescored = $this->finding()->withSeverity(Likelihood::Frequent, Impact::VeryHigh);
