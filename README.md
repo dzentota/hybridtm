@@ -83,12 +83,13 @@ The pipeline has four independent layers:
 
 ## Documentation
 
-- **[New Projects Guide](docs/new-projects.md)** — step-by-step guide for adding HybridTM from day one: DSL design, attribute annotation, CI/CD setup, AI agent integration.
-- **[Enterprise Adoption Guide](docs/enterprise-adoption.md)** — phased rollout strategy for existing applications: audit, as-is model, incremental annotation, governance.
-- **[Reference](docs/reference.md)** — complete reference for CLI, DSL classes, all attributes, and every enum value.
+- **[Documentation site](docs/)** — VitePress site (`cd docs && npm run docs:dev`), English + Russian: getting started, Knowledge Base authoring, API reference, migration from plain `hybridtm`, plus the guides below.
+- **[New Projects Guide](docs/en/new-projects.md)** — step-by-step guide for adding HybridTM from day one: DSL design, attribute annotation, CI/CD setup, AI agent integration.
+- **[Enterprise Adoption Guide](docs/en/enterprise-adoption.md)** — phased rollout strategy for existing applications: audit, as-is model, incremental annotation, governance.
+- **[Reference](docs/en/reference.md)** — complete reference for CLI, DSL classes, all attributes, and every enum value.
 - **CLI Wizard (`init`)** — interactive threat-model bootstrap with ASCII UI: `php bin/hybridtm init --out=threat-model.php`.
 
-> Russian translations: [new-projects.ru.md](docs/new-projects.ru.md) · [enterprise-adoption.ru.md](docs/enterprise-adoption.ru.md) · [reference.ru.md](docs/reference.ru.md)
+> Russian translations: [new-projects.md](docs/ru/new-projects.md) · [enterprise-adoption.md](docs/ru/enterprise-adoption.md) · [reference.md](docs/ru/reference.md)
 
 ---
 
