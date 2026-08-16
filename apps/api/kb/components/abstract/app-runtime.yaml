@@ -50,6 +50,16 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: cors_restricted
+      label: 'CORS restricted to an explicit origin allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: request_size_limit_enforced
+      label: 'Maximum request size enforced'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - app/input-validation-missing
     - app/debug-mode-enabled
@@ -58,3 +68,5 @@ spec:
     - app/dependency-audit-disabled
     - app/missing-authentication
     - app/rate-limiting-missing
+    - app/cors-wildcard-origin
+    - app/no-request-size-limit

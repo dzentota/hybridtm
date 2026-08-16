@@ -14,5 +14,12 @@ spec:
   mapping:
     type: datastore
     technologies: [file-server]
-  properties: []
-  rules: []
+  traits: [s3_bucket]
+  properties:
+    - id: bucket_policy_least_privilege
+      label: 'Bucket policy scoped to specific principals'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - s3/bucket-policy-overly-permissive

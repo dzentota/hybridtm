@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: eks/api-server-public
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Kubernetes API server endpoint has no IP restriction.'
+  when:
+    all:
+      - "component.hasTrait('container_orchestrator_control_plane')"
+      - "component.props.bool('public_endpoint_unrestricted') == true"
+  then:
+    - raise: THREAT-K8S-API-SERVER-PUBLIC
+      evidence: "{{ component.name }}'s API endpoint has no IP restriction."
+      require: [CM-RESTRICT-K8S-API-ACCESS]
+    - suggest_fix:
+        set: { public_endpoint_unrestricted: false }
+        label: 'Restrict the API endpoint to known networks'

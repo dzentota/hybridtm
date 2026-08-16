@@ -21,5 +21,11 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: request_validation_enabled
+      label: 'Validates requests against a schema'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - api/rate-limiting-missing
+    - api/no-request-validation

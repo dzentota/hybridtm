@@ -37,8 +37,14 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: app_attestation_enabled
+      label: 'Backend verifies app/device attestation'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - mobile/certificate-pinning-missing
     - client/no-auto-update
     - client/insecure-local-secret-storage
     - client/no-jailbreak-detection
+    - client/no-app-attestation

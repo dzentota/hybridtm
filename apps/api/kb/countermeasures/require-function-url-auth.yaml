@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-REQUIRE-FUNCTION-URL-AUTH
+  version: 1.0.0
+spec:
+  title: 'Require IAM authentication on the function URL'
+  description: 'Set the function URL''s auth type to AWS_IAM (or front it with API Gateway/CloudFront and enforce authentication there) instead of NONE.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

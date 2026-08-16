@@ -45,9 +45,15 @@ spec:
       default: false
       group: 'Cryptography'
       show_if: 'props.automated_backups_enabled == true'
+    - id: client_connections_encrypted
+      label: 'Requires encrypted client connections'
+      type: boolean
+      default: false
+      group: 'Cryptography'
   rules:
     - storage/unencrypted-at-rest
     - storage/datastore-auth-disabled
     - storage/datastore-public-access
     - storage/datastore-no-backups
     - storage/backup-unencrypted
+    - storage/datastore-connections-unencrypted

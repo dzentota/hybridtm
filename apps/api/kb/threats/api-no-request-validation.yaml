@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-API-NO-REQUEST-VALIDATION
+  version: 1.0.0
+spec:
+  title: 'API gateway does not validate requests against a schema'
+  summary: 'The gateway forwards every request straight to the backend with no schema/shape validation at the edge, so malformed or malicious payloads reach application code that has to defend itself with no help from the gateway layer.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: low
+  standards:
+      cwe: [20]
+  countermeasures:
+      - CM-ENABLE-REQUEST-VALIDATION

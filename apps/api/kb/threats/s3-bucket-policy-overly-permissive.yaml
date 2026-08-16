@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-S3-BUCKET-POLICY-OVERLY-PERMISSIVE
+  version: 1.0.0
+spec:
+  title: 'Bucket policy grants broader access than the public-read flag alone would show'
+  summary: 'The bucket''s IAM/bucket policy grants access to a wide principal set (e.g. any authenticated AWS user, or an overly broad role pattern) beyond the specific services and roles that need it, independent of whether the simpler "public read" toggle is off.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-RESTRICT-BUCKET-POLICY

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CICD-EXCESSIVE-RUNNER-PERMISSIONS
+  version: 1.0.0
+spec:
+  title: 'CI/CD job token has broader permissions than the job needs'
+  summary: 'The pipeline''s default job token (e.g. GitHub Actions'' GITHUB_TOKEN) keeps its default broad read/write scope instead of being restricted to what each job actually needs, so a compromised dependency running inside that job can use the token far beyond its intended purpose.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [269]
+  countermeasures:
+      - CM-SCOPE-RUNNER-PERMISSIONS

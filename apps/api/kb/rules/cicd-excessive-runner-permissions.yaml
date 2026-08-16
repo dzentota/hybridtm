@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cicd/excessive-runner-permissions
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'CI/CD job token keeps its default broad permissions instead of being scoped per job.'
+  when:
+    all:
+      - "component.hasTrait('cicd_pipeline')"
+      - "component.props.bool('runner_permissions_scoped') == false"
+  then:
+    - raise: THREAT-CICD-EXCESSIVE-RUNNER-PERMISSIONS
+      evidence: "{{ component.name }}'s job token is not scoped per job."
+      require: [CM-SCOPE-RUNNER-PERMISSIONS]
+    - suggest_fix:
+        set: { runner_permissions_scoped: true }
+        label: 'Scope job token permissions'

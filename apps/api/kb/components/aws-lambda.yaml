@@ -21,5 +21,11 @@ spec:
       type: boolean
       default: false
       group: 'Network'
+    - id: function_url_auth_configured
+      label: 'Function URL requires IAM authentication'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - aws/serverless-no-vpc-isolation
+    - aws/lambda-function-url-unauthenticated

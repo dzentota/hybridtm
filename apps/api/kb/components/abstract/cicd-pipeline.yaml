@@ -34,8 +34,20 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: secret_scanning_enabled
+      label: 'Scans commits/history for secrets'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: runner_permissions_scoped
+      label: 'Job token permissions scoped to the minimum needed'
+      type: boolean
+      default: false
+      group: 'Access control'
   rules:
     - cicd/secrets-in-build-logs
     - cicd/unpinned-dependencies
     - cicd/no-required-review
     - cicd/no-sast-scanning
+    - cicd/no-secret-scanning
+    - cicd/excessive-runner-permissions

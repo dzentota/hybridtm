@@ -14,5 +14,18 @@ spec:
   mapping:
     type: process
     technologies: [container-platform]
-  properties: []
-  rules: []
+  traits: [container_orchestrator_control_plane]
+  properties:
+    - id: control_plane_logging_enabled
+      label: 'Control plane audit logging enabled'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+    - id: public_endpoint_unrestricted
+      label: 'Public API endpoint has no IP restriction'
+      type: boolean
+      default: true
+      group: 'Network'
+  rules:
+    - eks/control-plane-logging-disabled
+    - eks/api-server-public
