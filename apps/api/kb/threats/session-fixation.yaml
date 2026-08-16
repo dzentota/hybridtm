@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SESSION-FIXATION
+  version: 1.0.0
+spec:
+  title: 'Session ID is not regenerated on privilege change'
+  summary: 'The application keeps the same session identifier across login (and other privilege changes) instead of issuing a new one, so an attacker who can plant a session ID in a victim''s browser before they log in inherits their authenticated session afterward.'
+  stride: [spoofing]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [384]
+  countermeasures:
+      - CM-REGENERATE-SESSION-ID

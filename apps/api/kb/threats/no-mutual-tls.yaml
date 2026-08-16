@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-MUTUAL-TLS
+  version: 1.0.0
+spec:
+  title: 'Internal service-to-service link has no mutual TLS'
+  summary: 'A link between two internal (non-client-facing) services authenticates the connection one-directionally at most, so anything that reaches the internal network segment can impersonate either side without presenting a client certificate.'
+  stride: [spoofing]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [295]
+  countermeasures:
+      - CM-ENABLE-MUTUAL-TLS

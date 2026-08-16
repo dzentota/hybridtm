@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/session-fixation
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Application does not regenerate the session ID on login.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('session_regenerated_on_login') == false"
+  then:
+    - raise: THREAT-SESSION-FIXATION
+      evidence: "{{ component.name }} does not regenerate the session ID on login."
+      require: [CM-REGENERATE-SESSION-ID]
+    - suggest_fix:
+        set: { session_regenerated_on_login: true }
+        label: 'Regenerate the session ID on login'

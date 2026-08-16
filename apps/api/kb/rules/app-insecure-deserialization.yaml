@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/insecure-deserialization
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Application deserializes untrusted input with a general-purpose (non-data-only) format.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('safe_deserialization_enabled') == false"
+  then:
+    - raise: THREAT-INSECURE-DESERIALIZATION
+      evidence: "{{ component.name }} does not use a data-only format for untrusted input."
+      require: [CM-AVOID-INSECURE-DESERIALIZATION]
+    - suggest_fix:
+        set: { safe_deserialization_enabled: true }
+        label: 'Use a data-only serialization format'

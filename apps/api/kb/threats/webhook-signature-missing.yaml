@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-WEBHOOK-SIGNATURE-MISSING
+  version: 1.0.0
+spec:
+  title: 'Webhook payload signature is not verified'
+  summary: 'The receiving end does not verify a cryptographic signature (or shared-secret HMAC) on incoming webhook payloads, so anyone who discovers the endpoint URL can send forged events that the receiver treats as genuine.'
+  stride: [spoofing, tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [345]
+  countermeasures:
+      - CM-VERIFY-WEBHOOK-SIGNATURE

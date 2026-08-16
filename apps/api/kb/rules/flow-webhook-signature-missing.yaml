@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/webhook-signature-missing
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: flow
+  description: 'A webhook-tagged flow does not verify a payload signature.'
+  when:
+    all:
+      - "flow.props.bool('is_webhook') == true"
+      - "flow.props.bool('webhook_signature_verified') == false"
+  then:
+    - raise: THREAT-WEBHOOK-SIGNATURE-MISSING
+      evidence: "The webhook from {{ flow.source.name }} to {{ flow.target.name }} does not verify a payload signature."
+      require: [CM-VERIFY-WEBHOOK-SIGNATURE]
+    - suggest_fix:
+        set: { webhook_signature_verified: true }
+        label: 'Verify the webhook payload signature'

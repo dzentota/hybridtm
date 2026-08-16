@@ -60,6 +60,26 @@ spec:
       type: boolean
       default: false
       group: 'Hardening'
+    - id: ssrf_protection_enabled
+      label: 'Outbound requests validated against an allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: safe_deserialization_enabled
+      label: 'Untrusted input deserialized with a data-only format'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: session_regenerated_on_login
+      label: 'Session ID regenerated on login'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: upload_type_validated
+      label: 'Uploaded file content is validated, not just its extension'
+      type: boolean
+      default: false
+      group: 'Hardening'
   rules:
     - app/input-validation-missing
     - app/debug-mode-enabled
@@ -70,3 +90,7 @@ spec:
     - app/rate-limiting-missing
     - app/cors-wildcard-origin
     - app/no-request-size-limit
+    - app/ssrf-missing-protection
+    - app/insecure-deserialization
+    - app/session-fixation
+    - app/unrestricted-file-upload
