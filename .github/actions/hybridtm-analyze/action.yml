@@ -1,0 +1,92 @@
+name: 'HybridTM Analyze'
+description: >-
+  Runs the HybridTM rule engine against a threat-model.php file, uploads
+  SARIF to GitHub code scanning, and (on a pull request) posts a comment
+  summarizing the finding-count delta against the base branch.
+author: 'HybridTM'
+
+inputs:
+  infra:
+    description: 'Path to the infrastructure DSL file'
+    required: false
+    default: 'threat-model.php'
+  kb:
+    description: 'Knowledge-base directory to load (repeatable paths, space-separated)'
+    required: false
+    default: ''
+  fail-on:
+    description: 'Exit non-zero if any finding reaches this severity (e.g. "high")'
+    required: false
+    default: ''
+  github-token:
+    description: 'Token used to post the PR comment (needs pull-requests: write)'
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.4'
+        coverage: none
+        tools: composer:v2
+
+    - name: Install hybridtm/hybridtm
+      shell: bash
+      run: composer require hybridtm/hybridtm --no-interaction --no-progress
+
+    - name: Run analysis (SARIF)
+      shell: bash
+      run: |
+        KB_FLAGS=""
+        for path in ${{ inputs.kb }}; do
+          KB_FLAGS="$KB_FLAGS --kb=$path"
+        done
+        vendor/bin/hybridtm analyze \
+          --infra="${{ inputs.infra }}" \
+          $KB_FLAGS \
+          --format=sarif > hybridtm-results.sarif
+
+    - name: Upload SARIF to code scanning
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: hybridtm-results.sarif
+
+    - name: Restore previous run's SARIF
+      if: github.event_name == 'pull_request'
+      id: cache-baseline
+      uses: actions/cache/restore@v4
+      with:
+        path: hybridtm-baseline.sarif
+        key: hybridtm-sarif-${{ github.event.pull_request.base.ref }}
+
+    - name: Comment on PR with risk delta
+      if: github.event_name == 'pull_request'
+      shell: bash
+      run: |
+        php "${{ github.action_path }}/../../scripts/render-pr-comment.php" \
+          hybridtm-results.sarif \
+          "$(test -f hybridtm-baseline.sarif && echo hybridtm-baseline.sarif || echo '')" \
+          > pr-comment.md
+        gh pr comment "${{ github.event.pull_request.number }}" --body-file pr-comment.md --edit-last || \
+          gh pr comment "${{ github.event.pull_request.number }}" --body-file pr-comment.md
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+
+    - name: Save this run's SARIF as the next baseline
+      if: github.ref == 'refs/heads/main'
+      uses: actions/cache/save@v4
+      with:
+        path: hybridtm-results.sarif
+        key: hybridtm-sarif-${{ github.ref_name }}
+
+    - name: Fail on severity threshold
+      if: inputs.fail-on != ''
+      shell: bash
+      run: |
+        vendor/bin/hybridtm analyze \
+          --infra="${{ inputs.infra }}" \
+          --fail-on="${{ inputs.fail-on }}" \
+          --format=table

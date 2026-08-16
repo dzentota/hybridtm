@@ -1,0 +1,30 @@
+name: HybridTM threat model check (example)
+
+# Not run automatically — this is a template for a consumer repository,
+# not a workflow for this one (this repo's threat model would just be
+# its own dogfooding case, tracked separately as T-11.7). Copy it into
+# a repository that has a threat-model.php and adjust `infra`/`kb`.
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  security-events: write
+  pull-requests: write
+
+jobs:
+  hybridtm-analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run HybridTM analysis
+        uses: HybridTM/hybridtm/.github/actions/hybridtm-analyze@main
+        with:
+          infra: threat-model.php
+          kb: kb-core/
+          fail-on: critical
