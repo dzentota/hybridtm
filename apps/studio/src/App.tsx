@@ -9,6 +9,7 @@ import { Inspector } from './inspector/Inspector'
 import { FindingsPanel } from './findings/FindingsPanel'
 import { LoginScreen } from './auth/LoginScreen'
 import { Toolbar } from './toolbar/Toolbar'
+import { CommandPalette } from './command/CommandPalette'
 
 const DEMO_PROJECT_SLUG = 'studio-demo'
 
@@ -87,6 +88,7 @@ function Studio() {
   return (
     <div className="w-full h-full grid relative" style={{ gridTemplateColumns: '260px 1fr 320px', gridTemplateRows: '1fr' }}>
       <AutosaveRestorePrompt />
+      <CommandPalette kb={kb} onRunAnalysis={() => runAnalysis.mutate()} />
       <ComponentPalette kb={kb} />
       <div className="flex flex-col h-full min-w-0">
         <Toolbar kb={kb} />

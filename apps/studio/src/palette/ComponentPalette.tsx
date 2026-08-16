@@ -28,6 +28,7 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
     <div className="flex flex-col h-full" style={{ background: 'var(--surface-1)', borderRight: '1px solid var(--border)' }}>
       <div className="p-2">
         <input
+          id="component-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder="Search components…"
