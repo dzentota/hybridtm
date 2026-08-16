@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next'
 import type { KbBundle } from '../api/types'
 import { useModelStore } from '../store/model.store'
 import { PropertyForm } from './PropertyForm'
@@ -5,13 +6,14 @@ import { PropertyForm } from './PropertyForm'
 /** Right-hand panel (T-7.9): shows the selected node's KB property schema
  * as an editable form, or a placeholder when nothing/a boundary is selected. */
 export function Inspector({ kb }: { kb: KbBundle | undefined }) {
+  const { t } = useTranslation()
   const { nodes, selectedId, updateProperty } = useModelStore()
   const selected = nodes.find((n) => n.id === selectedId)
 
   if (!selected || selected.data.kind !== 'component') {
     return (
       <div className="p-4 text-sm" style={{ color: 'var(--text-secondary)' }}>
-        Select a component to inspect its properties.
+        {t('inspector.empty')}
       </div>
     )
   }

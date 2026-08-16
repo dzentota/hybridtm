@@ -1,7 +1,9 @@
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { login } from '../api/client'
 
 export function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -15,7 +17,7 @@ export function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
       await login(email, password)
       onLoggedIn()
     } catch {
-      setError('Invalid email or password.')
+      setError(t('login.invalid'))
     } finally {
       setBusy(false)
     }
@@ -25,12 +27,12 @@ export function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
     <div className="w-full h-full flex items-center justify-center">
       <form onSubmit={submit} className="w-72 flex flex-col gap-3 p-6 rounded-xl border" style={{ borderColor: 'var(--border)', background: 'var(--surface-0)' }}>
         <div className="text-lg font-semibold" style={{ color: 'var(--text-primary)' }}>
-          HybridTM Studio
+          {t('login.title')}
         </div>
         <input
           type="email"
           required
-          placeholder="Email"
+          placeholder={t('login.email')}
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           className="text-sm px-2 py-1.5 rounded border"
@@ -39,7 +41,7 @@ export function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
         <input
           type="password"
           required
-          placeholder="Password"
+          placeholder={t('login.password')}
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           className="text-sm px-2 py-1.5 rounded border"
@@ -52,7 +54,7 @@ export function LoginScreen({ onLoggedIn }: { onLoggedIn: () => void }) {
           className="text-sm font-medium px-3 py-1.5 rounded"
           style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
         >
-          {busy ? 'Signing in…' : 'Sign in'}
+          {busy ? t('login.signingIn') : t('login.signIn')}
         </button>
       </form>
     </div>

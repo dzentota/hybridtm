@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useQuery, useMutation } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { ReactFlowProvider } from '@xyflow/react'
 import { analyze, createModelVersion, createProject, getKbBundle, getToken, listProjects } from './api/client'
 import { useModelStore, useTemporalStore, restoreAutosave, clearAutosave } from './store/model.store'
@@ -31,6 +32,7 @@ function useUndoRedoHotkeys() {
 }
 
 function AutosaveRestorePrompt() {
+  const { t } = useTranslation()
   const [pending] = useState(() => restoreAutosave())
   const [dismissed, setDismissed] = useState(false)
 
@@ -43,7 +45,7 @@ function AutosaveRestorePrompt() {
       role="alertdialog"
       aria-label="Restore autosaved model"
     >
-      <span>Unsaved changes from a previous session were found (saved {new Date(pending.savedAt).toLocaleTimeString()}).</span>
+      <span>{t('autosave.found', { time: new Date(pending.savedAt).toLocaleTimeString() })}</span>
       <button
         className="px-2 py-1 rounded font-medium"
         style={{ background: 'var(--accent)', color: 'white' }}
@@ -52,7 +54,7 @@ function AutosaveRestorePrompt() {
           setDismissed(true)
         }}
       >
-        Restore
+        {t('autosave.restore')}
       </button>
       <button
         className="px-2 py-1 rounded"
@@ -62,7 +64,7 @@ function AutosaveRestorePrompt() {
           setDismissed(true)
         }}
       >
-        Discard
+        {t('autosave.discard')}
       </button>
     </div>
   )

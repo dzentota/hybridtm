@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useReactFlow } from '@xyflow/react'
+import { useTranslation } from 'react-i18next'
 import { cascadeOffset, useModelStore } from '../store/model.store'
 import type { KbBundle } from '../api/types'
 
@@ -9,6 +10,7 @@ import type { KbBundle } from '../api/types'
  * reads the id back off the drag event for the drag path; the keyboard
  * path calls the same store action directly. */
 export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
+  const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
   const { screenToFlowPosition } = useReactFlow()
@@ -38,13 +40,13 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
           id="component-search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="Search components…"
+          placeholder={t('palette.search')}
           className="w-full text-sm px-2 py-1.5 rounded border"
           style={{ background: 'var(--surface-0)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
         />
       </div>
       <div className="flex-1 overflow-y-auto px-2 pb-2">
-        {!kb && <div className="text-xs p-2" style={{ color: 'var(--text-secondary)' }}>Loading knowledge base…</div>}
+        {!kb && <div className="text-xs p-2" style={{ color: 'var(--text-secondary)' }}>{t('palette.loading')}</div>}
         {[...grouped.entries()].map(([category, items]) => (
           <div key={category} className="mb-3">
             <div className="text-xs font-semibold uppercase tracking-wide px-1 mb-1" style={{ color: 'var(--text-secondary)' }}>
@@ -56,7 +58,7 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
                 draggable
                 role="button"
                 tabIndex={0}
-                aria-label={`Add ${component.metadata.name} to canvas`}
+                aria-label={t('palette.addAria', { name: component.metadata.name })}
                 onDragStart={(e) => {
                   e.dataTransfer.setData('application/hybridtm-kb-component', id)
                   e.dataTransfer.effectAllowed = 'move'
@@ -73,7 +75,7 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
               >
                 <span>{component.metadata.name}</span>
                 <span className="text-[10px] px-1.5 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
-                  {component.rules.length} rules
+                  {t('palette.rules', { count: component.rules.length })}
                 </span>
               </div>
             ))}

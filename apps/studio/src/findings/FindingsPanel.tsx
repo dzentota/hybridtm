@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useModelStore } from '../store/model.store'
 import { FindingCard } from './FindingCard'
 
@@ -13,6 +14,7 @@ export function FindingsPanel({
   onRunAnalysis: () => void
   isAnalyzing: boolean
 }) {
+  const { t } = useTranslation()
   const { findings, select } = useModelStore()
   const [minSeverity, setMinSeverity] = useState<(typeof severityOrder)[number]>('low')
 
@@ -40,7 +42,7 @@ export function FindingsPanel({
           className="text-sm font-medium px-3 py-1.5 rounded"
           style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
         >
-          {isAnalyzing ? 'Analyzing…' : 'Run analysis'}
+          {isAnalyzing ? t('findings.analyzing') : t('findings.runAnalysis')}
         </button>
         <select
           value={minSeverity}
@@ -50,7 +52,7 @@ export function FindingsPanel({
         >
           {severityOrder.map((s) => (
             <option key={s} value={s}>
-              min severity: {s}
+              {t('findings.minSeverity', { severity: s })}
             </option>
           ))}
         </select>
@@ -58,7 +60,7 @@ export function FindingsPanel({
       <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
         {findings.length === 0 && (
           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-            No findings yet — run analysis to check the model.
+            {t('findings.empty')}
           </div>
         )}
         {severityOrder

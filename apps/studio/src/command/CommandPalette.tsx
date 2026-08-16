@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { fuzzyMatch } from './fuzzy'
 import { useCommands } from './useCommands'
 import type { KbBundle } from '../api/types'
@@ -7,6 +8,7 @@ import type { KbBundle } from '../api/types'
  * (static canvas/view actions + one "Add <component>" entry per KB
  * component) and runs the selected one on Enter. */
 export function CommandPalette({ kb, onRunAnalysis }: { kb: KbBundle | undefined; onRunAnalysis: () => void }) {
+  const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
@@ -78,7 +80,7 @@ export function CommandPalette({ kb, onRunAnalysis }: { kb: KbBundle | undefined
               run(activeIndex)
             }
           }}
-          placeholder="Type a command…"
+          placeholder={t('command.placeholder')}
           aria-label="Command search"
           className="px-3 py-2.5 text-sm outline-none"
           style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)', background: 'transparent' }}
@@ -86,7 +88,7 @@ export function CommandPalette({ kb, onRunAnalysis }: { kb: KbBundle | undefined
         <div className="overflow-y-auto" role="listbox" aria-label="Commands">
           {filtered.length === 0 && (
             <div className="px-3 py-2 text-sm" style={{ color: 'var(--text-secondary)' }}>
-              No matching commands
+              {t('command.empty')}
             </div>
           )}
           {filtered.map((c, i) => (

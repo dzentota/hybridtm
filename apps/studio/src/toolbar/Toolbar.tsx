@@ -1,17 +1,19 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import { useModelStore, useTemporalStore, type OverlayMode } from '../store/model.store'
 import { useElkLayout } from '../layout/useElkLayout'
 import { useExportCanvas } from '../canvas/useExportCanvas'
 import type { KbBundle } from '../api/types'
 
-const OVERLAY_LABELS: Record<OverlayMode, string> = {
-  risks: 'Risks',
-  data: 'Data',
-  exposure: 'Exposure',
-  coverage: 'Coverage',
+const OVERLAY_KEYS: Record<OverlayMode, string> = {
+  risks: 'toolbar.overlayRisks',
+  data: 'toolbar.overlayData',
+  exposure: 'toolbar.overlayExposure',
+  coverage: 'toolbar.overlayCoverage',
 }
 
 function SavedIndicator() {
+  const { t } = useTranslation()
   const lastSavedAt = useModelStore((s) => s.lastSavedAt)
   const [, forceTick] = useState(0)
 
@@ -20,10 +22,15 @@ function SavedIndicator() {
     return () => clearInterval(id)
   }, [])
 
-  if (!lastSavedAt) return <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>Not saved yet</span>
+  if (!lastSavedAt) return <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('toolbar.notSaved')}</span>
 
   const seconds = Math.max(0, Math.round((Date.now() - new Date(lastSavedAt).getTime()) / 1000))
-  const label = seconds < 5 ? 'Saved just now' : seconds < 60 ? `Saved ${seconds}s ago` : `Saved ${Math.round(seconds / 60)}m ago`
+  const label =
+    seconds < 5
+      ? t('toolbar.savedNow')
+      : seconds < 60
+        ? t('toolbar.savedSecondsAgo', { count: seconds })
+        : t('toolbar.savedMinutesAgo', { count: Math.round(seconds / 60) })
   return (
     <span className="text-xs" style={{ color: 'var(--text-secondary)' }} aria-live="polite">
       {label}
@@ -32,6 +39,7 @@ function SavedIndicator() {
 }
 
 export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
+  const { t, i18n } = useTranslation()
   const { undo, redo, canUndo, canRedo } = useTemporalStore()
   const title = useModelStore((s) => s.title)
   const setTitle = useModelStore((s) => s.setTitle)
@@ -47,7 +55,7 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
       style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)' }}
     >
       <input
-        aria-label="Model title"
+        aria-label={t('toolbar.title')}
         value={title}
         onChange={(e) => setTitle(e.target.value)}
         className="font-medium bg-transparent outline-none min-w-0"
@@ -56,31 +64,31 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
       <div className="flex items-center gap-1" role="group" aria-label="Undo and redo">
         <button
           type="button"
-          aria-label="Undo (Ctrl+Z)"
-          title="Undo (Ctrl+Z)"
+          aria-label={t('toolbar.undo')}
+          title={t('toolbar.undo')}
           disabled={!canUndo}
           onClick={() => undo()}
           className="px-2 py-1 rounded disabled:opacity-40"
           style={{ border: '1px solid var(--border)' }}
         >
-          ↺ Undo
+          ↺ {t('toolbar.undoShort')}
         </button>
         <button
           type="button"
-          aria-label="Redo (Ctrl+Shift+Z)"
-          title="Redo (Ctrl+Shift+Z)"
+          aria-label={t('toolbar.redo')}
+          title={t('toolbar.redo')}
           disabled={!canRedo}
           onClick={() => redo()}
           className="px-2 py-1 rounded disabled:opacity-40"
           style={{ border: '1px solid var(--border)' }}
         >
-          ↻ Redo
+          ↻ {t('toolbar.redoShort')}
         </button>
       </div>
       <button
         type="button"
-        aria-label="Auto-layout the canvas with ELK"
-        title="Auto-layout"
+        aria-label={t('toolbar.autoLayout')}
+        title={t('toolbar.autoLayout')}
         disabled={laying}
         onClick={async () => {
           setLaying(true)
@@ -93,10 +101,10 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
         className="px-2 py-1 rounded disabled:opacity-40"
         style={{ border: '1px solid var(--border)' }}
       >
-        {laying ? 'Laying out…' : '⇉ Auto-layout'}
+        {laying ? t('toolbar.layingOut') : `⇉ ${t('toolbar.autoLayout')}`}
       </button>
       <label className="flex items-center gap-1.5">
-        <span style={{ color: 'var(--text-secondary)' }}>Overlay:</span>
+        <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.overlay')}</span>
         <select
           aria-label="Canvas overlay mode"
           value={overlayMode}
@@ -104,9 +112,9 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
           className="px-1.5 py-1 rounded text-sm"
           style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
         >
-          {(Object.keys(OVERLAY_LABELS) as OverlayMode[]).map((mode) => (
+          {(Object.keys(OVERLAY_KEYS) as OverlayMode[]).map((mode) => (
             <option key={mode} value={mode}>
-              {OVERLAY_LABELS[mode]}
+              {t(OVERLAY_KEYS[mode])}
             </option>
           ))}
         </select>
@@ -120,7 +128,7 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
           className="px-2 py-1 rounded"
           style={{ border: '1px solid var(--border)' }}
         >
-          PNG
+          {t('toolbar.exportPng')}
         </button>
         <button
           type="button"
@@ -130,9 +138,22 @@ export function Toolbar({ kb: _kb }: { kb: KbBundle | undefined }) {
           className="px-2 py-1 rounded"
           style={{ border: '1px solid var(--border)' }}
         >
-          SVG
+          {t('toolbar.exportSvg')}
         </button>
       </div>
+      <label className="flex items-center gap-1.5">
+        <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.language')}:</span>
+        <select
+          aria-label={t('toolbar.language')}
+          value={i18n.resolvedLanguage}
+          onChange={(e) => void i18n.changeLanguage(e.target.value)}
+          className="px-1.5 py-1 rounded text-sm"
+          style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
+        >
+          <option value="en">EN</option>
+          <option value="ru">RU</option>
+        </select>
+      </label>
       <div className="ml-auto flex items-center gap-3">
         <SavedIndicator />
       </div>
