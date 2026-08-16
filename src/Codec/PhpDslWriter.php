@@ -32,11 +32,24 @@ use HybridTM\DSL\TrustBoundary;
  * `IndividualRiskCategory`, `RiskTracking`) are all outside that subset —
  * PHP-DSL round-tripping for those is a distinct, separately-scoped
  * follow-up, not a bug in this class.
+ *
+ * Pass `$comments` straight from a prior `DslReadResult::$comments` to
+ * preserve a hand-written comment above an entity's construction line
+ * across a read/write cycle (T-4.5) — a comment written above
+ * `$web = new TechnicalAsset(...);` survives being read and rewritten,
+ * indefinitely, since each cycle's output feeds the next cycle's input
+ * unchanged.
  */
 final class PhpDslWriter
 {
-    public function write(ThreatModel $model): string
+    /** @var array<string, string> "ClassName:id" (or "ThreatModel") => comment text for this call */
+    private array $comments = [];
+
+    /** @param array<string, string> $comments see `DslReadResult::$comments` */
+    public function write(ThreatModel $model, array $comments = []): string
     {
+        $this->comments = $comments;
+
         $lines = [];
         $lines[] = '<?php';
         $lines[] = 'declare(strict_types=1);';
@@ -52,6 +65,7 @@ final class PhpDslWriter
 
         $names = new VariableNamer();
 
+        $lines = [...$lines, ...$this->commentLinesFor('ThreatModel')];
         $lines[] = "\$model = new ThreatModel('" . $this->esc($model->title) . "');";
         if ($model->description !== '') {
             $lines[] = "\$model->description = '" . $this->esc($model->description) . "';";
@@ -87,9 +101,15 @@ final class PhpDslWriter
     }
 
     /** @return list<string> */
+    private function commentLinesFor(string $key): array
+    {
+        return isset($this->comments[$key]) ? [$this->comments[$key]] : [];
+    }
+
+    /** @return list<string> */
     private function writeDataAsset(DataAsset $asset, string $var): array
     {
-        $lines = [];
+        $lines = $this->commentLinesFor("DataAsset:{$asset->id}");
         $lines[] = "\${$var} = new DataAsset('{$asset->id}', '" . $this->esc($asset->name) . "');";
         if ($asset->description !== '') {
             $lines[] = "\${$var}->description = '" . $this->esc($asset->description) . "';";
@@ -117,7 +137,7 @@ final class PhpDslWriter
     /** @return list<string> */
     private function writeTechnicalAsset(TechnicalAsset $asset, string $var): array
     {
-        $lines = [];
+        $lines = $this->commentLinesFor("TechnicalAsset:{$asset->id}");
         $lines[] = "\${$var} = new TechnicalAsset('{$asset->id}', '" . $this->esc($asset->name) . "');";
         if ($asset->description !== '') {
             $lines[] = "\${$var}->description = '" . $this->esc($asset->description) . "';";
@@ -225,7 +245,7 @@ final class PhpDslWriter
     /** @return list<string> */
     private function writeTrustBoundary(TrustBoundary $boundary, string $var): array
     {
-        $lines = [];
+        $lines = $this->commentLinesFor("TrustBoundary:{$boundary->id}");
         $lines[] = "\${$var} = new TrustBoundary('{$boundary->id}', '" . $this->esc($boundary->name) . "', TrustBoundaryType::{$boundary->type->name});";
         if ($boundary->description !== '') {
             $lines[] = "\${$var}->description = '" . $this->esc($boundary->description) . "';";

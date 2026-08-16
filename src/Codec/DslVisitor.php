@@ -74,6 +74,16 @@ final class DslVisitor
     /** @var list<NonCanonicalConstruct> */
     private array $nonCanonical = [];
 
+    /**
+     * @var array<string, string> "ClassName:id" (or "ThreatModel" for the
+     *      root) => leading comment text, captured so PhpDslWriter can put
+     *      it back (T-4.5).
+     */
+    private array $comments = [];
+
+    /** Comment text captured for the statement currently being visited. */
+    private string $pendingComment = '';
+
     /** @param list<Node\Stmt> $stmts top-level statements */
     public function read(array $stmts): DslReadResult
     {
@@ -81,7 +91,7 @@ final class DslVisitor
             $this->visitStatement($stmt);
         }
 
-        return new DslReadResult($this->model, $this->nonCanonical);
+        return new DslReadResult($this->model, $this->nonCanonical, $this->comments);
     }
 
     private function visitStatement(Stmt $stmt): void
@@ -103,11 +113,22 @@ final class DslVisitor
         }
 
         if ($stmt instanceof Stmt\Expression) {
+            $this->pendingComment = $this->commentTextFor($stmt);
             $this->visitExpression($stmt->expr, $stmt);
+            $this->pendingComment = '';
             return;
         }
 
         $this->reject($stmt, 'statement type ' . $stmt->getType() . ' is outside the recognizable subset');
+    }
+
+    private function commentTextFor(Node $node): string
+    {
+        $comments = $node->getComments();
+        if ($comments === []) {
+            return '';
+        }
+        return implode("\n", array_map(static fn ($c): string => $c->getText(), $comments));
     }
 
     private function visitExpression(Expr $expr, Node $context): void
@@ -220,7 +241,7 @@ final class DslVisitor
         }
 
         try {
-            $this->vars[$varName] = match ($className) {
+            $entity = match ($className) {
                 'ThreatModel' => new ThreatModel((string) ($args['title'] ?? $args[0] ?? '')),
                 'TechnicalAsset' => new TechnicalAsset((string) ($args['id'] ?? $args[0] ?? ''), (string) ($args['name'] ?? $args[1] ?? '')),
                 'DataAsset' => new DataAsset((string) ($args['id'] ?? $args[0] ?? ''), (string) ($args['name'] ?? $args[1] ?? '')),
@@ -230,6 +251,12 @@ final class DslVisitor
                     $args['type'] ?? $args[2] ?? TrustBoundaryType::NetworkOnPrem,
                 ),
             };
+            $this->vars[$varName] = $entity;
+
+            if ($this->pendingComment !== '') {
+                $key = $className === 'ThreatModel' ? 'ThreatModel' : "{$className}:{$entity->id}";
+                $this->comments[$key] = $this->pendingComment;
+            }
         } catch (\Throwable $e) {
             $this->reject($new, "failed to construct {$className}: " . $e->getMessage());
         }
