@@ -10,11 +10,19 @@ import {
   type Connection,
   type NodeChange,
   type EdgeChange,
+  type OnNodeDrag,
   useReactFlow,
   ReactFlowProvider,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { useModelStore, type StudioNode } from '../store/model.store'
+
+function absolutePosition(node: StudioNode, allNodes: StudioNode[]): { x: number; y: number } {
+  if (!node.parentId) return node.position
+  const parent = allNodes.find((n) => n.id === node.parentId)
+  if (!parent) return node.position
+  return { x: parent.position.x + node.position.x, y: parent.position.y + node.position.y }
+}
 import { ComponentNode } from './nodes/ComponentNode'
 import { BoundaryNode } from './nodes/BoundaryNode'
 import { DataFlowEdge } from './edges/DataFlowEdge'
@@ -29,7 +37,16 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
   const { screenToFlowPosition } = useReactFlow()
 
   const onNodesChange = useCallback(
-    (changes: NodeChange[]) => setNodes((nds) => applyNodeChanges(changes, nds) as typeof nds),
+    (changes: NodeChange[]) => {
+      // Pause undo-history recording while a drag is in progress so every
+      // intermediate mouse-move position doesn't become its own undo step —
+      // only the drag's final settled position does (T-7.13).
+      const dragging = changes.some((c) => c.type === 'position' && c.dragging)
+      const dragEnded = changes.some((c) => c.type === 'position' && c.dragging === false)
+      if (dragging) useModelStore.temporal.getState().pause()
+      if (dragEnded) useModelStore.temporal.getState().resume()
+      setNodes((nds) => applyNodeChanges(changes, nds) as typeof nds)
+    },
     [setNodes],
   )
   const onEdgesChange = useCallback(
@@ -44,6 +61,29 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
   const onSelectionChange = useCallback(
     ({ nodes: sel }: { nodes: StudioNode[] }) => select(sel[0]?.id ?? null),
     [select],
+  )
+
+  const onNodeDragStop: OnNodeDrag<StudioNode> = useCallback(
+    (_event, draggedNode) => {
+      if (draggedNode.type !== 'component') return
+      setNodes((nds) => {
+        const current = nds.find((n) => n.id === draggedNode.id)
+        if (!current) return nds
+        const abs = absolutePosition(current, nds)
+        const target = nds.find((n) => {
+          if (n.type !== 'boundary' || n.id === current.id) return false
+          const width = (n.style?.width as number) ?? 420
+          const height = (n.style?.height as number) ?? 260
+          return abs.x >= n.position.x && abs.x <= n.position.x + width && abs.y >= n.position.y && abs.y <= n.position.y + height
+        })
+        if ((target?.id ?? undefined) === current.parentId) return nds
+        const newPosition = target ? { x: abs.x - target.position.x, y: abs.y - target.position.y } : abs
+        return nds.map((n) =>
+          n.id === current.id ? { ...n, position: newPosition, parentId: target?.id } : n,
+        )
+      })
+    },
+    [setNodes],
   )
 
   const onDragOver = useCallback((event: React.DragEvent) => {
@@ -75,9 +115,9 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         onSelectionChange={onSelectionChange}
+        onNodeDragStop={onNodeDragStop}
         deleteKeyCode={['Backspace', 'Delete']}
         multiSelectionKeyCode={['Meta', 'Control']}
-        fitView
       >
         <Background />
         <Controls />
