@@ -1,0 +1,38 @@
+# Scanner-to-countermeasure mapping (T-10.8): which countermeasure a
+# passing scanner check verifies. Kept separate from the KB YAML
+# (apps/api/kb/countermeasures/*.yaml's `verification.automated` field is
+# for documentation/UI display) since this mapping is deployment-specific
+# — which scanner rule IDs apply depends on which cloud/stack an org
+# actually runs, and changes far more often than the countermeasure
+# catalog itself.
+mappings:
+  - tool: checkov
+    rule: CKV_AWS_16
+    countermeasure: CM-ENCRYPT-AT-REST
+  - tool: checkov
+    rule: CKV_AWS_17
+    countermeasure: CM-RESTRICT-DB-NETWORK-ACCESS
+  - tool: checkov
+    rule: CKV_AWS_23
+    countermeasure: CM-BLOCK-PUBLIC-BUCKET-ACCESS
+  - tool: checkov
+    rule: CKV_AWS_21
+    countermeasure: CM-ENABLE-AUDIT-LOGGING
+  - tool: trivy
+    rule: AVD-AWS-0028
+    countermeasure: CM-ENCRYPT-AT-REST
+  - tool: trivy
+    rule: AVD-AWS-0086
+    countermeasure: CM-BLOCK-PUBLIC-BUCKET-ACCESS
+  - tool: trivy
+    rule: AVD-AWS-0107
+    countermeasure: CM-RESTRICT-DB-NETWORK-ACCESS
+  - tool: sonarqube
+    rule: phpsecurity:S5131
+    countermeasure: CM-INPUT-VALIDATION
+  - tool: sonarqube
+    rule: phpsecurity:S4502
+    countermeasure: CM-CSRF-TOKENS
+  - tool: sonarqube
+    rule: phpsecurity:S2755
+    countermeasure: CM-INPUT-VALIDATION
