@@ -116,6 +116,28 @@ jobs:
           path: build/
           retention-days: 7
 
+  dogfood:
+    name: Dogfooding — analyze the platform's own threat model
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          coverage: none
+          tools: composer:v2
+      - uses: ramsey/composer-install@v3
+      - name: Analyze threat-model.php (T-11.7)
+        run: php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=table --fail-on=critical
+      - name: Export SARIF for code scanning
+        run: php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=sarif > hybridtm-self-analysis.sarif
+      - uses: github/codeql-action/upload-sarif@v3
+        with:
+          sarif_file: hybridtm-self-analysis.sarif
+
   security:
     name: Dependency audit
     runs-on: ubuntu-latest
