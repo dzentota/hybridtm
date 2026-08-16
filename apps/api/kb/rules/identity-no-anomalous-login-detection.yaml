@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: identity/no-anomalous-login-detection
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Identity provider has no anomalous-login detection.'
+  when:
+    all:
+      - "component.hasTrait('identity_provider')"
+      - "component.props.bool('anomalous_login_detection_enabled') == false"
+  then:
+    - raise: THREAT-NO-ANOMALOUS-LOGIN-DETECTION
+      evidence: "{{ component.name }} has no anomalous-login detection."
+      require: [CM-DETECT-ANOMALOUS-LOGINS]
+    - suggest_fix:
+        set: { anomalous_login_detection_enabled: true }
+        label: 'Enable anomalous-login detection'

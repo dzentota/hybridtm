@@ -14,5 +14,11 @@ spec:
   mapping:
     type: datastore
     technologies: [database]
-  properties: []
-  rules: []
+  properties:
+    - id: dangerous_commands_restricted
+      label: 'Destructive/admin commands disabled or renamed'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - cache/dangerous-commands-enabled

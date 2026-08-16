@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DNSSEC-DISABLED
+  version: 1.0.0
+spec:
+  title: 'DNS zone is not signed with DNSSEC'
+  summary: 'Without DNSSEC, resolvers have no way to verify DNS responses are authentic, so an attacker able to intercept or poison DNS traffic can redirect users to a malicious host with no cryptographic evidence of tampering.'
+  stride: [spoofing, tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [345]
+  countermeasures:
+      - CM-ENABLE-DNSSEC

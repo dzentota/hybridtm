@@ -1,0 +1,30 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: dns-provider-generic
+  name: DNS provider (generic)
+  version: 1.0.0
+  categories: [integration]
+  icon: mdi:dns-outline
+  color: '#0891B2'
+  maturity: stable
+spec:
+  mapping:
+    type: process
+    technologies: [gateway]
+    machine: serverless
+  traits: [dns_authoritative]
+  properties:
+    - id: dnssec_enabled
+      label: 'Zone is signed with DNSSEC'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: zone_transfer_restricted
+      label: 'Zone transfers restricted to authorized secondaries'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - dns/dnssec-disabled
+    - dns/zone-transfer-unrestricted

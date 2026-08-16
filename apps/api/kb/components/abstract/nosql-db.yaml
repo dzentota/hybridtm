@@ -12,5 +12,11 @@ spec:
   mapping:
     type: datastore
   traits: [nosql_engine]
-  properties: []
-  rules: []
+  properties:
+    - id: schema_validation_enabled
+      label: 'Document/schema validation enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - nosql/no-schema-validation

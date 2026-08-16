@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-BOUNDARY-CONTAINS-SPOF
+  version: 1.0.0
+spec:
+  title: 'Trust boundary contains a single point of failure'
+  summary: 'A component with no redundancy sits inside this trust boundary, so its failure (or an attacker deliberately taking it down) is an outage for everything that depends on it, with no automatic failover.'
+  stride: [denial-of-service]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [1188]
+  countermeasures:
+      - CM-ADD-REDUNDANCY

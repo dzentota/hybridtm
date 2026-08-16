@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-RESTRICT-DANGEROUS-COMMANDS
+  version: 1.0.0
+spec:
+  title: 'Disable or rename destructive/administrative commands'
+  description: 'Disable or rename commands like FLUSHALL, CONFIG, SHUTDOWN, KEYS at the server config level (e.g. Redis `rename-command`) so an application credential cannot invoke them even if compromised.'
+  cost: low
+  effort: low
+  effectiveness: medium
+  category: preventive

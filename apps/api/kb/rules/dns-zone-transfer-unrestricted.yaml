@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: dns/zone-transfer-unrestricted
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'DNS zone transfers are not restricted to authorized secondaries.'
+  when:
+    all:
+      - "component.hasTrait('dns_authoritative')"
+      - "component.props.bool('zone_transfer_restricted') == false"
+  then:
+    - raise: THREAT-DNS-ZONE-TRANSFER-UNRESTRICTED
+      evidence: "{{ component.name }} allows zone transfers to any requester."
+      require: [CM-RESTRICT-ZONE-TRANSFER]
+    - suggest_fix:
+        set: { zone_transfer_restricted: true }
+        label: 'Restrict zone transfers'

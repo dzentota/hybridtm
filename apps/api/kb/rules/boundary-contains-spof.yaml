@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: boundary/contains-spof
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: boundary
+  description: 'Trust boundary contains a component with no redundancy.'
+  when:
+    all:
+      - "boundary.anyAssetHasTrait('single_point_of_failure')"
+  then:
+    - raise: THREAT-BOUNDARY-CONTAINS-SPOF
+      evidence: "Trust boundary \"{{ boundary.name }}\" contains a component with no redundancy."
+      require: [CM-ADD-REDUNDANCY]

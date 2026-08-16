@@ -43,9 +43,15 @@ spec:
       type: boolean
       default: false
       group: 'Access control'
+    - id: anomalous_login_detection_enabled
+      label: 'Detects anomalous logins (impossible travel, new device)'
+      type: boolean
+      default: false
+      group: 'Monitoring'
   rules:
     - identity/idp-without-mfa
     - identity/default-credentials
     - identity/session-timeout-excessive
     - identity/account-lockout-disabled
     - identity/weak-password-policy
+    - identity/no-anomalous-login-detection
