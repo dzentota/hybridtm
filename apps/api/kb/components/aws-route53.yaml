@@ -1,0 +1,31 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-route53
+  name: AWS Route 53
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [integration, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  mapping:
+    type: process
+    technologies: [gateway]
+    machine: serverless
+  traits: [dns_authoritative]
+  properties:
+    - id: dnssec_enabled
+      label: 'Zone is signed with DNSSEC'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: zone_transfer_restricted
+      label: 'Zone transfers restricted to authorized secondaries'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - dns/dnssec-disabled
+    - dns/zone-transfer-unrestricted
