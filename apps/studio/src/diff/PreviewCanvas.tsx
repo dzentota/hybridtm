@@ -1,7 +1,7 @@
 import { Background, ReactFlow, ReactFlowProvider, type NodeProps } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
 import { canonicalModelToGraph } from '../store/model.store'
-import type { CanonicalModel } from '../api/types'
+import type { CanonicalModel, ModelLayout } from '../api/types'
 import type { ComponentNodeData, BoundaryNodeData, StudioNode } from '../store/model.store'
 
 /** Read-only, store-independent node renderers for the diff view's two
@@ -37,8 +37,16 @@ function PreviewBoundaryNode({ data }: NodeProps<StudioNode>) {
 
 const nodeTypes = { component: PreviewComponentNode, boundary: PreviewBoundaryNode }
 
-export function PreviewCanvas({ model, label }: { model: CanonicalModel | undefined; label: string }) {
-  const { nodes, edges } = model ? canonicalModelToGraph(model) : { nodes: [], edges: [] }
+export function PreviewCanvas({
+  model,
+  layout,
+  label,
+}: {
+  model: CanonicalModel | undefined
+  layout?: ModelLayout | null
+  label: string
+}) {
+  const { nodes, edges } = model ? canonicalModelToGraph(model, layout) : { nodes: [], edges: [] }
 
   return (
     <div className="flex flex-col h-full min-h-0" style={{ border: '1px solid var(--border)' }}>

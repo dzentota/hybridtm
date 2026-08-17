@@ -40,13 +40,54 @@ export interface CanonicalDataFlow {
   targetPort?: string
   description?: string
   protocol?: string
+  // Mirrors CommunicationLink.dataSent/dataReceived/tags (src/DSL/CommunicationLink.php)
+  // — IDs into CanonicalModel.dataAssets. No separate "direction" field:
+  // a flow that only sends is outbound, one that only receives is inbound,
+  // one with both is bidirectional (request/response).
+  dataSent?: string[]
+  dataReceived?: string[]
+  tags?: string[]
+}
+
+// Mirrors src/DSL/DataAsset.php (only the fields the studio surfaces —
+// backend has richer classification: usage/origin/owner/quantity/CIA
+// ratings — extend here as the UI grows into them).
+export interface CanonicalDataAsset {
+  id: string
+  name: string
+  classification?: string
+  tags?: string[]
+}
+
+// Mirrors src/Codec/LayoutCodec.php's `threat-model.layout.json` shape — a
+// sidecar for canvas pixel positions, deliberately separate from
+// CanonicalModel (which has no notion of where things sit on screen).
+// ModelVersion.layout on the backend is this exact shape, keyed by
+// component/boundary id.
+export interface LayoutRect {
+  x: number
+  y: number
+  w: number
+  h: number
+}
+
+export interface LayoutGroup extends LayoutRect {
+  collapsed: boolean
+}
+
+export interface ModelLayout {
+  schemaVersion: 1
+  nodes: Record<string, LayoutRect>
+  groups: Record<string, LayoutGroup>
+  edges: Record<string, [number, number][]>
+  viewport: { x: number; y: number; zoom: number }
 }
 
 export interface CanonicalModel {
   schemaVersion: 1
   kbVersion?: string
   model: { title: string; businessCriticality?: string }
-  dataAssets: unknown[]
+  dataAssets: CanonicalDataAsset[]
   components: CanonicalComponent[]
   trustBoundaries: CanonicalTrustBoundary[]
   dataFlows: CanonicalDataFlow[]
@@ -82,15 +123,51 @@ export interface KbComponent {
     vendor?: string
     categories?: string[]
     maturity?: string
+    icon?: string
+    color?: string
   }
+}
+
+export interface KbCountermeasure {
+  title: string
+  description: string
+  cost: 'low' | 'medium' | 'high'
+  effort: 'low' | 'medium' | 'high'
+  effectiveness: 'low' | 'medium' | 'high'
+  category: string
+  metadata: { id: string; version: string }
+}
+
+export interface KbThreat {
+  title: string
+  summary: string
+  stride: string[]
+  base: { likelihood: string; impact: string }
+  // Mirrors schema/kb/threat.v1.json's `standards` shape — populated
+  // per-threat only where a mapping has actually been verified against the
+  // primary source (MITRE CAPEC, OWASP ASVS GitHub, etc.), not guessed;
+  // most threats still only carry `cwe`, and that's fine — an absent field
+  // means "not yet mapped," not "not applicable."
+  standards?: {
+    cwe?: number[]
+    capec?: number[]
+    owasp_top10_2021?: string[]
+    owasp_asvs?: string[]
+    mitre_attack?: string[]
+    pci_dss_4?: string[]
+    iso_27001_2022?: string[]
+    nist_800_53?: string[]
+  }
+  countermeasures: string[]
+  metadata: { id: string; version: string }
 }
 
 export interface KbBundle {
   kbVersion: string
   traits: Record<string, unknown>
   components: Record<string, KbComponent>
-  threats: Record<string, unknown>
-  countermeasures: Record<string, unknown>
+  threats: Record<string, KbThreat>
+  countermeasures: Record<string, KbCountermeasure>
   rules: Record<string, unknown>
   riskPatterns: Record<string, unknown>
   templates: Record<string, unknown>

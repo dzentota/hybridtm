@@ -14,14 +14,7 @@ import {
   useReactFlow,
 } from '@xyflow/react'
 import '@xyflow/react/dist/style.css'
-import { useModelStore, type StudioNode } from '../store/model.store'
-
-function absolutePosition(node: StudioNode, allNodes: StudioNode[]): { x: number; y: number } {
-  if (!node.parentId) return node.position
-  const parent = allNodes.find((n) => n.id === node.parentId)
-  if (!parent) return node.position
-  return { x: parent.position.x + node.position.x, y: parent.position.y + node.position.y }
-}
+import { useModelStore, absolutePosition, type StudioNode, type StudioEdge } from '../store/model.store'
 import { ComponentNode } from './nodes/ComponentNode'
 import { BoundaryNode } from './nodes/BoundaryNode'
 import { DataFlowEdge } from './edges/DataFlowEdge'
@@ -31,7 +24,7 @@ const nodeTypes = { component: ComponentNode, boundary: BoundaryNode }
 const edgeTypes = { dataflow: DataFlowEdge }
 
 function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
-  const { nodes, edges, setNodes, setEdges, select, addComponentFromKb } = useModelStore()
+  const { nodes, edges, setNodes, setEdges, select, selectEdge, addComponentFromKb } = useModelStore()
   const wrapperRef = useRef<HTMLDivElement>(null)
   const { screenToFlowPosition } = useReactFlow()
 
@@ -58,8 +51,11 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
     [setEdges],
   )
   const onSelectionChange = useCallback(
-    ({ nodes: sel }: { nodes: StudioNode[] }) => select(sel[0]?.id ?? null),
-    [select],
+    ({ nodes: sel, edges: selEdges }: { nodes: StudioNode[]; edges: StudioEdge[] }) => {
+      select(sel[0]?.id ?? null)
+      selectEdge(sel.length === 0 ? selEdges[0]?.id ?? null : null)
+    },
+    [select, selectEdge],
   )
 
   const onNodeDragStop: OnNodeDrag<StudioNode> = useCallback(
@@ -104,7 +100,15 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
   )
 
   return (
-    <div ref={wrapperRef} className="w-full h-full" onDragOver={onDragOver} onDrop={onDrop}>
+    <div ref={wrapperRef} className="relative w-full h-full" onDragOver={onDragOver} onDrop={onDrop}>
+      {nodes.filter((n) => n.type === 'component').length >= 2 && edges.length === 0 && (
+        <div
+          className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 px-3 py-1.5 rounded-full text-xs shadow"
+          style={{ background: 'var(--surface-0)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+        >
+          Drag from the ring on a block's right edge to another block's left-edge ring to connect them
+        </div>
+      )}
       <ReactFlow
         nodes={nodes}
         edges={edges}
@@ -117,6 +121,10 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
         onNodeDragStop={onNodeDragStop}
         deleteKeyCode={['Backspace', 'Delete']}
         multiSelectionKeyCode={['Meta', 'Control']}
+        // Otherwise selecting/dragging a boundary elevates it above its own
+        // children (elevateNodesOnSelect, on by default) — see the zIndex
+        // fields set alongside node construction in model.store.ts.
+        zIndexMode="manual"
       >
         <Background />
         <Controls />

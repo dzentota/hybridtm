@@ -3,10 +3,14 @@ import { useShallow } from 'zustand/react/shallow'
 import { temporal } from 'zundo'
 import type { Edge, Node } from '@xyflow/react'
 import type {
+  CanonicalDataAsset,
   CanonicalDataFlow,
   CanonicalModel,
   Finding,
   KbComponent,
+  LayoutGroup,
+  LayoutRect,
+  ModelLayout,
   PropertyBag,
   PropertyValue,
 } from '../api/types'
@@ -17,10 +21,26 @@ export interface ComponentNodeData extends Record<string, unknown> {
   kbComponentId?: string
   kbName?: string
   kbVersion?: string
+  icon?: string
+  color?: string
   traits: string[]
   properties: PropertyBag
   findingCount: number
   maxSeverity?: Finding['severity']
+}
+
+// Icon/color aren't part of CanonicalModel (they're KB-only display
+// metadata), so a component built from a saved model version — loadCanonicalModel,
+// PHP import, diff-preview canvases — has no icon of its own to carry. This
+// index, filled once the KB bundle loads (see App.tsx), lets every node-
+// building path (including the pure canonicalModelToGraph, which has no kb
+// bundle in scope) look icons up by kbComponentId instead of threading the
+// bundle through every call site.
+let kbIconIndex: Record<string, { icon?: string; color?: string }> = {}
+export function setKbIconIndex(components: Record<string, KbComponent>): void {
+  kbIconIndex = Object.fromEntries(
+    Object.entries(components).map(([id, c]) => [id, { icon: c.metadata.icon, color: c.metadata.color }]),
+  )
 }
 
 export interface BoundaryNodeData extends Record<string, unknown> {
@@ -34,6 +54,14 @@ export type StudioNode = Node<ComponentNodeData | BoundaryNodeData>
 export interface DataFlowEdgeData extends Record<string, unknown> {
   protocol?: string
   maxSeverity?: Finding['severity']
+  // Mirrors CommunicationLink.dataSent/dataReceived (src/DSL/CommunicationLink.php)
+  // — IDs into the model's data-asset library. A flow's "direction" isn't a
+  // separate field: which assets it *sends* (source→target) vs *receives*
+  // (the response, target→source) already implies it, and matches what the
+  // backend DSL actually models rather than adding a redundant enum.
+  dataSent?: string[]
+  dataReceived?: string[]
+  tags?: string[]
 }
 
 export type StudioEdge = Edge<DataFlowEdgeData>
@@ -45,44 +73,114 @@ function freshId(prefix: string): string {
   return `${prefix}-${nextId++}`
 }
 
+// xyflow bumps a node's z-index above its siblings on select/drag
+// (elevateNodesOnSelect) — fine for ordinary nodes, but a boundary is a
+// *container*: elevating it above its own children on selection/drag put
+// the boundary's fill on top of the component that had just been dropped
+// into it, hiding it and forcing you to move the boundary out of the way
+// to get the component back. Explicit, fixed zIndex + `zIndexMode="manual"`
+// on <ReactFlow> (FlowCanvas.tsx) turns that automatic elevation off
+// entirely, so boundaries always render behind components regardless of
+// selection order.
+const BOUNDARY_Z_INDEX = 0
+const COMPONENT_Z_INDEX = 1
+
+// Matches ComponentNode.tsx's fixed `w-[220px] h-[96px]` — the layout
+// sidecar records a size per LayoutCodec's shape, but the canvas doesn't
+// support resizing components, so it's always this constant.
+const COMPONENT_LAYOUT_SIZE = { w: 220, h: 96 }
+const DEFAULT_BOUNDARY_SIZE = { w: 420, h: 260 }
+
+/** A child node's `position` is relative to its parent in xyflow; the
+ * layout sidecar (and everything else that reasons about "where is this on
+ * the canvas") wants absolute canvas coordinates. Exported so FlowCanvas's
+ * drop-into-boundary logic and the layout writer share one conversion. */
+export function absolutePosition(node: StudioNode, allNodes: StudioNode[]): { x: number; y: number } {
+  if (!node.parentId) return node.position
+  const parent = allNodes.find((n) => n.id === node.parentId)
+  if (!parent) return node.position
+  return { x: parent.position.x + node.position.x, y: parent.position.y + node.position.y }
+}
+
 /** Pure CanonicalModel → {nodes, edges} conversion, shared by
  * `loadCanonicalModel` and the version-diff preview canvases (T-7.22) —
- * neither should re-derive this layout logic independently. */
-export function canonicalModelToGraph(model: CanonicalModel): { nodes: StudioNode[]; edges: StudioEdge[] } {
-  const boundaryNodes: StudioNode[] = model.trustBoundaries.map((b, i) => ({
-    id: b.id,
-    type: 'boundary',
-    position: { x: 40 + i * 40, y: 40 + i * 40 },
-    style: { width: 420, height: 260 },
-    data: { kind: 'boundary', name: b.name, boundaryType: b.type },
-  }))
+ * neither should re-derive this layout logic independently. `layout` is the
+ * ModelVersion's sidecar of saved canvas positions (see toLayout below); a
+ * component/boundary with no entry in it falls back to a deterministic
+ * grid, same as models saved before layout persistence existed. */
+export function canonicalModelToGraph(
+  model: CanonicalModel,
+  layout?: ModelLayout | null,
+): { nodes: StudioNode[]; edges: StudioEdge[] } {
+  // CanonicalModel declares components/trustBoundaries/dataFlows required,
+  // but stored data doesn't always comply — models saved via the PHP DSL
+  // import, or by tooling that predates a given field, can omit any of
+  // these top-level arrays entirely (seen with a project whose ModelVersion
+  // had no `trustBoundaries`/`dataFlows` keys at all, only `components`).
+  const trustBoundaries = model.trustBoundaries ?? []
+  const components = model.components ?? []
+  const dataFlows = model.dataFlows ?? []
+
+  const boundaryNodes: StudioNode[] = trustBoundaries.map((b, i) => {
+    const saved = layout?.groups[b.id]
+    return {
+      id: b.id,
+      type: 'boundary',
+      position: saved ? { x: saved.x, y: saved.y } : { x: 40 + i * 40, y: 40 + i * 40 },
+      style: saved ? { width: saved.w, height: saved.h } : { width: DEFAULT_BOUNDARY_SIZE.w, height: DEFAULT_BOUNDARY_SIZE.h },
+      zIndex: BOUNDARY_Z_INDEX,
+      data: { kind: 'boundary', name: b.name, boundaryType: b.type },
+    }
+  })
   const boundaryOfComponent = new Map<string, string>()
-  for (const b of model.trustBoundaries) {
-    for (const cid of b.contains) boundaryOfComponent.set(cid, b.id)
+  for (const b of trustBoundaries) {
+    for (const cid of b.contains ?? []) boundaryOfComponent.set(cid, b.id)
   }
-  const componentNodes: StudioNode[] = model.components.map((c, i) => ({
-    id: c.id,
-    type: 'component',
-    position: { x: 80 + (i % 5) * 180, y: 340 + Math.floor(i / 5) * 140 },
-    parentId: boundaryOfComponent.get(c.id),
-    data: {
-      kind: 'component',
-      name: c.name,
-      kbComponentId: c.kbComponent,
-      kbVersion: c.kbVersion,
-      traits: c.traits,
-      properties: c.properties,
-      findingCount: 0,
-    },
-  }))
-  const edges: StudioEdge[] = model.dataFlows.map((f) => ({
+  const componentNodes: StudioNode[] = components.map((c, i) => {
+    const kbIcon = c.kbComponent ? kbIconIndex[c.kbComponent] : undefined
+    const parentId = boundaryOfComponent.get(c.id)
+    const saved = layout?.nodes[c.id]
+    // The sidecar stores absolute canvas coordinates; a child node's
+    // position must be relative to its parent boundary's own (also saved)
+    // position, or it'd render offset by the parent's coordinates too.
+    const parentSaved = parentId ? layout?.groups[parentId] : undefined
+    const position = saved
+      ? parentId && parentSaved
+        ? { x: saved.x - parentSaved.x, y: saved.y - parentSaved.y }
+        : { x: saved.x, y: saved.y }
+      : { x: 80 + (i % 5) * 180, y: 340 + Math.floor(i / 5) * 140 }
+    return {
+      id: c.id,
+      type: 'component',
+      position,
+      parentId,
+      zIndex: COMPONENT_Z_INDEX,
+      data: {
+        kind: 'component',
+        name: c.name,
+        kbComponentId: c.kbComponent,
+        kbVersion: c.kbVersion,
+        icon: kbIcon?.icon,
+        color: kbIcon?.color,
+        // Some stored models predate `properties` (e.g. PHP-DSL-imported
+        // components carry only traits/overrides) or were saved by another
+        // client — CanonicalComponent declares these required, but real
+        // data on disk doesn't always comply, so default rather than trust
+        // the type here.
+        traits: c.traits ?? [],
+        properties: c.properties ?? {},
+        findingCount: 0,
+      },
+    }
+  })
+  const edges: StudioEdge[] = dataFlows.map((f) => ({
     id: f.id ?? freshId('flow'),
     source: f.sourceId,
     target: f.targetId,
     sourceHandle: 'out',
     targetHandle: 'in',
     type: 'dataflow',
-    data: { protocol: f.protocol },
+    data: { protocol: f.protocol, dataSent: f.dataSent ?? [], dataReceived: f.dataReceived ?? [], tags: f.tags ?? [] },
   }))
   return { nodes: [...boundaryNodes, ...componentNodes], edges }
 }
@@ -97,6 +195,7 @@ function buildComponentNode(kbId: string, kb: KbComponent, position: { x: number
     id,
     type: 'component',
     position,
+    zIndex: COMPONENT_Z_INDEX,
     ariaLabel: `${kb.metadata.name} component, no findings yet`,
     data: {
       kind: 'component',
@@ -104,6 +203,8 @@ function buildComponentNode(kbId: string, kb: KbComponent, position: { x: number
       kbComponentId: kbId,
       kbName: kb.metadata.name,
       kbVersion: kb.metadata.version,
+      icon: kb.metadata.icon,
+      color: kb.metadata.color,
       traits: kb.traits,
       properties,
       findingCount: 0,
@@ -111,7 +212,12 @@ function buildComponentNode(kbId: string, kb: KbComponent, position: { x: number
   }
 }
 
-const AUTOSAVE_KEY = 'hybridtm.studio.autosave.v1'
+// Keyed per project (not one global slot) so switching projects can't
+// clobber another project's unsaved local draft — see setAutosaveProjectId.
+const AUTOSAVE_KEY_PREFIX = 'hybridtm.studio.autosave.v1.'
+function autosaveKey(projectId: string): string {
+  return AUTOSAVE_KEY_PREFIX + projectId
+}
 
 interface AutosavePayload {
   title: string
@@ -124,7 +230,9 @@ interface ModelState {
   title: string
   nodes: StudioNode[]
   edges: StudioEdge[]
+  dataAssets: CanonicalDataAsset[]
   selectedId: string | null
+  selectedEdgeId: string | null
   findings: Finding[]
   lastSavedAt: string | null
   overlayMode: OverlayMode
@@ -132,21 +240,31 @@ interface ModelState {
   setNodes: (updater: (nodes: StudioNode[]) => StudioNode[]) => void
   setEdges: (updater: (edges: StudioEdge[]) => StudioEdge[]) => void
   select: (id: string | null) => void
+  selectEdge: (id: string | null) => void
   setTitle: (title: string) => void
   setOverlayMode: (mode: OverlayMode) => void
+  addDataAsset: (name: string, classification?: string) => CanonicalDataAsset
+  updateDataAsset: (id: string, patch: Partial<Pick<CanonicalDataAsset, 'name' | 'classification'>>) => void
+  removeDataAsset: (id: string) => void
 
   addComponentFromKb: (kbId: string, kb: KbComponent, position: { x: number; y: number }) => void
   insertTemplate: (
     items: { kbId: string; kb: KbComponent; position: { x: number; y: number } }[],
     edges: { from: number; to: number }[],
   ) => void
+  insertCanonicalModel: (model: CanonicalModel, layout: ModelLayout | undefined, anchor: { x: number; y: number }) => void
   addBoundary: (position: { x: number; y: number }) => void
   updateProperty: (nodeId: string, propertyId: string, value: PropertyValue) => void
+  updateBoundary: (nodeId: string, patch: Partial<Pick<BoundaryNodeData, 'name' | 'boundaryType'>>) => void
+  resizeBoundary: (nodeId: string, rect: { x: number; y: number; width: number; height: number }) => void
+  updateEdgeProtocol: (edgeId: string, protocol: string) => void
+  updateEdgeData: (edgeId: string, patch: Partial<DataFlowEdgeData>) => void
   connect: (sourceId: string, targetId: string) => void
 
   applyFindings: (findings: Finding[]) => void
   toCanonicalModel: () => CanonicalModel
-  loadCanonicalModel: (model: CanonicalModel) => void
+  toLayout: () => ModelLayout
+  loadCanonicalModel: (model: CanonicalModel, layout?: ModelLayout | null) => void
   markSaved: (at: string) => void
 }
 
@@ -158,16 +276,47 @@ export const useModelStore = create<ModelState>()(
       title: 'Untitled model',
       nodes: [],
       edges: [],
+      dataAssets: [],
       selectedId: null,
+      selectedEdgeId: null,
       findings: [],
       lastSavedAt: null,
       overlayMode: 'risks',
 
       setNodes: (updater) => set((s) => ({ nodes: updater(s.nodes) })),
       setEdges: (updater) => set((s) => ({ edges: updater(s.edges) })),
-      select: (id) => set({ selectedId: id }),
+      // Selecting a node clears any edge selection and vice versa — the
+      // Inspector shows one or the other, never both.
+      select: (id) => set({ selectedId: id, selectedEdgeId: id ? null : get().selectedEdgeId }),
+      selectEdge: (id) => set({ selectedEdgeId: id, selectedId: id ? null : get().selectedId }),
       setTitle: (title) => set({ title }),
       setOverlayMode: (overlayMode) => set({ overlayMode }),
+
+      addDataAsset: (name, classification) => {
+        const asset: CanonicalDataAsset = { id: freshId('asset'), name, classification }
+        set((s) => ({ dataAssets: [...s.dataAssets, asset] }))
+        return asset
+      },
+
+      updateDataAsset: (id, patch) => {
+        set((s) => ({ dataAssets: s.dataAssets.map((a) => (a.id === id ? { ...a, ...patch } : a)) }))
+      },
+
+      removeDataAsset: (id) => {
+        set((s) => ({
+          dataAssets: s.dataAssets.filter((a) => a.id !== id),
+          // An edge referencing a deleted asset would otherwise silently
+          // point at nothing — strip it from every flow's dataSent/dataReceived.
+          edges: s.edges.map((e) => ({
+            ...e,
+            data: {
+              ...e.data,
+              dataSent: e.data?.dataSent?.filter((aid) => aid !== id),
+              dataReceived: e.data?.dataReceived?.filter((aid) => aid !== id),
+            },
+          })),
+        }))
+      },
 
       addComponentFromKb: (kbId, kb, position) => {
         const node = buildComponentNode(kbId, kb, position)
@@ -193,6 +342,47 @@ export const useModelStore = create<ModelState>()(
         set((s) => ({ nodes: [...s.nodes, ...newNodes], edges: [...s.edges, ...newEdges] }))
       },
 
+      // Drops a full saved template (components/boundaries/flows + its own
+      // data assets) onto the canvas as one atomic undo step. Every id —
+      // node, edge, and data asset — gets a fresh one first: the same
+      // template can be inserted more than once, or alongside content that
+      // happens to reuse the same ids the template was authored with (it's
+      // just a canonical model, built the same way any saved project is).
+      insertCanonicalModel: (model, layout, anchor) => {
+        const { nodes: rawNodes, edges: rawEdges } = canonicalModelToGraph(model, layout)
+        const nodeIdMap = new Map(rawNodes.map((n) => [n.id, freshId('tpl')]))
+        const assetIdMap = new Map((model.dataAssets ?? []).map((a) => [a.id, freshId('asset')]))
+        const remapAssetIds = (ids?: string[]) => (ids ?? []).map((id) => assetIdMap.get(id) ?? id)
+
+        const newNodes: StudioNode[] = rawNodes.map((n) => ({
+          ...n,
+          id: nodeIdMap.get(n.id)!,
+          parentId: n.parentId ? nodeIdMap.get(n.parentId) : undefined,
+          position: n.parentId ? n.position : { x: n.position.x + anchor.x, y: n.position.y + anchor.y },
+        }))
+        const newEdges: StudioEdge[] = rawEdges.map((e) => ({
+          ...e,
+          id: freshId('flow'),
+          source: nodeIdMap.get(e.source) ?? e.source,
+          target: nodeIdMap.get(e.target) ?? e.target,
+          data: {
+            ...e.data,
+            dataSent: remapAssetIds(e.data?.dataSent),
+            dataReceived: remapAssetIds(e.data?.dataReceived),
+          },
+        }))
+        const newAssets: CanonicalDataAsset[] = (model.dataAssets ?? []).map((a) => ({
+          ...a,
+          id: assetIdMap.get(a.id)!,
+        }))
+
+        set((s) => ({
+          nodes: [...s.nodes, ...newNodes],
+          edges: [...s.edges, ...newEdges],
+          dataAssets: [...s.dataAssets, ...newAssets],
+        }))
+      },
+
       addBoundary: (position) => {
         const id = freshId('boundary')
         const node: StudioNode = {
@@ -200,6 +390,7 @@ export const useModelStore = create<ModelState>()(
           type: 'boundary',
           position,
           style: { width: 420, height: 260 },
+          zIndex: BOUNDARY_Z_INDEX,
           ariaLabel: 'Trust boundary, network cloud provider',
           data: { kind: 'boundary', name: 'Trust boundary', boundaryType: 'network-cloud-provider' },
         }
@@ -213,6 +404,36 @@ export const useModelStore = create<ModelState>()(
               ? { ...n, data: { ...n.data, properties: { ...n.data.properties, [propertyId]: value } } }
               : n,
           ),
+        }))
+      },
+
+      updateBoundary: (nodeId, patch) => {
+        set((s) => ({
+          nodes: s.nodes.map((n) =>
+            n.id === nodeId && n.data.kind === 'boundary' ? { ...n, data: { ...n.data, ...patch } } : n,
+          ),
+        }))
+      },
+
+      resizeBoundary: (nodeId, rect) => {
+        set((s) => ({
+          nodes: s.nodes.map((n) =>
+            n.id === nodeId && n.data.kind === 'boundary'
+              ? { ...n, position: { x: rect.x, y: rect.y }, style: { ...n.style, width: rect.width, height: rect.height } }
+              : n,
+          ),
+        }))
+      },
+
+      updateEdgeProtocol: (edgeId, protocol) => {
+        set((s) => ({
+          edges: s.edges.map((e) => (e.id === edgeId ? { ...e, data: { ...e.data, protocol } } : e)),
+        }))
+      },
+
+      updateEdgeData: (edgeId, patch) => {
+        set((s) => ({
+          edges: s.edges.map((e) => (e.id === edgeId ? { ...e, data: { ...e.data, ...patch } } : e)),
         }))
       },
 
@@ -269,7 +490,7 @@ export const useModelStore = create<ModelState>()(
       },
 
       toCanonicalModel: () => {
-        const { title, nodes, edges } = get()
+        const { title, nodes, edges, dataAssets } = get()
         const componentNodes = nodes.filter(
           (n): n is StudioNode & { data: ComponentNodeData } => n.data.kind === 'component',
         )
@@ -287,12 +508,15 @@ export const useModelStore = create<ModelState>()(
           sourceId: e.source,
           targetId: e.target,
           protocol: e.data?.protocol ?? 'unknown-protocol',
+          dataSent: e.data?.dataSent ?? [],
+          dataReceived: e.data?.dataReceived ?? [],
+          tags: e.data?.tags ?? [],
         }))
 
         return {
           schemaVersion: 1,
           model: { title, businessCriticality: 'important' },
-          dataAssets: [],
+          dataAssets,
           components: componentNodes.map((n) => ({
             id: n.id,
             name: n.data.name,
@@ -313,13 +537,32 @@ export const useModelStore = create<ModelState>()(
         }
       },
 
-      loadCanonicalModel: (model) => {
-        const { nodes, edges } = canonicalModelToGraph(model)
+      toLayout: () => {
+        const { nodes } = get()
+        const layoutNodes: Record<string, LayoutRect> = {}
+        const groups: Record<string, LayoutGroup> = {}
+        for (const n of nodes) {
+          if (n.data.kind === 'component') {
+            const abs = absolutePosition(n, nodes)
+            layoutNodes[n.id] = { x: abs.x, y: abs.y, ...COMPONENT_LAYOUT_SIZE }
+          } else if (n.data.kind === 'boundary') {
+            const w = (n.style?.width as number) ?? DEFAULT_BOUNDARY_SIZE.w
+            const h = (n.style?.height as number) ?? DEFAULT_BOUNDARY_SIZE.h
+            groups[n.id] = { x: n.position.x, y: n.position.y, w, h, collapsed: false }
+          }
+        }
+        return { schemaVersion: 1, nodes: layoutNodes, groups, edges: {}, viewport: { x: 0, y: 0, zoom: 1 } }
+      },
+
+      loadCanonicalModel: (model, layout) => {
+        const { nodes, edges } = canonicalModelToGraph(model, layout)
         set({
           title: model.model.title,
           nodes,
           edges,
+          dataAssets: model.dataAssets ?? [],
           selectedId: null,
+          selectedEdgeId: null,
           findings: [],
         })
       },
@@ -346,33 +589,41 @@ export function useTemporalStore() {
   )
 }
 
-function readAutosave(): AutosavePayload | null {
+export function restoreAutosave(projectId: string): AutosavePayload | null {
   try {
-    const raw = localStorage.getItem(AUTOSAVE_KEY)
+    const raw = localStorage.getItem(autosaveKey(projectId))
     return raw ? (JSON.parse(raw) as AutosavePayload) : null
   } catch {
     return null
   }
 }
 
-export function restoreAutosave(): AutosavePayload | null {
-  return readAutosave()
+export function clearAutosave(projectId: string): void {
+  localStorage.removeItem(autosaveKey(projectId))
+  useModelStore.setState({ lastSavedAt: null })
 }
 
-export function clearAutosave(): void {
-  localStorage.removeItem(AUTOSAVE_KEY)
-  useModelStore.setState({ lastSavedAt: null })
+// Set by App.tsx whenever the open project changes, so the debounced writer
+// below (which runs outside React, off a plain store subscription) knows
+// which project's slot to write into. Skips saving entirely when null —
+// e.g. during the moment loadCanonicalModel repopulates the canvas for a
+// newly-switched project, before the effect that sets this has run.
+let autosaveProjectId: string | null = null
+export function setAutosaveProjectId(projectId: string | null): void {
+  autosaveProjectId = projectId
 }
 
 let autosaveTimeout: ReturnType<typeof setTimeout> | undefined
 useModelStore.subscribe((state, prevState) => {
   if (state.nodes === prevState.nodes && state.edges === prevState.edges && state.title === prevState.title) return
+  if (!autosaveProjectId) return
+  const projectId = autosaveProjectId
   if (autosaveTimeout) clearTimeout(autosaveTimeout)
   autosaveTimeout = setTimeout(() => {
     const { title, nodes, edges } = useModelStore.getState()
     const savedAt = new Date().toISOString()
     const payload: AutosavePayload = { title, nodes, edges, savedAt }
-    localStorage.setItem(AUTOSAVE_KEY, JSON.stringify(payload))
+    localStorage.setItem(autosaveKey(projectId), JSON.stringify(payload))
     useModelStore.getState().markSaved(savedAt)
   }, 800)
 })

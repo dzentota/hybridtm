@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
+import { useReactFlow } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
 import { useModelStore, useTemporalStore, type OverlayMode } from '../store/model.store'
 import { useElkLayout } from '../layout/useElkLayout'
 import { useExportCanvas } from '../canvas/useExportCanvas'
+import { ProjectSwitcher } from './ProjectSwitcher'
+import { logout, type ProjectSummary } from '../api/client'
 import type { KbBundle } from '../api/types'
 
 const OVERLAY_KEYS: Record<OverlayMode, string> = {
@@ -40,11 +43,25 @@ function SavedIndicator() {
 
 export function Toolbar({
   kb: _kb,
+  projects,
+  currentProjectId,
+  onSwitchProject,
+  onCreateProject,
+  onSave,
+  isSaving,
+  saveError,
   onOpenTemplates,
   onOpenDiff,
   onToggleCode,
 }: {
   kb: KbBundle | undefined
+  projects: ProjectSummary[]
+  currentProjectId: string | null
+  onSwitchProject: (id: string) => void
+  onCreateProject: (slug: string, title: string) => void
+  onSave: () => void
+  isSaving: boolean
+  saveError: string | null
   onOpenTemplates: () => void
   onOpenDiff: () => void
   onToggleCode: () => void
@@ -53,17 +70,30 @@ export function Toolbar({
   const { undo, redo, canUndo, canRedo } = useTemporalStore()
   const title = useModelStore((s) => s.title)
   const setTitle = useModelStore((s) => s.setTitle)
+  const addBoundary = useModelStore((s) => s.addBoundary)
   const { runLayout } = useElkLayout()
   const { exportAs } = useExportCanvas()
+  const { screenToFlowPosition } = useReactFlow()
   const overlayMode = useModelStore((s) => s.overlayMode)
   const setOverlayMode = useModelStore((s) => s.setOverlayMode)
   const [laying, setLaying] = useState(false)
 
   return (
     <div
-      className="px-3 py-2 flex items-center gap-3 text-sm overflow-x-auto"
-      style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)', whiteSpace: 'nowrap' }}
+      className="px-3 py-2 flex flex-wrap items-center gap-3 text-sm rounded-lg shadow-lg"
+      style={{
+        border: '1px solid var(--border)',
+        background: 'var(--surface-0)',
+        color: 'var(--text-primary)',
+      }}
     >
+      <ProjectSwitcher
+        projects={projects}
+        currentProjectId={currentProjectId}
+        onSwitch={onSwitchProject}
+        onCreate={onCreateProject}
+      />
+      <div style={{ width: '1px', height: '20px', background: 'var(--border)' }} />
       <input
         aria-label={t('toolbar.title')}
         value={title}
@@ -71,6 +101,22 @@ export function Toolbar({
         className="font-medium bg-transparent outline-none min-w-0"
         style={{ width: '220px' }}
       />
+      <button
+        type="button"
+        aria-label="Save model"
+        title="Save the current model to this project"
+        disabled={isSaving}
+        onClick={onSave}
+        className="px-2 py-1 rounded font-medium disabled:opacity-40"
+        style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
+      >
+        {isSaving ? 'Saving…' : '💾 Save'}
+      </button>
+      {saveError && (
+        <span className="text-xs" style={{ color: 'var(--severity-critical)' }} role="alert">
+          Save failed: {saveError}
+        </span>
+      )}
       <div className="flex items-center gap-1" role="group" aria-label="Undo and redo">
         <button
           type="button"
@@ -112,6 +158,19 @@ export function Toolbar({
         style={{ border: '1px solid var(--border)' }}
       >
         {laying ? t('toolbar.layingOut') : `⇉ ${t('toolbar.autoLayout')}`}
+      </button>
+      <button
+        type="button"
+        aria-label="Add trust boundary"
+        title="Add a trust boundary to the canvas — drag components onto it to place them inside"
+        onClick={() => {
+          const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+          addBoundary(center)
+        }}
+        className="px-2 py-1 rounded"
+        style={{ border: '1px solid var(--border)' }}
+      >
+        ⬚ Boundary
       </button>
       <button
         type="button"
@@ -196,6 +255,16 @@ export function Toolbar({
       </label>
       <div className="ml-auto flex items-center gap-3">
         <SavedIndicator />
+        <button
+          type="button"
+          aria-label="Log out"
+          title="Log out"
+          onClick={() => logout()}
+          className="px-2 py-1 rounded"
+          style={{ border: '1px solid var(--border)' }}
+        >
+          Log out
+        </button>
       </div>
     </div>
   )

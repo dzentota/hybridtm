@@ -58,7 +58,7 @@ const resources = {
         empty: 'No matching commands',
       },
       inspector: {
-        empty: 'Select a component to inspect its properties.',
+        empty: 'Select a component, trust boundary, or data flow to inspect it.',
       },
       canvasBanner: 'HybridTM Studio — drag a component from the palette onto the canvas',
     },
@@ -119,7 +119,7 @@ const resources = {
         empty: 'Нет подходящих команд',
       },
       inspector: {
-        empty: 'Выберите компонент, чтобы посмотреть его свойства.',
+        empty: 'Выберите компонент, границу доверия или поток данных, чтобы посмотреть его свойства.',
       },
       canvasBanner: 'HybridTM Studio — перетащите компонент из палитры на холст',
     },

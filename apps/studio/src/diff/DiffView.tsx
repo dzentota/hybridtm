@@ -128,8 +128,8 @@ export function DiffView({ open, onClose }: { open: boolean; onClose: () => void
         {versions && versions.length >= 2 && (
           <div className="flex-1 min-h-0 flex flex-col">
             <div className="flex-1 min-h-0 grid grid-cols-2 gap-2 p-2">
-              <PreviewCanvas model={fromVersion?.data} label="From" />
-              <PreviewCanvas model={toVersion?.data} label="To" />
+              <PreviewCanvas model={fromVersion?.data} layout={fromVersion?.layout} label="From" />
+              <PreviewCanvas model={toVersion?.data} layout={toVersion?.layout} label="To" />
             </div>
             <div className="flex-1 min-h-0 overflow-y-auto p-3" style={{ borderTop: '1px solid var(--border)' }}>
               {riskDeltaLoading && (

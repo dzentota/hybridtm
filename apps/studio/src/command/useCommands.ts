@@ -21,6 +21,8 @@ export function useCommands(
   onOpenTemplates: () => void,
   onOpenDiff: () => void,
   onToggleCode: () => void,
+  onToggleLeftPanel: () => void,
+  onToggleRightPanel: () => void,
 ): Command[] {
   const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
   const addBoundary = useModelStore((s) => s.addBoundary)
@@ -47,6 +49,8 @@ export function useCommands(
       { id: 'browse-templates', label: 'Browse architecture templates', group: 'Canvas', run: onOpenTemplates },
       { id: 'compare-versions', label: 'Compare model versions', group: 'Canvas', run: onOpenDiff },
       { id: 'toggle-code', label: 'Toggle PHP DSL code view', group: 'Canvas', run: onToggleCode },
+      { id: 'toggle-left-panel', label: 'Toggle component palette panel', group: 'View', run: onToggleLeftPanel },
+      { id: 'toggle-right-panel', label: 'Toggle inspector & findings panel', group: 'View', run: onToggleRightPanel },
       {
         id: 'clear-canvas',
         label: 'Clear canvas',
@@ -89,6 +93,8 @@ export function useCommands(
     onOpenTemplates,
     onOpenDiff,
     onToggleCode,
+    onToggleLeftPanel,
+    onToggleRightPanel,
     addComponentFromKb,
     addBoundary,
     setOverlayMode,

@@ -60,19 +60,34 @@ export function DataFlowEdge({
           strokeDasharray: crossesBoundary ? '6 4' : undefined,
         }}
       />
-      {d.protocol && (
+      {(d.protocol || d.tags?.length || d.dataSent?.length || d.dataReceived?.length) && (
         <EdgeLabelRenderer>
           <div
-            className="text-[10px] px-1 rounded pointer-events-none"
+            className="flex flex-col items-center gap-0.5 pointer-events-none"
             style={{
               position: 'absolute',
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              background: 'var(--surface-0)',
-              color: 'var(--text-secondary)',
-              border: '1px solid var(--border)',
             }}
           >
-            {d.protocol}
+            {d.protocol && (
+              <div
+                className="text-[10px] px-1 rounded"
+                style={{ background: 'var(--surface-0)', color: 'var(--text-secondary)', border: '1px solid var(--border)' }}
+              >
+                {d.protocol}
+              </div>
+            )}
+            {(d.dataSent?.length || d.dataReceived?.length || d.tags?.length) ? (
+              <div
+                className="text-[9px] px-1 rounded-full"
+                style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
+                title={d.tags?.join(', ')}
+              >
+                {d.dataSent?.length ? `→${d.dataSent.length}` : ''}
+                {d.dataReceived?.length ? ` ←${d.dataReceived.length}` : ''}
+                {d.tags?.length ? ` 🏷️${d.tags.length}` : ''}
+              </div>
+            ) : null}
           </div>
         </EdgeLabelRenderer>
       )}

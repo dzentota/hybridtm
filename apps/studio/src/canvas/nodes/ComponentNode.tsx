@@ -1,5 +1,6 @@
 import { Handle, Position, type NodeProps } from '@xyflow/react'
 import { useModelStore, type ComponentNodeData, type StudioNode } from '../../store/model.store'
+import { ComponentIcon } from '../../design/ComponentIcon'
 
 const severityGlyph: Record<string, string> = {
   critical: '⬢',
@@ -52,19 +53,36 @@ export function ComponentNode({ data, selected, parentId }: NodeProps<StudioNode
       }}
       title={highlight?.label}
     >
-      <Handle type="target" position={Position.Left} id="in" style={{ top: '50%' }} />
-      <Handle type="source" position={Position.Right} id="out" style={{ top: '50%' }} />
+      <Handle
+        type="target"
+        position={Position.Left}
+        id="in"
+        title="Drag a connection here to route data into this block"
+        className="hybridtm-handle"
+        style={{ top: '50%' }}
+      />
+      <Handle
+        type="source"
+        position={Position.Right}
+        id="out"
+        title="Drag from here to another block to connect them"
+        className="hybridtm-handle"
+        style={{ top: '50%' }}
+      />
 
       <div className="flex items-start justify-between gap-1">
-        <div className="min-w-0">
-          <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
-            {d.name}
-          </div>
-          {d.kbName && (
-            <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
-              {d.kbName} {d.kbVersion}
+        <div className="flex items-start gap-1.5 min-w-0">
+          <ComponentIcon icon={d.icon} color={d.color} size={14} />
+          <div className="min-w-0">
+            <div className="text-sm font-semibold truncate" style={{ color: 'var(--text-primary)' }}>
+              {d.name}
             </div>
-          )}
+            {d.kbName && (
+              <div className="text-xs truncate" style={{ color: 'var(--text-secondary)' }}>
+                {d.kbName} {d.kbVersion}
+              </div>
+            )}
+          </div>
         </div>
         {d.findingCount > 0 && d.maxSeverity && (
           <span className="severity-badge shrink-0" data-severity={d.maxSeverity}>

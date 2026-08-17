@@ -80,6 +80,21 @@ body {
 .severity-badge[data-severity='medium'] { background: var(--severity-medium); }
 .severity-badge[data-severity='low'] { background: var(--severity-low); }
 
+/* Connection handles: default xyflow dots are 6px and easy to miss — make
+   them big enough to see as an obvious "drag to connect" target, and grow
+   further on hover so the affordance is discoverable before the first drag. */
+.hybridtm-handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--surface-0) !important;
+  border: 2px solid var(--accent) !important;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.hybridtm-handle:hover {
+  transform: scale(1.6);
+  background: var(--accent) !important;
+}
+
 .severity-badge[data-severity='critical']::before { content: '⬢'; }
 .severity-badge[data-severity='high']::before { content: '⬤'; }
 .severity-badge[data-severity='elevated']::before { content: '◐'; }

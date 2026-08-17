@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react'
 import { useReactFlow } from '@xyflow/react'
 import { useTranslation } from 'react-i18next'
 import { cascadeOffset, useModelStore } from '../store/model.store'
+import { ComponentIcon } from '../design/ComponentIcon'
 import type { KbBundle } from '../api/types'
 
 /** Category tree + search over the KB bundle (T-7.8). Drag a row onto the
@@ -9,7 +10,7 @@ import type { KbBundle } from '../api/types'
  * handles alone aren't operable without a pointer (T-7.20). FlowCanvas
  * reads the id back off the drag event for the drag path; the keyboard
  * path calls the same store action directly. */
-export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
+export function ComponentPalette({ kb, onCollapse }: { kb: KbBundle | undefined; onCollapse: () => void }) {
   const { t } = useTranslation()
   const [query, setQuery] = useState('')
   const addComponentFromKb = useModelStore((s) => s.addComponentFromKb)
@@ -34,8 +35,18 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
   }, [kb, query])
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'var(--surface-1)', borderRight: '1px solid var(--border)' }}>
-      <div className="p-2">
+    <div className="relative flex flex-col h-full min-h-0" style={{ background: 'var(--surface-1)', borderRight: '1px solid var(--border)' }}>
+      <button
+        type="button"
+        aria-label="Collapse component palette"
+        title="Collapse panel"
+        onClick={onCollapse}
+        className="absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-10 rounded flex items-center justify-center text-sm"
+        style={{ background: 'var(--surface-0)', border: '1px solid var(--border)', color: 'var(--text-secondary)' }}
+      >
+        ‹
+      </button>
+      <div className="p-2 shrink-0">
         <input
           id="component-search"
           value={query}
@@ -45,7 +56,7 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
           style={{ background: 'var(--surface-0)', borderColor: 'var(--border)', color: 'var(--text-primary)' }}
         />
       </div>
-      <div className="flex-1 overflow-y-auto px-2 pb-2">
+      <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
         {!kb && <div className="text-xs p-2" style={{ color: 'var(--text-secondary)' }}>{t('palette.loading')}</div>}
         {[...grouped.entries()].map(([category, items]) => (
           <div key={category} className="mb-3">
@@ -70,11 +81,14 @@ export function ComponentPalette({ kb }: { kb: KbBundle | undefined }) {
                   const offset = cascadeOffset(useModelStore.getState().nodes.length)
                   addComponentFromKb(id, component, { x: center.x + offset.x, y: center.y + offset.y })
                 }}
-                className="flex items-center justify-between text-sm px-2 py-1.5 rounded cursor-grab hover:bg-(--surface-2) focus-visible:outline focus-visible:outline-2"
+                className="flex items-center justify-between gap-2 text-sm px-2 py-1.5 rounded cursor-grab hover:bg-(--surface-2) focus-visible:outline focus-visible:outline-2"
                 style={{ color: 'var(--text-primary)', outlineColor: 'var(--accent)' }}
               >
-                <span>{component.metadata.name}</span>
-                <span className="text-[10px] px-1.5 rounded-full" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
+                <span className="flex items-center gap-2 min-w-0">
+                  <ComponentIcon icon={component.metadata.icon} color={component.metadata.color} />
+                  <span className="truncate">{component.metadata.name}</span>
+                </span>
+                <span className="text-[10px] px-1.5 rounded-full shrink-0" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
                   {t('palette.rules', { count: component.rules.length })}
                 </span>
               </div>

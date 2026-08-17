@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import Editor from '@monaco-editor/react'
-import { createModelVersion, ensureDemoProject, exportModelAsPhp, getModelVersion, importPhp } from '../api/client'
+import { createModelVersion, exportModelAsPhp, getModelVersion, importPhp } from '../api/client'
 import { useModelStore } from '../store/model.store'
+import { useProjectStore, projectIri } from '../project/project.store'
 
 /** Split-view PHP DSL preview + two-way sync (T-7.15). Sync happens on
  * explicit Refresh/Apply, not per-keystroke: the export/import round trip
@@ -14,14 +15,16 @@ export function PhpSyncPanel() {
   const [busy, setBusy] = useState<'refresh' | 'apply' | null>(null)
   const [error, setError] = useState<string | null>(null)
   const toCanonicalModel = useModelStore((s) => s.toCanonicalModel)
+  const toLayout = useModelStore((s) => s.toLayout)
   const loadCanonicalModel = useModelStore((s) => s.loadCanonicalModel)
+  const currentProjectId = useProjectStore((s) => s.currentProjectId)
 
   const refresh = async () => {
+    if (!currentProjectId) return
     setBusy('refresh')
     setError(null)
     try {
-      const project = await ensureDemoProject()
-      const modelVersion = await createModelVersion(`/api/threat_model_projects/${project.id}`, toCanonicalModel())
+      const modelVersion = await createModelVersion(projectIri(currentProjectId), toCanonicalModel(), toLayout())
       const php = await exportModelAsPhp(modelVersion.id)
       setCode(php)
       setWarnings([])
@@ -33,14 +36,14 @@ export function PhpSyncPanel() {
   }
 
   const apply = async () => {
+    if (!currentProjectId) return
     setBusy('apply')
     setError(null)
     try {
-      const project = await ensureDemoProject()
-      const result = await importPhp(project.id, code)
+      const result = await importPhp(currentProjectId, code)
       setWarnings(result.warnings)
       const modelVersion = await getModelVersion(result.id)
-      loadCanonicalModel(modelVersion.data)
+      loadCanonicalModel(modelVersion.data, modelVersion.layout)
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {
@@ -56,7 +59,7 @@ export function PhpSyncPanel() {
         </span>
         <button
           type="button"
-          disabled={busy !== null}
+          disabled={busy !== null || !currentProjectId}
           onClick={() => void refresh()}
           className="px-2 py-0.5 rounded text-xs disabled:opacity-40"
           style={{ border: '1px solid var(--border)' }}

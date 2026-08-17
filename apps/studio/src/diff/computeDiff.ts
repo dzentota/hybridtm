@@ -27,9 +27,14 @@ function propertyDiff(a: PropertyBag, b: PropertyBag): string[] {
  * canvas show zero changes, which is the point of a threat-model diff
  * (what changed about the *system*, not where someone dragged a box). */
 export function computeModelDiff(from: CanonicalModel, to: CanonicalModel): ModelDiff {
+  // As in canonicalModelToGraph (model.store.ts): CanonicalModel declares
+  // these arrays required, but stored data doesn't always comply (e.g. a
+  // PHP-DSL-imported version with no trustBoundaries/dataFlows keys at
+  // all, or components missing `properties`) — default rather than trust
+  // the type when reading arbitrary saved versions.
   const components: EntryDiff[] = []
-  const fromComponents = new Map(from.components.map((c) => [c.id, c]))
-  const toComponents = new Map(to.components.map((c) => [c.id, c]))
+  const fromComponents = new Map((from.components ?? []).map((c) => [c.id, c]))
+  const toComponents = new Map((to.components ?? []).map((c) => [c.id, c]))
   for (const [id, c] of fromComponents) {
     if (!toComponents.has(id)) components.push({ id, label: c.name, status: 'removed' })
   }
@@ -39,15 +44,15 @@ export function computeModelDiff(from: CanonicalModel, to: CanonicalModel): Mode
       components.push({ id, label: c.name, status: 'added' })
       continue
     }
-    const changedFields = propertyDiff(before.properties, c.properties)
+    const changedFields = propertyDiff(before.properties ?? {}, c.properties ?? {})
     if (before.name !== c.name) changedFields.unshift('name')
     if (before.kbVersion !== c.kbVersion) changedFields.push('kbVersion')
     if (changedFields.length > 0) components.push({ id, label: c.name, status: 'changed', changedFields })
   }
 
   const trustBoundaries: EntryDiff[] = []
-  const fromBoundaries = new Map(from.trustBoundaries.map((b) => [b.id, b]))
-  const toBoundaries = new Map(to.trustBoundaries.map((b) => [b.id, b]))
+  const fromBoundaries = new Map((from.trustBoundaries ?? []).map((b) => [b.id, b]))
+  const toBoundaries = new Map((to.trustBoundaries ?? []).map((b) => [b.id, b]))
   for (const [id, b] of fromBoundaries) {
     if (!toBoundaries.has(id)) trustBoundaries.push({ id, label: b.name, status: 'removed' })
   }
@@ -57,8 +62,8 @@ export function computeModelDiff(from: CanonicalModel, to: CanonicalModel): Mode
 
   const flowKey = (f: CanonicalModel['dataFlows'][number]) => f.id ?? `${f.sourceId}->${f.targetId}`
   const dataFlows: EntryDiff[] = []
-  const fromFlows = new Map(from.dataFlows.map((f) => [flowKey(f), f]))
-  const toFlows = new Map(to.dataFlows.map((f) => [flowKey(f), f]))
+  const fromFlows = new Map((from.dataFlows ?? []).map((f) => [flowKey(f), f]))
+  const toFlows = new Map((to.dataFlows ?? []).map((f) => [flowKey(f), f]))
   for (const [key, f] of fromFlows) {
     if (!toFlows.has(key)) dataFlows.push({ id: key, label: `${f.sourceId} → ${f.targetId}`, status: 'removed' })
   }

@@ -2,17 +2,22 @@ import { useMemo, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useModelStore } from '../store/model.store'
 import { FindingCard } from './FindingCard'
+import type { KbBundle } from '../api/types'
 
 const severityOrder = ['critical', 'high', 'elevated', 'medium', 'low'] as const
 
 /** Findings list with severity filter + grouping, wired to canvas selection
  * (T-7.10): clicking a card selects the node/edge it's about. */
 export function FindingsPanel({
+  kb,
   onRunAnalysis,
   isAnalyzing,
+  analysisError,
 }: {
+  kb: KbBundle | undefined
   onRunAnalysis: () => void
   isAnalyzing: boolean
+  analysisError: string | null
 }) {
   const { t } = useTranslation()
   const { findings, select } = useModelStore()
@@ -34,8 +39,8 @@ export function FindingsPanel({
   }, [visible])
 
   return (
-    <div className="flex flex-col h-full" style={{ background: 'var(--surface-1)', borderLeft: '1px solid var(--border)' }}>
-      <div className="p-3 flex flex-col gap-2" style={{ borderBottom: '1px solid var(--border)' }}>
+    <div className="flex flex-col h-full min-h-0" style={{ background: 'var(--surface-1)', borderLeft: '1px solid var(--border)' }}>
+      <div className="p-3 flex flex-col gap-2 shrink-0" style={{ borderBottom: '1px solid var(--border)' }}>
         <button
           onClick={onRunAnalysis}
           disabled={isAnalyzing}
@@ -44,6 +49,11 @@ export function FindingsPanel({
         >
           {isAnalyzing ? t('findings.analyzing') : t('findings.runAnalysis')}
         </button>
+        {analysisError && (
+          <div className="text-xs" style={{ color: 'var(--severity-critical)' }} role="alert">
+            Analysis failed: {analysisError}
+          </div>
+        )}
         <select
           value={minSeverity}
           onChange={(e) => setMinSeverity(e.target.value as (typeof severityOrder)[number])}
@@ -57,7 +67,7 @@ export function FindingsPanel({
           ))}
         </select>
       </div>
-      <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+      <div className="flex-1 min-h-0 overflow-y-auto p-3 flex flex-col gap-3">
         {findings.length === 0 && (
           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             {t('findings.empty')}
@@ -75,6 +85,7 @@ export function FindingsPanel({
                   <FindingCard
                     key={f.stableId}
                     finding={f}
+                    kb={kb}
                     onSelectSubject={(subject) => {
                       const id = subject.split(':')[1]
                       if (id) select(id)

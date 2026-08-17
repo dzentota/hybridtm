@@ -1,4 +1,4 @@
-import type { AnalysisResult, CanonicalModel, KbBundle } from './types'
+import type { AnalysisResult, CanonicalModel, KbBundle, ModelLayout } from './types'
 
 const TOKEN_KEY = 'hybridtm.studio.token'
 
@@ -9,6 +9,14 @@ export function getToken(): string | null {
 export function setToken(token: string | null): void {
   if (token === null) localStorage.removeItem(TOKEN_KEY)
   else localStorage.setItem(TOKEN_KEY, token)
+}
+
+/** Clears the token and fires the same event the 401 handler below uses to
+ * bounce back to the login screen — one path for "no longer authed",
+ * whether that's the user's choice or the server's. */
+export function logout(): void {
+  setToken(null)
+  window.dispatchEvent(new Event('hybridtm:unauthorized'))
 }
 
 class ApiError extends Error {
@@ -34,9 +42,23 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     let message = res.statusText
     try {
       const body = await res.json()
-      message = body.error ?? body.message ?? message
+      // API Platform's standard problem-details error shape uses `detail`
+      // (e.g. "Access Denied."), not `error`/`message` — those were never
+      // populated by this backend, so failures always showed the generic
+      // res.statusText ("Forbidden") instead of the real reason.
+      message = body.detail ?? body.error ?? body.message ?? message
     } catch {
       // no JSON body
+    }
+    // A previously-valid token can go stale (expiry, server restart, revoked
+    // session) at any point during a session, not just at initial load — the
+    // rest of the app (App.tsx) treats "token present" as "authed" and never
+    // re-checks, so without this every panel just hangs on its loading state
+    // forever once the token dies. Clearing it and telling App.tsx to drop
+    // back to the login screen turns that silent hang into a re-login prompt.
+    if (res.status === 401 && token) {
+      setToken(null)
+      window.dispatchEvent(new Event('hybridtm:unauthorized'))
     }
     throw new ApiError(res.status, message)
   }
@@ -77,29 +99,24 @@ export function createProject(slug: string, title: string): Promise<ProjectSumma
   })
 }
 
-export const DEMO_PROJECT_SLUG = 'studio-demo'
-
-// Shared find-or-create used by every feature that needs a project to save
-// against (run analysis, PHP sync, ...) — one place to fix if/when the demo
-// project flow changes.
-export async function ensureDemoProject(): Promise<ProjectSummary> {
-  const projects = await listProjects()
-  return projects.find((p) => p.slug === DEMO_PROJECT_SLUG) ?? createProject(DEMO_PROJECT_SLUG, 'Studio demo')
-}
-
 export interface ModelVersionSummary {
   id: string
   project: string
   data: CanonicalModel
+  layout?: ModelLayout | null
   createdAt?: string
   status?: string
 }
 
-export function createModelVersion(projectIri: string, data: CanonicalModel): Promise<ModelVersionSummary> {
+export function createModelVersion(
+  projectIri: string,
+  data: CanonicalModel,
+  layout?: ModelLayout,
+): Promise<ModelVersionSummary> {
   return request<ModelVersionSummary>('/api/model_versions', {
     method: 'POST',
     headers: { 'Content-Type': 'application/ld+json' },
-    body: JSON.stringify({ project: projectIri, schemaVersion: 1, data }),
+    body: JSON.stringify({ project: projectIri, schemaVersion: 1, data, layout }),
   })
 }
 
@@ -140,6 +157,39 @@ export function importPhp(projectId: string, code: string): Promise<ImportResult
     headers: { 'Content-Type': 'text/x-php' },
     body: code,
   })
+}
+
+export interface ModelTemplateSummary {
+  id: string
+  name: string
+  description?: string | null
+  data: CanonicalModel
+  layout?: ModelLayout | null
+  createdAt?: string
+}
+
+// User-saved templates (distinct from the KB's own `Kind::Template` entries
+// and from Studio's hardcoded STARTER_TEMPLATES) — "save my current canvas
+// for reuse" (§ save-as-template).
+export function listModelTemplates(): Promise<ModelTemplateSummary[]> {
+  return request<ModelTemplateSummary[]>('/api/model_templates')
+}
+
+export function createModelTemplate(
+  name: string,
+  description: string,
+  data: CanonicalModel,
+  layout?: ModelLayout,
+): Promise<ModelTemplateSummary> {
+  return request<ModelTemplateSummary>('/api/model_templates', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/ld+json' },
+    body: JSON.stringify({ name, description, data, layout }),
+  })
+}
+
+export function deleteModelTemplate(id: string): Promise<void> {
+  return request<void>(`/api/model_templates/${id}`, { method: 'DELETE' })
 }
 
 export { ApiError }
