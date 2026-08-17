@@ -2,7 +2,7 @@ apiVersion: hybridtm.io/kb/v1
 kind: Component
 metadata:
   id: client-browser-spa
-  name: Browser (SPA)
+  name: Browser
   version: 1.0.0
   categories: [client]
   icon: material-symbols:web

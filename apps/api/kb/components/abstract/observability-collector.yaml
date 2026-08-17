@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [observability]
   maturity: stable
+  icon: mdi:monitor-dashboard
+  color: '#f59e0b'
   abstract: true
 spec:
   mapping:

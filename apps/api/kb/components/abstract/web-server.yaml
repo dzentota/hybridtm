@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [web, edge]
   maturity: stable
+  icon: mdi:web
+  color: '#3b82f6'
   abstract: true
 spec:
   mapping:

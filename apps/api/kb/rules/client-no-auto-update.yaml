@@ -11,6 +11,9 @@ spec:
     all:
       - "component.hasTrait('client_device')"
       - "component.props.bool('auto_update_enabled') == false"
+  unless:
+    any:
+      - "component.hasTrait('browser_client')"
   then:
     - raise: THREAT-CLIENT-NO-AUTO-UPDATE
       evidence: "{{ component.name }} has no automatic update mechanism."

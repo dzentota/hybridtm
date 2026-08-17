@@ -5,7 +5,7 @@ metadata:
   name: Mobile App
   version: 1.0.0
   categories: [client]
-  icon: material-symbols:smartphone
+  icon: material-symbols:smartphone-outline
   maturity: stable
 spec:
   extends: abstract/client
@@ -13,5 +13,23 @@ spec:
     type: external-entity
     technologies: [mobile-app]
   traits: [mobile_client]
-  properties: []
-  rules: []
+  properties:
+    - id: certificate_pinning_enabled
+      label: 'Pins server certificate/public key'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: jailbreak_root_detection_enabled
+      label: 'Detects jailbroken/rooted devices'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: app_attestation_enabled
+      label: 'Backend verifies app/device attestation'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - mobile/certificate-pinning-missing
+    - client/no-jailbreak-detection
+    - client/no-app-attestation

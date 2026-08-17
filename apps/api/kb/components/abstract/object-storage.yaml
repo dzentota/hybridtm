@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [storage]
   maturity: stable
+  icon: mdi:bucket-outline
+  color: '#14b8a6'
   abstract: true
 spec:
   extends: abstract/datastore

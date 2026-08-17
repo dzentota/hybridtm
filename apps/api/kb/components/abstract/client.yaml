@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [client]
   maturity: stable
+  icon: mdi:devices
+  color: '#8b5cf6'
   abstract: true
 spec:
   mapping:
@@ -16,12 +18,15 @@ spec:
     defaults:
       confidentiality: internal
   traits: [client_device, processing_end_user_requests]
+  # certificate_pinning_enabled/jailbreak_root_detection_enabled/
+  # app_attestation_enabled used to live here and inherited onto every
+  # client type via `extends`, including Browser (SPA) and Desktop — a
+  # laptop browser can neither pin a certificate the way a native app does,
+  # detect a jailbroken/rooted OS, nor attest itself to the backend, so
+  # those toggles (and the "why is this here" confusion they caused) only
+  # belong on client-mobile-app now, the one client type they're actually
+  # about.
   properties:
-    - id: certificate_pinning_enabled
-      label: 'Pins server certificate/public key'
-      type: boolean
-      default: false
-      group: 'Cryptography'
     - id: auto_update_enabled
       label: 'Receives automatic security updates'
       type: boolean
@@ -32,19 +37,6 @@ spec:
       type: boolean
       default: false
       group: 'Cryptography'
-    - id: jailbreak_root_detection_enabled
-      label: 'Detects jailbroken/rooted devices'
-      type: boolean
-      default: false
-      group: 'Hardening'
-    - id: app_attestation_enabled
-      label: 'Backend verifies app/device attestation'
-      type: boolean
-      default: false
-      group: 'Hardening'
   rules:
-    - mobile/certificate-pinning-missing
     - client/no-auto-update
     - client/insecure-local-secret-storage
-    - client/no-jailbreak-detection
-    - client/no-app-attestation

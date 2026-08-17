@@ -6,7 +6,7 @@ metadata:
   version: 1.0.0
   vendor: HAProxy Technologies
   categories: [web, edge]
-  icon: simple-icons:haproxy
+  icon: mdi:router-network
   color: '#106DA9'
   maturity: stable
 spec:

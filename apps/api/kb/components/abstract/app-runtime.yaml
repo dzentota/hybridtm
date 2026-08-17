@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [application]
   maturity: stable
+  icon: mdi:application-braces-outline
+  color: '#6366f1'
   abstract: true
 spec:
   mapping:

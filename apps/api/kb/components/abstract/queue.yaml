@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [integration]
   maturity: stable
+  icon: mdi:tray-full
+  color: '#22c55e'
   abstract: true
 spec:
   mapping:

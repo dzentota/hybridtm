@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [application, cloud]
   maturity: stable
+  icon: mdi:aws
+  color: '#FF9900'
   abstract: true
 spec:
   mapping:

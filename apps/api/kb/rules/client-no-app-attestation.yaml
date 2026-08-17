@@ -10,6 +10,7 @@ spec:
   when:
     all:
       - "component.hasTrait('client_device')"
+      - "component.hasTrait('mobile_client')"
       - "component.props.bool('app_attestation_enabled') == false"
   then:
     - raise: THREAT-NO-APP-ATTESTATION

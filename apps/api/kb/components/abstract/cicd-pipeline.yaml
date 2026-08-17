@@ -6,6 +6,8 @@ metadata:
   version: 1.0.0
   categories: [cicd]
   maturity: stable
+  icon: mdi:infinity
+  color: '#f97316'
   abstract: true
 spec:
   mapping:

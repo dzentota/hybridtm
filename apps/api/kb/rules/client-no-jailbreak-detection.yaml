@@ -10,6 +10,7 @@ spec:
   when:
     all:
       - "component.hasTrait('client_device')"
+      - "component.hasTrait('mobile_client')"
       - "component.props.bool('jailbreak_root_detection_enabled') == false"
   then:
     - raise: THREAT-NO-JAILBREAK-DETECTION
