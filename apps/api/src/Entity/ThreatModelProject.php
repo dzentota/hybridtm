@@ -22,7 +22,17 @@ use Symfony\Component\Validator\Constraints as Assert;
  * itself — that lives in its `ModelVersion` history (§6.3, T-6.1/T-6.3).
  */
 #[ORM\Entity(repositoryClass: ThreatModelProjectRepository::class)]
-#[ORM\Table(name: 'threat_model_project')]
+// Slug uniqueness is scoped per tenant, not global: every tenant's Studio
+// client bootstraps a project via the same hardcoded 'studio-demo' slug
+// (ensureDemoProject in the frontend), and collection reads are RLS-scoped
+// to the caller's tenant — a single global unique index meant the first
+// tenant to create 'studio-demo' silently blocked every other tenant's
+// client from ever bootstrapping its own (500 on insert, since the
+// tenant-scoped SELECT that should have found "already exists" can't see
+// across tenants).
+#[ORM\Table(name: 'threat_model_project', uniqueConstraints: [
+    new ORM\UniqueConstraint(name: 'uniq_tenant_slug', columns: ['tenant_id', 'slug']),
+])]
 #[ORM\HasLifecycleCallbacks]
 #[ApiResource(
     operations: [
@@ -54,7 +64,7 @@ class ThreatModelProject
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     public ?Tenant $tenant = null;
 
-    #[ORM\Column(length: 80, unique: true)]
+    #[ORM\Column(length: 80)]
     #[Assert\NotBlank]
     #[Assert\Regex(pattern: '/^[a-z][a-z0-9-]{1,79}$/', message: 'Slug must be a lowercase kebab-case identifier.')]
     public string $slug = '';
