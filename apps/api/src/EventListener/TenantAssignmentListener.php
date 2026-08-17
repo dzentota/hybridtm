@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\EventListener;
 
 use App\Entity\DeepAnalysisResult;
+use App\Entity\ModelTemplate;
 use App\Entity\ModelVersion;
 use App\Entity\ProjectMembership;
 use App\Entity\RiskDecisionRecord;
@@ -44,7 +45,7 @@ use Symfony\Bundle\SecurityBundle\Security;
 #[AsDoctrineListener(event: Events::onFlush, priority: 10)]
 final class TenantAssignmentListener
 {
-    private const GOVERNED = [ThreatModelProject::class, ModelVersion::class, RiskDecisionRecord::class, ProjectMembership::class];
+    private const GOVERNED = [ThreatModelProject::class, ModelVersion::class, RiskDecisionRecord::class, ProjectMembership::class, ModelTemplate::class];
 
     public function __construct(private readonly Security $security)
     {
@@ -87,6 +88,11 @@ final class TenantAssignmentListener
         $entity = $args->getObject();
 
         if ($entity instanceof ThreatModelProject) {
+            $entity->tenant ??= $this->currentTenant();
+            return;
+        }
+
+        if ($entity instanceof ModelTemplate) {
             $entity->tenant ??= $this->currentTenant();
             return;
         }
