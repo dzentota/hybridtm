@@ -12,5 +12,6 @@ spec:
     impact: medium
   standards:
       cwe: [778]
+      pci_dss_4: ['10.4.1']
   countermeasures:
       - CM-ADD-BOUNDARY-MONITORING

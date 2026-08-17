@@ -12,5 +12,6 @@ spec:
     impact: high
   standards:
       cwe: [269]
+      pci_dss_4: ['7.2.2']
   countermeasures:
       - CM-AVOID-WILDCARD-IAM

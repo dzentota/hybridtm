@@ -12,5 +12,8 @@ spec:
     impact: medium
   standards:
       cwe: [327]
+      capec: [20]
+      owasp_asvs: ['V9.1.2']
+      pci_dss_4: ['4.2.1']
   countermeasures:
       - CM-DISABLE-WEAK-CIPHERS

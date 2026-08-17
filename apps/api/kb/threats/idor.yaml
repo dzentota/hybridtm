@@ -12,5 +12,8 @@ spec:
     impact: high
   standards:
       cwe: [639, 284]
+      capec: [180]
+      owasp_asvs: ['V4.2.1']
+      pci_dss_4: ['6.2.4']
   countermeasures:
       - CM-ENFORCE-OBJECT-LEVEL-AUTHORIZATION

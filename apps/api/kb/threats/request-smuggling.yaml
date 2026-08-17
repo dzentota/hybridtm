@@ -12,5 +12,6 @@ spec:
     impact: high
   standards:
       cwe: [444]
+      pci_dss_4: ['6.2.4']
   countermeasures:
       - CM-PREVENT-REQUEST-SMUGGLING

@@ -12,5 +12,8 @@ spec:
     impact: high
   standards:
       cwe: [434]
+      capec: [650]
+      owasp_asvs: ['V12.2.1']
+      pci_dss_4: ['6.2.4']
   countermeasures:
       - CM-VALIDATE-UPLOAD-TYPE

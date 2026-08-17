@@ -12,5 +12,6 @@ spec:
     impact: medium
   standards:
       cwe: [1006]
+      pci_dss_4: ['6.3.1']
   countermeasures:
       - CM-ENABLE-SAST-SCANNING

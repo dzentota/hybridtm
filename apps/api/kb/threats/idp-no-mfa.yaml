@@ -12,5 +12,6 @@ spec:
     impact: high
   standards:
       cwe: [308]
+      pci_dss_4: ['8.3.1']
   countermeasures:
       - CM-ENFORCE-MFA

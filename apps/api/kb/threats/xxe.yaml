@@ -12,5 +12,8 @@ spec:
     impact: high
   standards:
       cwe: [611]
+      capec: [221]
+      owasp_asvs: ['V5.5.2']
+      pci_dss_4: ['6.2.4']
   countermeasures:
       - CM-DISABLE-XML-EXTERNAL-ENTITIES

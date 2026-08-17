@@ -12,3 +12,4 @@ spec:
     impact: low
   standards:
     cwe: [319]
+    pci_dss_4: ['4.2.1']

@@ -12,5 +12,6 @@ spec:
     impact: medium
   standards:
       cwe: [489, 209]
+      pci_dss_4: ['2.2.1']
   countermeasures:
       - CM-DISABLE-DEBUG-MODE

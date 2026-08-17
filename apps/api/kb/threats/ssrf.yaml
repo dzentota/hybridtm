@@ -12,5 +12,8 @@ spec:
     impact: high
   standards:
       cwe: [918]
+      capec: [664]
+      owasp_asvs: ['V12.6.1']
+      pci_dss_4: ['6.2.4']
   countermeasures:
       - CM-PREVENT-SSRF

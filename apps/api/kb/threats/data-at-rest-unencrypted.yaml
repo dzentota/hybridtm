@@ -12,4 +12,5 @@ spec:
     impact: medium
   standards:
     cwe: [311, 312]
+    pci_dss_4: ['3.5.1']
   countermeasures: [CM-ENCRYPT-AT-REST]

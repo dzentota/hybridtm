@@ -12,5 +12,6 @@ spec:
     impact: low
   standards:
       cwe: [778]
+      pci_dss_4: ['10.2.1']
   countermeasures:
       - CM-ENABLE-MULTI-REGION-TRAIL

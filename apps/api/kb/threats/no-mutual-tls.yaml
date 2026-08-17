@@ -12,5 +12,6 @@ spec:
     impact: medium
   standards:
       cwe: [295]
+      pci_dss_4: ['4.2.1']
   countermeasures:
       - CM-ENABLE-MUTUAL-TLS

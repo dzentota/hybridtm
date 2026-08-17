@@ -12,5 +12,6 @@ spec:
     impact: high
   standards:
       cwe: [311]
+      pci_dss_4: ['3.5.1']
   countermeasures:
       - CM-ENCRYPT-BACKUPS

@@ -12,5 +12,6 @@ spec:
     impact: medium
   standards:
       cwe: [320]
+      pci_dss_4: ['3.6.1']
   countermeasures:
       - CM-ENABLE-KEY-ROTATION

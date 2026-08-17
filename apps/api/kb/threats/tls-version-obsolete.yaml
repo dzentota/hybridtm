@@ -12,5 +12,7 @@ spec:
     impact: medium
   standards:
       cwe: [327, 326]
+      owasp_asvs: ['V9.1.3']
+      pci_dss_4: ['4.2.1']
   countermeasures:
       - CM-ENFORCE-TLS

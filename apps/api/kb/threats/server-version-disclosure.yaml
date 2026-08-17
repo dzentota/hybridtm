@@ -12,5 +12,6 @@ spec:
     impact: low
   standards:
       cwe: [200, 497]
+      pci_dss_4: ['2.2.1']
   countermeasures:
       - CM-DISABLE-VERSION-DISCLOSURE
