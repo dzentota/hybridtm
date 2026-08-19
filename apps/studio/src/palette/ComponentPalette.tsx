@@ -59,8 +59,8 @@ export function ComponentPalette({ kb, onCollapse }: { kb: KbBundle | undefined;
       <div className="flex-1 min-h-0 overflow-y-auto px-2 pb-2">
         {!kb && <div className="text-xs p-2" style={{ color: 'var(--text-secondary)' }}>{t('palette.loading')}</div>}
         {[...grouped.entries()].map(([category, items]) => (
-          <div key={category} className="mb-3">
-            <div className="text-xs font-semibold uppercase tracking-wide px-1 mb-1" style={{ color: 'var(--text-secondary)' }}>
+          <div key={category} className="mb-4">
+            <div className="text-[11px] font-semibold uppercase tracking-wider px-2 mb-1.5" style={{ color: 'var(--text-secondary)' }}>
               {category}
             </div>
             {items.map(([id, component]) => (
@@ -70,6 +70,7 @@ export function ComponentPalette({ kb, onCollapse }: { kb: KbBundle | undefined;
                 role="button"
                 tabIndex={0}
                 aria-label={t('palette.addAria', { name: component.metadata.name })}
+                title={t('palette.rules', { count: component.rules.length })}
                 onDragStart={(e) => {
                   e.dataTransfer.setData('application/hybridtm-kb-component', id)
                   e.dataTransfer.effectAllowed = 'move'
@@ -81,16 +82,11 @@ export function ComponentPalette({ kb, onCollapse }: { kb: KbBundle | undefined;
                   const offset = cascadeOffset(useModelStore.getState().nodes.length)
                   addComponentFromKb(id, component, { x: center.x + offset.x, y: center.y + offset.y })
                 }}
-                className="flex items-center justify-between gap-2 text-sm px-2 py-1.5 rounded cursor-grab hover:bg-(--surface-2) focus-visible:outline focus-visible:outline-2"
+                className="flex items-center gap-2.5 text-sm px-2 py-2 rounded-lg cursor-grab hover:bg-(--surface-2) focus-visible:outline focus-visible:outline-2"
                 style={{ color: 'var(--text-primary)', outlineColor: 'var(--accent)' }}
               >
-                <span className="flex items-center gap-2 min-w-0">
-                  <ComponentIcon icon={component.metadata.icon} color={component.metadata.color} />
-                  <span className="truncate">{component.metadata.name}</span>
-                </span>
-                <span className="text-[10px] px-1.5 rounded-full shrink-0" style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}>
-                  {t('palette.rules', { count: component.rules.length })}
-                </span>
+                <ComponentIcon icon={component.metadata.icon} color={component.metadata.color} size={17} />
+                <span className="truncate">{component.metadata.name}</span>
               </div>
             ))}
           </div>

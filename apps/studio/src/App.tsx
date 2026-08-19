@@ -74,9 +74,13 @@ function AutosaveRestorePrompt({ projectId }: { projectId: string | null }) {
 
   if (!pending || !projectId || dismissedFor === projectId) return null
 
+  // Positioned relative to the canvas area (App.tsx's flex-1 wrapper below
+  // the toolbar row), not the whole app — so "just under the toolbar"
+  // falls out of the layout instead of needing a hand-tuned pixel offset
+  // that breaks the moment the toolbar's own height changes.
   return (
     <div
-      className="absolute top-14 left-1/2 -translate-x-1/2 z-10 px-3 py-2 rounded shadow text-sm flex items-center gap-3"
+      className="absolute top-3 left-1/2 -translate-x-1/2 z-10 px-3 py-2 rounded shadow text-sm flex items-center gap-3"
       style={{ background: 'var(--surface)', border: '1px solid var(--border)', color: 'var(--text-primary)' }}
       role="alertdialog"
       aria-label="Restore autosaved model"
@@ -246,7 +250,6 @@ function Studio() {
         gridTemplateRows: '1fr',
       }}
     >
-      <AutosaveRestorePrompt projectId={currentProjectId} />
       <CommandPalette
         kb={kb}
         onRunAnalysis={() => runAnalysis.mutate()}
@@ -263,25 +266,30 @@ function Studio() {
       ) : (
         <ComponentPalette kb={kb} onCollapse={toggleLeftPanel} />
       )}
-      <div className="relative h-full min-h-0 min-w-0">
-        <div className="absolute inset-x-3 top-3 z-10">
-          <Toolbar
-            kb={kb}
-            projects={projects ?? []}
-            currentProjectId={currentProjectId}
-            onSwitchProject={(id) => switchProject(id, modelVersions ?? [])}
-            onCreateProject={(slug, title) => createProjectMutation.mutate({ slug, title })}
-            onSave={() => saveModel.mutate()}
-            isSaving={saveModel.isPending}
-            saveError={saveModel.isError ? (saveModel.error instanceof Error ? saveModel.error.message : String(saveModel.error)) : null}
-            onOpenTemplates={() => setTemplatesOpen(true)}
-            onOpenDiff={() => setDiffOpen(true)}
-            onToggleCode={() => setCodeOpen((v) => !v)}
-          />
-        </div>
-        <div className="h-full min-h-0 grid" style={{ gridTemplateColumns: codeOpen ? '1fr 1fr' : '1fr' }}>
-          <FlowCanvas kb={kb} />
-          {codeOpen && <PhpSyncPanel />}
+      {/* Toolbar is a normal-flow row here, not an absolutely-positioned
+         overlay — the canvas/code-panel area below starts *after* it, so
+         nothing rendered there (a component near the top, the PHP view's
+         first lines) can end up underneath it. */}
+      <div className="h-full min-h-0 min-w-0 flex flex-col">
+        <Toolbar
+          kb={kb}
+          projects={projects ?? []}
+          currentProjectId={currentProjectId}
+          onSwitchProject={(id) => switchProject(id, modelVersions ?? [])}
+          onCreateProject={(slug, title) => createProjectMutation.mutate({ slug, title })}
+          onSave={() => saveModel.mutate()}
+          isSaving={saveModel.isPending}
+          saveError={saveModel.isError ? (saveModel.error instanceof Error ? saveModel.error.message : String(saveModel.error)) : null}
+          onOpenTemplates={() => setTemplatesOpen(true)}
+          onOpenDiff={() => setDiffOpen(true)}
+          onToggleCode={() => setCodeOpen((v) => !v)}
+        />
+        <div className="relative flex-1 min-h-0">
+          <AutosaveRestorePrompt projectId={currentProjectId} />
+          <div className="h-full min-h-0 grid" style={{ gridTemplateColumns: codeOpen ? '1fr 1fr' : '1fr' }}>
+            <FlowCanvas kb={kb} />
+            {codeOpen && <PhpSyncPanel />}
+          </div>
         </div>
       </div>
       {rightCollapsed ? (

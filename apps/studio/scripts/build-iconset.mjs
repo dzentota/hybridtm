@@ -17,7 +17,32 @@ import { getIcons } from '@iconify/utils'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const OUT_PATH = resolve(__dirname, '../src/design/iconset.generated.json')
 
+// Generic chrome icons for the toolbar / node hover-toolbar / palette —
+// not referenced by any KB YAML, so they need their own allowlist entries.
+const UI_CHROME_ICONS = [
+  'mdi:undo',
+  'mdi:redo',
+  'mdi:content-save-outline',
+  'mdi:sitemap-outline',
+  'mdi:vector-square',
+  'mdi:view-grid-plus-outline',
+  'mdi:compare-horizontal',
+  'mdi:code-tags',
+  'mdi:file-image-outline',
+  'mdi:svg',
+  'mdi:translate',
+  'mdi:logout',
+  'mdi:layers-outline',
+  'mdi:shield-alert-outline',
+  'mdi:content-copy',
+  'mdi:trash-can-outline',
+  'mdi:chevron-left',
+  'mdi:chevron-right',
+  'mdi:magnify',
+]
+
 const KB_ICON_ALLOWLIST = [
+  ...UI_CHROME_ICONS,
   'material-symbols:api',
   'material-symbols:cloud-outline',
   'material-symbols:folder-shared-outline',

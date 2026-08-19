@@ -6,6 +6,8 @@ import { useElkLayout } from '../layout/useElkLayout'
 import { useExportCanvas } from '../canvas/useExportCanvas'
 import { ProjectSwitcher } from './ProjectSwitcher'
 import { logout, type ProjectSummary } from '../api/client'
+import { Icon } from '@iconify/react'
+import { IconButton, ToolbarDivider } from '../design/IconButton'
 import type { KbBundle } from '../api/types'
 
 const OVERLAY_KEYS: Record<OverlayMode, string> = {
@@ -41,6 +43,12 @@ function SavedIndicator() {
   )
 }
 
+/** Two-tier app bar (T-7.x design pass): an identity/action row up top
+ * (project, title, save status, the one colored primary action, sign-out)
+ * and a dense icon-only tool row below it, grouped with dividers — mirrors
+ * the separation most diagramming tools (draw.io, IriusRisk) use between
+ * "what is this document and did it save" and "editing tools", instead of
+ * one flat run of same-weight text buttons where nothing stands out. */
 export function Toolbar({
   kb: _kb,
   projects,
@@ -78,193 +86,130 @@ export function Toolbar({
   const setOverlayMode = useModelStore((s) => s.setOverlayMode)
   const [laying, setLaying] = useState(false)
 
+  // A solid, full-width docked bar (T-7.x UX pass) — not a floating card
+  // positioned *over* the canvas. It used to be `position: absolute`, which
+  // let it visually cover whatever the canvas/code panel rendered directly
+  // underneath (a component near the top, the PHP code view's first lines);
+  // moving it into normal document flow (App.tsx renders it as a sibling
+  // row above the canvas, not an overlay on top of it) makes that
+  // impossible by construction — there's no "underneath" left to cover.
   return (
-    <div
-      className="px-3 py-2 flex flex-wrap items-center gap-3 text-sm rounded-lg shadow-lg"
-      style={{
-        border: '1px solid var(--border)',
-        background: 'var(--surface-0)',
-        color: 'var(--text-primary)',
-      }}
-    >
-      <ProjectSwitcher
-        projects={projects}
-        currentProjectId={currentProjectId}
-        onSwitch={onSwitchProject}
-        onCreate={onCreateProject}
-      />
-      <div style={{ width: '1px', height: '20px', background: 'var(--border)' }} />
-      <input
-        aria-label={t('toolbar.title')}
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        className="font-medium bg-transparent outline-none min-w-0"
-        style={{ width: '220px' }}
-      />
-      <button
-        type="button"
-        aria-label="Save model"
-        title="Save the current model to this project"
-        disabled={isSaving}
-        onClick={onSave}
-        className="px-2 py-1 rounded font-medium disabled:opacity-40"
-        style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
+    <div className="flex flex-col w-full" style={{ borderBottom: '1px solid var(--border)', background: 'var(--surface-0)' }}>
+      <div
+        className="px-3 py-2 flex flex-wrap items-center gap-3 text-sm"
+        style={{ borderBottom: '1px solid var(--border)', color: 'var(--text-primary)' }}
       >
-        {isSaving ? 'Saving…' : '💾 Save'}
-      </button>
-      {saveError && (
-        <span className="text-xs" style={{ color: 'var(--severity-critical)' }} role="alert">
-          Save failed: {saveError}
-        </span>
-      )}
-      <div className="flex items-center gap-1" role="group" aria-label="Undo and redo">
-        <button
-          type="button"
-          aria-label={t('toolbar.undo')}
-          title={t('toolbar.undo')}
-          disabled={!canUndo}
-          onClick={() => undo()}
-          className="px-2 py-1 rounded disabled:opacity-40"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          ↺ {t('toolbar.undoShort')}
-        </button>
-        <button
-          type="button"
-          aria-label={t('toolbar.redo')}
-          title={t('toolbar.redo')}
-          disabled={!canRedo}
-          onClick={() => redo()}
-          className="px-2 py-1 rounded disabled:opacity-40"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          ↻ {t('toolbar.redoShort')}
-        </button>
-      </div>
-      <button
-        type="button"
-        aria-label={t('toolbar.autoLayout')}
-        title={t('toolbar.autoLayout')}
-        disabled={laying}
-        onClick={async () => {
-          setLaying(true)
-          try {
-            await runLayout()
-          } finally {
-            setLaying(false)
-          }
-        }}
-        className="px-2 py-1 rounded disabled:opacity-40"
-        style={{ border: '1px solid var(--border)' }}
-      >
-        {laying ? t('toolbar.layingOut') : `⇉ ${t('toolbar.autoLayout')}`}
-      </button>
-      <button
-        type="button"
-        aria-label="Add trust boundary"
-        title="Add a trust boundary to the canvas — drag components onto it to place them inside"
-        onClick={() => {
-          const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
-          addBoundary(center)
-        }}
-        className="px-2 py-1 rounded"
-        style={{ border: '1px solid var(--border)' }}
-      >
-        ⬚ Boundary
-      </button>
-      <button
-        type="button"
-        aria-label="Browse architecture templates"
-        title="Templates"
-        onClick={onOpenTemplates}
-        className="px-2 py-1 rounded"
-        style={{ border: '1px solid var(--border)' }}
-      >
-        Templates
-      </button>
-      <button
-        type="button"
-        aria-label="Compare model versions"
-        title="Compare versions"
-        onClick={onOpenDiff}
-        className="px-2 py-1 rounded"
-        style={{ border: '1px solid var(--border)' }}
-      >
-        Diff
-      </button>
-      <button
-        type="button"
-        aria-label="Toggle PHP DSL code view"
-        title="Code"
-        onClick={onToggleCode}
-        className="px-2 py-1 rounded"
-        style={{ border: '1px solid var(--border)' }}
-      >
-        Code
-      </button>
-      <label className="flex items-center gap-1.5">
-        <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.overlay')}</span>
-        <select
-          aria-label="Canvas overlay mode"
-          value={overlayMode}
-          onChange={(e) => setOverlayMode(e.target.value as OverlayMode)}
-          className="px-1.5 py-1 rounded text-sm"
-          style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
-        >
-          {(Object.keys(OVERLAY_KEYS) as OverlayMode[]).map((mode) => (
-            <option key={mode} value={mode}>
-              {t(OVERLAY_KEYS[mode])}
-            </option>
-          ))}
-        </select>
-      </label>
-      <div className="flex items-center gap-1" role="group" aria-label="Export canvas">
-        <button
-          type="button"
-          aria-label="Export canvas as PNG"
-          title="Export PNG"
-          onClick={() => void exportAs('png')}
-          className="px-2 py-1 rounded"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          {t('toolbar.exportPng')}
-        </button>
-        <button
-          type="button"
-          aria-label="Export canvas as SVG"
-          title="Export SVG"
-          onClick={() => void exportAs('svg')}
-          className="px-2 py-1 rounded"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          {t('toolbar.exportSvg')}
-        </button>
-      </div>
-      <label className="flex items-center gap-1.5">
-        <span style={{ color: 'var(--text-secondary)' }}>{t('toolbar.language')}:</span>
-        <select
-          aria-label={t('toolbar.language')}
-          value={i18n.resolvedLanguage}
-          onChange={(e) => void i18n.changeLanguage(e.target.value)}
-          className="px-1.5 py-1 rounded text-sm"
-          style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
-        >
-          <option value="en">EN</option>
-          <option value="ru">RU</option>
-        </select>
-      </label>
-      <div className="ml-auto flex items-center gap-3">
+        <ProjectSwitcher
+          projects={projects}
+          currentProjectId={currentProjectId}
+          onSwitch={onSwitchProject}
+          onCreate={onCreateProject}
+        />
+        <div style={{ width: '1px', height: '20px', background: 'var(--border)' }} />
+        <input
+          aria-label={t('toolbar.title')}
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+          className="font-medium bg-transparent outline-none min-w-0"
+          style={{ width: '220px' }}
+        />
         <SavedIndicator />
-        <button
-          type="button"
-          aria-label="Log out"
-          title="Log out"
-          onClick={() => logout()}
-          className="px-2 py-1 rounded"
-          style={{ border: '1px solid var(--border)' }}
-        >
-          Log out
-        </button>
+        {saveError && (
+          <span className="text-xs" style={{ color: 'var(--severity-critical)' }} role="alert">
+            Save failed: {saveError}
+          </span>
+        )}
+        <div className="ml-auto flex items-center gap-2">
+          <button
+            type="button"
+            aria-label={t('toolbar.save')}
+            title={t('toolbar.save')}
+            disabled={isSaving}
+            onClick={onSave}
+            className="px-3 py-1.5 rounded-md font-medium text-sm disabled:opacity-40"
+            style={{ background: 'var(--accent)', color: 'var(--accent-contrast)' }}
+          >
+            {isSaving ? t('toolbar.saving') : t('toolbar.save')}
+          </button>
+          <IconButton icon="mdi:logout" label={t('toolbar.logOut')} onClick={() => logout()} />
+        </div>
+      </div>
+
+      <div className="px-3 py-1.5 flex flex-wrap items-center gap-1.5">
+        <div className="flex items-center gap-0.5" role="group" aria-label="Undo and redo">
+          <IconButton icon="mdi:undo" label={t('toolbar.undo')} disabled={!canUndo} onClick={() => undo()} />
+          <IconButton icon="mdi:redo" label={t('toolbar.redo')} disabled={!canRedo} onClick={() => redo()} />
+        </div>
+
+        <ToolbarDivider />
+
+        <IconButton
+          icon="mdi:sitemap-outline"
+          label={laying ? t('toolbar.layingOut') : t('toolbar.autoLayout')}
+          disabled={laying}
+          onClick={async () => {
+            setLaying(true)
+            try {
+              await runLayout()
+            } finally {
+              setLaying(false)
+            }
+          }}
+        />
+        <IconButton
+          icon="mdi:vector-square"
+          label={t('toolbar.addBoundary')}
+          onClick={() => {
+            const center = screenToFlowPosition({ x: window.innerWidth / 2, y: window.innerHeight / 2 })
+            addBoundary(center)
+          }}
+        />
+
+        <ToolbarDivider />
+
+        <IconButton icon="mdi:view-grid-plus-outline" label={t('toolbar.templates')} onClick={onOpenTemplates} />
+        <IconButton icon="mdi:compare-horizontal" label={t('toolbar.diff')} onClick={onOpenDiff} />
+        <IconButton icon="mdi:code-tags" label={t('toolbar.code')} onClick={onToggleCode} />
+
+        <ToolbarDivider />
+
+        <label className="flex items-center gap-1.5 pl-1">
+          <span className="text-xs" style={{ color: 'var(--text-secondary)' }}>{t('toolbar.overlay')}</span>
+          <select
+            aria-label="Canvas overlay mode"
+            value={overlayMode}
+            onChange={(e) => setOverlayMode(e.target.value as OverlayMode)}
+            className="px-1.5 py-1 rounded text-sm"
+            style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
+          >
+            {(Object.keys(OVERLAY_KEYS) as OverlayMode[]).map((mode) => (
+              <option key={mode} value={mode}>
+                {t(OVERLAY_KEYS[mode])}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <ToolbarDivider />
+
+        <div className="flex items-center gap-0.5" role="group" aria-label="Export canvas">
+          <IconButton icon="mdi:file-image-outline" label={t('toolbar.exportPng')} onClick={() => void exportAs('png')} />
+          <IconButton icon="mdi:svg" label={t('toolbar.exportSvg')} onClick={() => void exportAs('svg')} />
+        </div>
+
+        <div className="ml-auto flex items-center gap-1.5">
+          <Icon icon="mdi:translate" width={16} height={16} style={{ color: 'var(--text-secondary)' }} aria-hidden="true" />
+          <select
+            aria-label={t('toolbar.language')}
+            value={i18n.resolvedLanguage}
+            onChange={(e) => void i18n.changeLanguage(e.target.value)}
+            className="px-1.5 py-1 rounded text-sm"
+            style={{ border: '1px solid var(--border)', background: 'var(--surface-0)', color: 'var(--text-primary)' }}
+          >
+            <option value="en">EN</option>
+            <option value="ru">RU</option>
+          </select>
+        </div>
       </div>
     </div>
   )

@@ -58,27 +58,75 @@ function CanvasInner({ kb }: { kb: KbBundle | undefined }) {
     [select, selectEdge],
   )
 
+  // Smallest-area boundary match, not first-in-array-order: two boundaries
+  // can legitimately overlap on screen (nothing stops a user from placing
+  // one over another), and `.find()` picking whichever happens to sit
+  // first in the node list — unrelated to z-order or which box the user
+  // can actually see themselves dropping into — could silently parent a
+  // component to the wrong one. The smallest matching box is the most
+  // specific/innermost one, matching what a user visually aims for.
+  const boundaryAt = useCallback(
+    (point: { x: number; y: number }, nds: StudioNode[], excludeId?: string) => {
+      const candidates = nds.filter((n) => {
+        if (n.type !== 'boundary' || n.id === excludeId) return false
+        const width = (n.style?.width as number) ?? 420
+        const height = (n.style?.height as number) ?? 260
+        return point.x >= n.position.x && point.x <= n.position.x + width && point.y >= n.position.y && point.y <= n.position.y + height
+      })
+      return candidates.sort((a, b) => {
+        const areaOf = (n: StudioNode) => ((n.style?.width as number) ?? 420) * ((n.style?.height as number) ?? 260)
+        return areaOf(a) - areaOf(b)
+      })[0]
+    },
+    [],
+  )
+
   const onNodeDragStop: OnNodeDrag<StudioNode> = useCallback(
     (_event, draggedNode) => {
-      if (draggedNode.type !== 'component') return
-      setNodes((nds) => {
-        const current = nds.find((n) => n.id === draggedNode.id)
-        if (!current) return nds
-        const abs = absolutePosition(current, nds)
-        const target = nds.find((n) => {
-          if (n.type !== 'boundary' || n.id === current.id) return false
-          const width = (n.style?.width as number) ?? 420
-          const height = (n.style?.height as number) ?? 260
-          return abs.x >= n.position.x && abs.x <= n.position.x + width && abs.y >= n.position.y && abs.y <= n.position.y + height
+      if (draggedNode.type === 'component') {
+        setNodes((nds) => {
+          const current = nds.find((n) => n.id === draggedNode.id)
+          if (!current) return nds
+          const abs = absolutePosition(current, nds)
+          const target = boundaryAt(abs, nds, current.id)
+          if ((target?.id ?? undefined) === current.parentId) return nds
+          const newPosition = target ? { x: abs.x - target.position.x, y: abs.y - target.position.y } : abs
+          return nds.map((n) =>
+            n.id === current.id ? { ...n, position: newPosition, parentId: target?.id } : n,
+          )
         })
-        if ((target?.id ?? undefined) === current.parentId) return nds
-        const newPosition = target ? { x: abs.x - target.position.x, y: abs.y - target.position.y } : abs
-        return nds.map((n) =>
-          n.id === current.id ? { ...n, position: newPosition, parentId: target?.id } : n,
-        )
-      })
+        return
+      }
+      if (draggedNode.type === 'boundary') {
+        // The reverse case: a component keeps whatever containment it had
+        // when *it* was last dropped, since xyflow moves parented children
+        // along with their parent automatically — nothing needs to react
+        // when a boundary that already owns children is dragged. But a
+        // boundary dragged so it now visually *encloses* components it
+        // doesn't own (or that were dropped there before this boundary
+        // existed/moved) never got checked at all: only a component's own
+        // drag-stop used to run the containment test, so those components
+        // stayed exactly as un-parented as before — just now sitting
+        // inside a dashed box that implied otherwise. Re-running the same
+        // containment test from the boundary's side catches that case.
+        setNodes((nds) => {
+          const boundary = nds.find((n) => n.id === draggedNode.id)
+          if (!boundary) return nds
+          let changed = false
+          const next = nds.map((n) => {
+            if (n.type !== 'component') return n
+            const abs = absolutePosition(n, nds)
+            const target = boundaryAt(abs, nds)
+            if ((target?.id ?? undefined) === n.parentId) return n
+            changed = true
+            const newPosition = target ? { x: abs.x - target.position.x, y: abs.y - target.position.y } : abs
+            return { ...n, position: newPosition, parentId: target?.id }
+          })
+          return changed ? next : nds
+        })
+      }
     },
-    [setNodes],
+    [setNodes, boundaryAt],
   )
 
   const onDragOver = useCallback((event: React.DragEvent) => {

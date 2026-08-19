@@ -3,6 +3,7 @@ import Editor from '@monaco-editor/react'
 import { createModelVersion, exportModelAsPhp, getModelVersion, importPhp } from '../api/client'
 import { useModelStore } from '../store/model.store'
 import { useProjectStore, projectIri } from '../project/project.store'
+import { useElkLayout } from '../layout/useElkLayout'
 
 /** Split-view PHP DSL preview + two-way sync (T-7.15). Sync happens on
  * explicit Refresh/Apply, not per-keystroke: the export/import round trip
@@ -18,6 +19,7 @@ export function PhpSyncPanel() {
   const toLayout = useModelStore((s) => s.toLayout)
   const loadCanonicalModel = useModelStore((s) => s.loadCanonicalModel)
   const currentProjectId = useProjectStore((s) => s.currentProjectId)
+  const { runLayout } = useElkLayout()
 
   const refresh = async () => {
     if (!currentProjectId) return
@@ -44,6 +46,13 @@ export function PhpSyncPanel() {
       setWarnings(result.warnings)
       const modelVersion = await getModelVersion(result.id)
       loadCanonicalModel(modelVersion.data, modelVersion.layout)
+      // ImportController never persists a `layout` alongside a PHP-DSL
+      // import (there's no canvas position info in the DSL to carry over),
+      // so this always lands on canonicalModelToGraph's fallback grid — a
+      // reasonable default, but not as good as letting ELK actually pack
+      // boundaries/components without overlap. Skip it if the reader
+      // returned an actual saved layout (defensive; not expected today).
+      if (!modelVersion.layout) await runLayout()
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e))
     } finally {

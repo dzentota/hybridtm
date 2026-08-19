@@ -20,13 +20,20 @@ export function FindingsPanel({
   analysisError: string | null
 }) {
   const { t } = useTranslation()
-  const { findings, select } = useModelStore()
+  const { findings, select, focusSubjectId, setFocusSubject, nodes } = useModelStore()
   const [minSeverity, setMinSeverity] = useState<(typeof severityOrder)[number]>('low')
 
-  const visible = useMemo(() => {
+  const focusName = focusSubjectId ? nodes.find((n) => n.id === focusSubjectId)?.data.name : undefined
+
+  const bySeverity = useMemo(() => {
     const cutoff = severityOrder.indexOf(minSeverity)
     return findings.filter((f) => severityOrder.indexOf(f.severity as (typeof severityOrder)[number]) <= cutoff)
   }, [findings, minSeverity])
+
+  const visible = useMemo(
+    () => bySeverity.filter((f) => !focusSubjectId || f.subject === `component:${focusSubjectId}`),
+    [bySeverity, focusSubjectId],
+  )
 
   const grouped = useMemo(() => {
     const map = new Map<string, typeof findings>()
@@ -54,6 +61,19 @@ export function FindingsPanel({
             Analysis failed: {analysisError}
           </div>
         )}
+        {focusSubjectId && (
+          <div
+            className="flex items-center justify-between gap-2 text-xs px-2 py-1 rounded-full"
+            style={{ background: 'var(--surface-2)', color: 'var(--text-primary)' }}
+          >
+            <span className="truncate">
+              Showing {visible.length} of {bySeverity.length} findings for {focusName ?? 'selected component'}
+            </span>
+            <button type="button" className="font-medium shrink-0" style={{ color: 'var(--accent)' }} onClick={() => setFocusSubject(null)}>
+              Clear
+            </button>
+          </div>
+        )}
         <select
           value={minSeverity}
           onChange={(e) => setMinSeverity(e.target.value as (typeof severityOrder)[number])}
@@ -71,6 +91,13 @@ export function FindingsPanel({
         {findings.length === 0 && (
           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
             {t('findings.empty')}
+          </div>
+        )}
+        {findings.length > 0 && visible.length === 0 && (
+          <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+            {focusSubjectId
+              ? `No findings for ${focusName ?? 'this component'} at or above the selected severity.`
+              : 'No findings at or above the selected severity.'}
           </div>
         )}
         {severityOrder

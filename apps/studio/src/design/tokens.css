@@ -63,6 +63,30 @@ body {
   color: var(--text-primary);
 }
 
+/* Generic hover affordance for every clickable control (T-7.x UX pass) —
+   many buttons across the app set their resting background via an inline
+   `style`, which always beats a `hover:bg-…` Tailwind class no matter how
+   specific it is (inline style outranks any selector, pseudo-classes
+   included), so those buttons had zero visible hover feedback. `filter`
+   is never set inline anywhere in this codebase, so this rule has nothing
+   to lose that fight against — it reaches every button/role="button"
+   uniformly regardless of how its background happens to be set. */
+button:not(:disabled):hover,
+[role='button']:hover {
+  filter: brightness(0.95);
+  cursor: pointer;
+}
+:root[data-theme='dark'] button:not(:disabled):hover,
+:root[data-theme='dark'] [role='button']:hover {
+  filter: brightness(1.25);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) button:not(:disabled):hover,
+  :root:not([data-theme='light']) [role='button']:hover {
+    filter: brightness(1.25);
+  }
+}
+
 /* Severity badge: color + glyph + pattern together, never color alone. */
 .severity-badge {
   display: inline-flex;
@@ -93,6 +117,30 @@ body {
 .hybridtm-handle:hover {
   transform: scale(1.6);
   background: var(--accent) !important;
+}
+
+/* A trust-boundary box being a *node* (not, say, an SVG background layer)
+   means it always paints — and hit-tests — above every edge, since xyflow
+   renders its entire edges pane below its entire nodes pane regardless of
+   any per-node zIndex. Setting `pointer-events: none` on just our own
+   rendered div (see BoundaryNode.tsx) wasn't enough: xyflow wraps every
+   node in its own `.react-flow__node-<type>` container, one level above
+   what our component controls, and *that* wrapper — not our div — is what
+   was still catching the click. Targeting the wrapper class directly here
+   lets clicks fall all the way through to whatever is actually there (a
+   contained component, a data-flow edge, or empty canvas). The boundary
+   itself stays selectable/resizable: BoundaryNode's label and NodeResizer's
+   handles both set their own `pointerEvents: 'all'`, which — since
+   pointer-events:none only removes an element from being a *target*, it
+   doesn't stop a descendant that opts back in — makes them clickable
+   islands inside this otherwise click-through wrapper.
+   `!important` is required, not decorative: xyflow itself sets
+   `pointer-events: all` as an INLINE style on this exact wrapper (confirmed
+   by inspecting the rendered `style=""` attribute), and a plain class rule
+   can never beat an inline style regardless of selector specificity — only
+   `!important` in a stylesheet outranks a non-important inline value. */
+.react-flow__node-boundary {
+  pointer-events: none !important;
 }
 
 .severity-badge[data-severity='critical']::before { content: '⬢'; }

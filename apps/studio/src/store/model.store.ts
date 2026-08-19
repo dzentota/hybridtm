@@ -121,12 +121,30 @@ export function canonicalModelToGraph(
   const components = model.components ?? []
   const dataFlows = model.dataFlows ?? []
 
+  // Fallback grid for boundaries with no saved position (models imported
+  // from PHP/Threagile/OTM never carry a layout sidecar at all — see
+  // ImportController, which only ever sets `data`, never `layout`). This
+  // used to place boundary *i* at (40+40i, 40+40i) with every box the same
+  // DEFAULT_BOUNDARY_SIZE — a diagonal staircase of identically-sized boxes
+  // reads as nested concentric rectangles, not as siblings, which is
+  // exactly the "trust zones nested inside each other" bug reported after
+  // a PHP DSL round-trip. Laying them out in a row (wrapping every 3)
+  // keeps them visually independent instead.
+  const BOUNDARY_GAP = 40
+  const BOUNDARIES_PER_ROW = 3
   const boundaryNodes: StudioNode[] = trustBoundaries.map((b, i) => {
     const saved = layout?.groups[b.id]
+    const col = i % BOUNDARIES_PER_ROW
+    const row = Math.floor(i / BOUNDARIES_PER_ROW)
     return {
       id: b.id,
       type: 'boundary',
-      position: saved ? { x: saved.x, y: saved.y } : { x: 40 + i * 40, y: 40 + i * 40 },
+      position: saved
+        ? { x: saved.x, y: saved.y }
+        : {
+            x: 40 + col * (DEFAULT_BOUNDARY_SIZE.w + BOUNDARY_GAP),
+            y: 40 + row * (DEFAULT_BOUNDARY_SIZE.h + BOUNDARY_GAP),
+          },
       style: saved ? { width: saved.w, height: saved.h } : { width: DEFAULT_BOUNDARY_SIZE.w, height: DEFAULT_BOUNDARY_SIZE.h },
       zIndex: BOUNDARY_Z_INDEX,
       data: { kind: 'boundary', name: b.name, boundaryType: b.type },
@@ -136,7 +154,18 @@ export function canonicalModelToGraph(
   for (const b of trustBoundaries) {
     for (const cid of b.contains ?? []) boundaryOfComponent.set(cid, b.id)
   }
-  const componentNodes: StudioNode[] = components.map((c, i) => {
+  // Separate running index per parent (rather than the shared `i` from
+  // .map): a child node's fallback position is relative to its *own*
+  // parent boundary once parentId is set (xyflow treats a child's
+  // `position` as parent-relative, unconditionally), so reusing the global
+  // index — a page-scale absolute-looking offset like (80 + 4*180, 340) —
+  // could place a child hundreds of pixels outside its own boundary's much
+  // smaller box. That was the other half of the same reported bug: PHP
+  // import produces no layout, so every component hit this fallback and
+  // ended up stranded outside its trust zone instead of inside it.
+  const childIndexInParent = new Map<string, number>()
+  let topLevelIndex = 0
+  const componentNodes: StudioNode[] = components.map((c) => {
     const kbIcon = c.kbComponent ? kbIconIndex[c.kbComponent] : undefined
     const parentId = boundaryOfComponent.get(c.id)
     const saved = layout?.nodes[c.id]
@@ -144,11 +173,17 @@ export function canonicalModelToGraph(
     // position must be relative to its parent boundary's own (also saved)
     // position, or it'd render offset by the parent's coordinates too.
     const parentSaved = parentId ? layout?.groups[parentId] : undefined
-    const position = saved
-      ? parentId && parentSaved
-        ? { x: saved.x - parentSaved.x, y: saved.y - parentSaved.y }
-        : { x: saved.x, y: saved.y }
-      : { x: 80 + (i % 5) * 180, y: 340 + Math.floor(i / 5) * 140 }
+    let position: { x: number; y: number }
+    if (saved) {
+      position = parentId && parentSaved ? { x: saved.x - parentSaved.x, y: saved.y - parentSaved.y } : { x: saved.x, y: saved.y }
+    } else if (parentId) {
+      const idx = childIndexInParent.get(parentId) ?? 0
+      childIndexInParent.set(parentId, idx + 1)
+      position = { x: 24 + (idx % 2) * 190, y: 48 + Math.floor(idx / 2) * 110 }
+    } else {
+      const idx = topLevelIndex++
+      position = { x: 80 + (idx % 5) * 180, y: 340 + Math.floor(idx / 5) * 140 }
+    }
     return {
       id: c.id,
       type: 'component',
@@ -233,6 +268,7 @@ interface ModelState {
   dataAssets: CanonicalDataAsset[]
   selectedId: string | null
   selectedEdgeId: string | null
+  focusSubjectId: string | null
   findings: Finding[]
   lastSavedAt: string | null
   overlayMode: OverlayMode
@@ -241,6 +277,9 @@ interface ModelState {
   setEdges: (updater: (edges: StudioEdge[]) => StudioEdge[]) => void
   select: (id: string | null) => void
   selectEdge: (id: string | null) => void
+  setFocusSubject: (id: string | null) => void
+  removeNode: (id: string) => void
+  duplicateNode: (id: string) => void
   setTitle: (title: string) => void
   setOverlayMode: (mode: OverlayMode) => void
   addDataAsset: (name: string, classification?: string) => CanonicalDataAsset
@@ -279,6 +318,7 @@ export const useModelStore = create<ModelState>()(
       dataAssets: [],
       selectedId: null,
       selectedEdgeId: null,
+      focusSubjectId: null,
       findings: [],
       lastSavedAt: null,
       overlayMode: 'risks',
@@ -289,6 +329,40 @@ export const useModelStore = create<ModelState>()(
       // Inspector shows one or the other, never both.
       select: (id) => set({ selectedId: id, selectedEdgeId: id ? null : get().selectedEdgeId }),
       selectEdge: (id) => set({ selectedEdgeId: id, selectedId: id ? null : get().selectedId }),
+      setFocusSubject: (id) => set({ focusSubjectId: id }),
+      // Mirrors what xyflow's own Backspace/Delete key handling does
+      // (applyNodeChanges with a "remove" change) — a boundary also drops
+      // every node it contains, and any edge touching a removed node goes
+      // with it, so the graph never ends up with a dangling parentId or an
+      // edge pointing at a node that no longer exists.
+      removeNode: (id) => {
+        set((s) => {
+          const toRemove = new Set([id, ...s.nodes.filter((n) => n.parentId === id).map((n) => n.id)])
+          return {
+            nodes: s.nodes.filter((n) => !toRemove.has(n.id)),
+            edges: s.edges.filter((e) => !toRemove.has(e.source) && !toRemove.has(e.target)),
+            selectedId: s.selectedId && toRemove.has(s.selectedId) ? null : s.selectedId,
+          }
+        })
+      },
+      // Component-only (a duplicated boundary with duplicated children would
+      // need a whole id-remapping pass like insertTemplate's — not worth it
+      // for a quick "clone this block" action) — clones properties/traits,
+      // drops findings (they're keyed to the original node's id), and keeps
+      // it in the same trust boundary as the original.
+      duplicateNode: (id) => {
+        const source = get().nodes.find((n) => n.id === id)
+        if (!source || source.type !== 'component') return
+        const offset = cascadeOffset(get().nodes.length)
+        const clone: StudioNode = {
+          ...source,
+          id: freshId('component'),
+          position: { x: source.position.x + offset.x + 24, y: source.position.y + offset.y + 24 },
+          selected: false,
+          data: { ...source.data, findingCount: 0, maxSeverity: undefined },
+        }
+        set((s) => ({ nodes: [...s.nodes, clone], selectedId: clone.id }))
+      },
       setTitle: (title) => set({ title }),
       setOverlayMode: (overlayMode) => set({ overlayMode }),
 

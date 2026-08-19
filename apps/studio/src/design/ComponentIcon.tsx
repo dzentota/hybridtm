@@ -17,10 +17,10 @@ export function ComponentIcon({
   const tint = color ?? 'var(--text-secondary)'
   return (
     <span
-      className="inline-flex items-center justify-center rounded shrink-0"
+      className="inline-flex items-center justify-center rounded-full shrink-0"
       style={{
-        width: size + 8,
-        height: size + 8,
+        width: size + 10,
+        height: size + 10,
         background: `color-mix(in srgb, ${tint} 16%, transparent)`,
       }}
     >

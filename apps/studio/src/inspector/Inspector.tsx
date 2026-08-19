@@ -159,9 +159,13 @@ export function Inspector({ kb }: { kb: KbBundle | undefined }) {
       <div className="text-base font-semibold mb-1" style={{ color: 'var(--text-primary)' }}>
         {selected.data.name}
       </div>
-      <div className="text-xs mb-4" style={{ color: 'var(--text-secondary)' }}>
-        {selected.data.traits.join(', ') || 'no traits'}
-      </div>
+
+      {/* No visible traits block here on purpose: traits are the KB's
+         internal rule-engine classification (`component.hasTrait(...)`),
+         not something the user set or can act on. They still surface
+         where they're actually informative — inside a specific finding's
+         "Why did this fire?" rule trace (FindingCard/RuleTrace), as part
+         of the condition that explains that one result. */}
 
       {kbComponent ? (
         <PropertyForm

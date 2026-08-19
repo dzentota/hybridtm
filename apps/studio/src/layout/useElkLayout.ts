@@ -5,6 +5,15 @@ import { useModelStore, type StudioNode } from '../store/model.store'
 const DEFAULT_WIDTH = 200
 const DEFAULT_HEIGHT = 90
 const BOUNDARY_PADDING = 48
+// Matches BoundaryNode's own MIN_BOUNDARY_WIDTH/HEIGHT (the NodeResizer
+// floor for manual resizing) — an empty boundary (no components currently
+// assigned to it) has zero children for ELK to reserve space around, and
+// ELK sizes a childless compound node at exactly 0x0. Rendered at that
+// size the box is an unclickable, unresizable point (its own 4 corner
+// resize handles all stack on the same pixel), which is exactly what "the
+// trust zone became a dot I can't resize" was.
+const MIN_BOUNDARY_WIDTH = 240
+const MIN_BOUNDARY_HEIGHT = 140
 
 // Explicit `workerFactory` makes elkjs spawn a real browser Worker
 // (public/elk-worker.min.js, copied from node_modules/elkjs/lib) instead of
@@ -70,6 +79,15 @@ export function useElkLayout() {
       id: b.id,
       layoutOptions: {
         'elk.padding': `[top=${BOUNDARY_PADDING},left=${BOUNDARY_PADDING},bottom=${BOUNDARY_PADDING},right=${BOUNDARY_PADDING}]`,
+        // A boundary with no components currently assigned to it has zero
+        // ELK children, and ELK sizes a childless compound node at exactly
+        // 0x0 — telling it about the floor up front (rather than clamping
+        // the result afterwards) matters because ELK also reserves
+        // sibling spacing based on this size *during* layout; clamping
+        // post-hoc could leave the now-larger box overlapping whatever ELK
+        // placed right next to where it assumed a zero-size node would be.
+        'elk.nodeSize.constraints': 'MINIMUM_SIZE',
+        'elk.nodeSize.minimum': `(${MIN_BOUNDARY_WIDTH}, ${MIN_BOUNDARY_HEIGHT})`,
       },
       children: componentNodes.filter((n) => n.parentId === b.id).map(elkChild),
       edges: boundaryEdges.get(b.id) ?? [],
@@ -114,10 +132,12 @@ export function useElkLayout() {
         if (n.type === 'boundary') {
           const result = boundaryResult.get(n.id)
           if (!result) return n
+          const width = Math.max(result.width ?? (n.style?.width as number) ?? 0, MIN_BOUNDARY_WIDTH)
+          const height = Math.max(result.height ?? (n.style?.height as number) ?? 0, MIN_BOUNDARY_HEIGHT)
           return {
             ...n,
             position: { x: result.x ?? 0, y: result.y ?? 0 },
-            style: { ...n.style, width: result.width ?? n.style?.width, height: result.height ?? n.style?.height },
+            style: { ...n.style, width, height },
           }
         }
         if (n.parentId) {

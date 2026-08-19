@@ -1,6 +1,7 @@
-import { Handle, Position, type NodeProps } from '@xyflow/react'
+import { Handle, NodeToolbar, Position, type NodeProps } from '@xyflow/react'
 import { useModelStore, type ComponentNodeData, type StudioNode } from '../../store/model.store'
 import { ComponentIcon } from '../../design/ComponentIcon'
+import { IconButton } from '../../design/IconButton'
 
 const severityGlyph: Record<string, string> = {
   critical: '⬢',
@@ -30,12 +31,12 @@ function overlayHighlight(mode: string, d: ComponentNodeData): { color: string; 
   return null
 }
 
-export function ComponentNode({ data, selected, parentId }: NodeProps<StudioNode>) {
+export function ComponentNode({ id, data, selected, parentId }: NodeProps<StudioNode>) {
   const d = data as ComponentNodeData
   const overlayMode = useModelStore((s) => s.overlayMode)
-  const propertyChips = Object.entries(d.properties)
-    .filter(([, v]) => v === true || (typeof v === 'string' && v !== ''))
-    .slice(0, 3)
+  const setFocusSubject = useModelStore((s) => s.setFocusSubject)
+  const duplicateNode = useModelStore((s) => s.duplicateNode)
+  const removeNode = useModelStore((s) => s.removeNode)
 
   const highlight =
     overlayMode === 'exposure'
@@ -46,13 +47,33 @@ export function ComponentNode({ data, selected, parentId }: NodeProps<StudioNode
 
   return (
     <div
-      className="rounded-[10px] border bg-(--surface-0) shadow-[var(--shadow-node)] px-3 py-2 w-[220px] h-[96px] flex flex-col justify-between"
+      className="rounded-[10px] border bg-(--surface-0) shadow-[var(--shadow-node)] px-3 py-2 w-[220px] h-[76px] flex flex-col justify-between"
       style={{
         borderColor: selected ? 'var(--accent)' : highlight ? highlight.color : 'var(--border)',
         borderWidth: selected || highlight ? 2 : 1,
       }}
       title={highlight?.label}
     >
+      {/* Floating action bar, only while selected — keeps the node face
+         itself down to icon + name + severity so the diagram reads as an
+         architecture, not a property dump; per-node detail lives here and
+         in the Inspector instead of as chips on every block. */}
+      <NodeToolbar isVisible={selected} position={Position.Top} offset={8}>
+        <div
+          className="flex items-center gap-0.5 p-0.5 rounded-lg shadow-lg"
+          style={{ background: 'var(--surface-0)', border: '1px solid var(--border)' }}
+        >
+          <IconButton
+            icon="mdi:shield-alert-outline"
+            label={d.findingCount > 0 ? `View ${d.findingCount} finding(s) for ${d.name}` : 'No findings yet for this component'}
+            disabled={d.findingCount === 0}
+            onClick={() => setFocusSubject(id)}
+          />
+          <IconButton icon="mdi:content-copy" label={`Duplicate ${d.name}`} onClick={() => duplicateNode(id)} />
+          <IconButton icon="mdi:trash-can-outline" label={`Delete ${d.name}`} variant="danger" onClick={() => removeNode(id)} />
+        </div>
+      </NodeToolbar>
+
       <Handle
         type="target"
         position={Position.Left}
@@ -91,20 +112,6 @@ export function ComponentNode({ data, selected, parentId }: NodeProps<StudioNode
           </span>
         )}
       </div>
-
-      {propertyChips.length > 0 && (
-        <div className="flex flex-wrap gap-1">
-          {propertyChips.map(([key]) => (
-            <span
-              key={key}
-              className="text-[10px] px-1.5 py-0.5 rounded-full"
-              style={{ background: 'var(--surface-2)', color: 'var(--text-secondary)' }}
-            >
-              {key}
-            </span>
-          ))}
-        </div>
-      )}
 
       <div className="flex justify-between text-[10px]" style={{ color: 'var(--text-secondary)' }}>
         <span>◀ in</span>
