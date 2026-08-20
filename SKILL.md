@@ -237,6 +237,32 @@ $link->usage          = DataUsage::Business;
 $link->tags           = [];
 ```
 
+**Threat Actor dataflows.** A Threat Actor component (`threat-actor-*` in the
+KB, trait `threat_actor`) is not a channel like `Client` — it's the
+adversary, so it normally does **not** flow through a `Client`. It targets
+the same entry point a legitimate client would, but without that client's
+protections (cert pinning, jailbreak detection), so the reachability rule
+(`RuleContextGraph::pathsFromThreatActors()`) can tell the two apart:
+
+```php
+// Parallel to the legitimate channel — bypasses client-side controls entirely.
+$client->communicatesTo('api', Protocol::Https, Authentication::Credentials);
+$attacker->communicatesTo('api', Protocol::Https, Authentication::None);
+```
+
+The one case where a Threat Actor *should* flow into a `Client` is modeling
+a **compromised client device** (malware, theft, session hijack) — the
+actor is taking over the channel, not calling over it, so there's no real
+network protocol involved:
+
+```php
+$attacker->communicatesTo('mobile-client', Protocol::Unknown, Authentication::None);
+```
+
+`pathsFromThreatActors()` then continues the walk from `mobile-client`
+onward using the attacker's `privilege_level`, so a compromised device
+correctly inherits whatever that client could already reach.
+
 ---
 
 ## Knowledge Base (KB)
