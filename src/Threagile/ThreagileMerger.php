@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Threagile;
 
 use HybridTM\Analysis\Finding;
@@ -31,7 +33,7 @@ final class ThreagileMerger
     /**
      * @param list<Finding> $hybridTmFindings
      * @param list<Finding> $threagileFindings raw output of `ThreagileRiskParser`
-     *        (`ruleId` = Threagile category, `threatId` = "THREAGILE-{category}")
+     *                                         (`ruleId` = Threagile category, `threatId` = "THREAGILE-{category}")
      * @return list<Finding>
      */
     public function merge(array $hybridTmFindings, array $threagileFindings): array

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis\Rules;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -42,7 +44,9 @@ final class RuleContextGraphTest extends TestCase
         $app->communicatesTo('db');
         $model->addTechnicalAsset($web)->addTechnicalAsset($app)->addTechnicalAsset(new TechnicalAsset('db'));
 
-        $paths = $this->graph($model)->pathsFromInternet($model->getTechnicalAsset('db'), maxHops: 4);
+        $db = $model->getTechnicalAsset('db');
+        self::assertNotNull($db, 'db asset must exist in the model');
+        $paths = $this->graph($model)->pathsFromInternet($db, maxHops: 4);
 
         self::assertCount(1, $paths);
         self::assertSame(['web', 'app', 'db'], $paths[0]->assetIds);
@@ -58,7 +62,9 @@ final class RuleContextGraphTest extends TestCase
         $app->communicatesTo('db');
         $model->addTechnicalAsset($web)->addTechnicalAsset($app)->addTechnicalAsset(new TechnicalAsset('db'));
 
-        $paths = $this->graph($model)->pathsFromInternet($model->getTechnicalAsset('db'), maxHops: 1);
+        $db = $model->getTechnicalAsset('db');
+        self::assertNotNull($db, 'db asset must exist in the model');
+        $paths = $this->graph($model)->pathsFromInternet($db, maxHops: 1);
         self::assertSame([], $paths, '2-hop path exceeds the 1-hop budget');
     }
 
@@ -70,7 +76,9 @@ final class RuleContextGraphTest extends TestCase
         $web->internet = true;
         $model->addTechnicalAsset($web);
 
-        self::assertSame([], $this->graph($model)->pathsFromInternet($model->getTechnicalAsset('isolated'), maxHops: 4));
+        $isolated = $model->getTechnicalAsset('isolated');
+        self::assertNotNull($isolated, 'isolated asset must exist in the model');
+        self::assertSame([], $this->graph($model)->pathsFromInternet($isolated, maxHops: 4));
     }
 
     public function testFindsMultiplePathsFromDifferentInternetAssets(): void
@@ -84,7 +92,9 @@ final class RuleContextGraphTest extends TestCase
         $webB->communicatesTo('db');
         $model->addTechnicalAsset($webA)->addTechnicalAsset($webB)->addTechnicalAsset(new TechnicalAsset('db'));
 
-        $paths = $this->graph($model)->pathsFromInternet($model->getTechnicalAsset('db'), maxHops: 4);
+        $db = $model->getTechnicalAsset('db');
+        self::assertNotNull($db, 'db asset must exist in the model');
+        $paths = $this->graph($model)->pathsFromInternet($db, maxHops: 4);
         self::assertCount(2, $paths);
     }
 
@@ -99,7 +109,9 @@ final class RuleContextGraphTest extends TestCase
         $app->communicatesTo('db');
         $model->addTechnicalAsset($web)->addTechnicalAsset($app)->addTechnicalAsset(new TechnicalAsset('db'));
 
-        $paths = $this->graph($model)->pathsFromInternet($model->getTechnicalAsset('db'), maxHops: 10);
+        $db = $model->getTechnicalAsset('db');
+        self::assertNotNull($db, 'db asset must exist in the model');
+        $paths = $this->graph($model)->pathsFromInternet($db, maxHops: 10);
         self::assertCount(1, $paths, 'cycle must not produce infinite or duplicate paths');
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Enums;
 
 use HybridTM\Enums\Confidentiality;
@@ -25,7 +27,9 @@ final class ConfidentialityTest extends TestCase
     public function testAlphabeticalOrderWouldHaveBeenWrong(): void
     {
         // Documents exactly why rank() exists instead of comparing ->value.
-        self::assertTrue('confidential' < 'internal');
+        $confidentialValue = Confidentiality::Confidential->value;
+        $internalValue = Confidentiality::Internal->value;
+        self::assertTrue($confidentialValue < $internalValue);
         self::assertTrue(Confidentiality::Confidential->rank() > Confidentiality::Internal->rank());
     }
 }

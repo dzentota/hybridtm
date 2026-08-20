@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Kb;
 
 use Symfony\Component\Yaml\Yaml;
@@ -157,19 +159,23 @@ final class YamlKbLoader implements KbLoaderInterface
     private function mergeComponentSpec(array $parent, array $child): array
     {
         return [
-            'mapping'          => $this->mergeMapping($parent['mapping'] ?? [], $child['mapping'] ?? []),
-            'traits'           => $this->mergeUniqueList($parent['traits'] ?? [], $child['traits'] ?? []),
-            'ports'            => $this->mergePorts($parent['ports'] ?? [], $child['ports'] ?? []),
-            'properties'       => $this->mergeById($parent['properties'] ?? [], $child['properties'] ?? []),
-            'rules'            => $this->mergeUniqueList($parent['rules'] ?? [], $child['rules'] ?? []),
-            'risk_patterns'    => $this->mergeUniqueList($parent['risk_patterns'] ?? [], $child['risk_patterns'] ?? []),
+            'mapping' => $this->mergeMapping($parent['mapping'] ?? [], $child['mapping'] ?? []),
+            'traits' => $this->mergeUniqueList($parent['traits'] ?? [], $child['traits'] ?? []),
+            'ports' => $this->mergePorts($parent['ports'] ?? [], $child['ports'] ?? []),
+            'properties' => $this->mergeById($parent['properties'] ?? [], $child['properties'] ?? []),
+            'rules' => $this->mergeUniqueList($parent['rules'] ?? [], $child['rules'] ?? []),
+            'risk_patterns' => $this->mergeUniqueList($parent['risk_patterns'] ?? [], $child['risk_patterns'] ?? []),
             'hardening_guides' => $this->mergeUniqueList($parent['hardening_guides'] ?? [], $child['hardening_guides'] ?? []),
             // Own metadata always wins — extends only pulls in spec content.
-            'metadata'         => $child['metadata'] ?? [],
+            'metadata' => $child['metadata'] ?? [],
         ];
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param array<string, mixed> $parent
+     * @param array<string, mixed> $child
+     * @return array<string, mixed>
+     */
     private function mergeMapping(array $parent, array $child): array
     {
         $merged = array_merge($parent, $child);
@@ -179,7 +185,11 @@ final class YamlKbLoader implements KbLoaderInterface
         return $merged;
     }
 
-    /** @return array<string, mixed> */
+    /**
+     * @param array<string, mixed> $parent
+     * @param array<string, mixed> $child
+     * @return array<string, mixed>
+     */
     private function mergePorts(array $parent, array $child): array
     {
         return [

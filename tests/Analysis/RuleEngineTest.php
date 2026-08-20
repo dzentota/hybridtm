@@ -1,15 +1,15 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis;
 
 use HybridTM\Analysis\AnalysisOptions;
 use HybridTM\Analysis\RuleEngine;
-use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\RiskTracking;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
-use HybridTM\Enums\Confidentiality;
 use HybridTM\Enums\DecisionStatus;
 use HybridTM\Enums\Severity;
 use HybridTM\Kb\InMemoryKnowledgeBase;

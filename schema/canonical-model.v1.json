@@ -538,6 +538,7 @@
         },
         "type": {
           "enum": [
+            "internet",
             "network-on-prem",
             "network-dedicated-hoster",
             "network-virtual-lan",

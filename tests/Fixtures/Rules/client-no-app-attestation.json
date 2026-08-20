@@ -16,7 +16,8 @@
                     "app_attestation_enabled": false
                 },
                 "traits": [
-                    "client_device"
+                    "client_device",
+                    "mobile_client"
                 ],
                 "overrides": {
                     "type": "process",
@@ -54,7 +55,8 @@
                     "app_attestation_enabled": true
                 },
                 "traits": [
-                    "client_device"
+                    "client_device",
+                    "mobile_client"
                 ],
                 "overrides": {
                     "type": "process",

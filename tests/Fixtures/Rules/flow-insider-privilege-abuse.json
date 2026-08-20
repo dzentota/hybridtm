@@ -1,0 +1,122 @@
+{
+    "ruleId": "flow/insider-privilege-abuse",
+    "expectedThreatId": "THREAT-UNAUDITED-PRIVILEGED-ACTOR-ACCESS",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "insider",
+                "name": "insider",
+                "properties": { "privilege_level": "admin" },
+                "traits": ["threat_actor"],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "insider",
+                "targetId": "target",
+                "protocol": "https",
+                "properties": []
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "insider",
+                "name": "insider",
+                "properties": { "privilege_level": "admin" },
+                "traits": ["threat_actor"],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": { "audit_logging_enabled": true },
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "insider",
+                "targetId": "target",
+                "protocol": "https",
+                "properties": []
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

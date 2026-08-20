@@ -1,15 +1,17 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
 /** Lifecycle state of a risk decision. */
 enum DecisionStatus: string
 {
-    case Open          = 'open';
-    case Accepted      = 'accepted';
-    case Mitigated     = 'mitigated';
+    case Open = 'open';
+    case Accepted = 'accepted';
+    case Mitigated = 'mitigated';
     case FalsePositive = 'false-positive';
-    case Deferred      = 'deferred';
+    case Deferred = 'deferred';
 
     /** Statuses that must carry an expiry date (ADR: risk acceptance is never permanent). */
     public function requiresExpiry(): bool

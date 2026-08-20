@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis\Rules;
 
 use HybridTM\Analysis\Finding;
@@ -67,8 +69,8 @@ final readonly class RuleContext
             evidence: $evidence !== '' ? [$evidence] : [],
             countermeasureIds: array_values(array_unique([...($spec['countermeasures'] ?? []), ...$require])),
             standards: new StandardsMapping(
-                cwe: array_map(static fn ($v): int => (int) $v, $spec['standards']['cwe'] ?? []),
-                capec: array_map(static fn ($v): int => (int) $v, $spec['standards']['capec'] ?? []),
+                cwe: array_values(array_map(static fn ($v): int => (int) $v, $spec['standards']['cwe'] ?? [])),
+                capec: array_values(array_map(static fn ($v): int => (int) $v, $spec['standards']['capec'] ?? [])),
                 owaspTop10: $spec['standards']['owasp_top10_2021'] ?? [],
                 owaspAsvs: $spec['standards']['owasp_asvs'] ?? [],
                 mitreAttack: $spec['standards']['mitre_attack'] ?? [],

@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis;
 
 use HybridTM\Analysis\SubjectRef;
 use HybridTM\Enums\SubjectKind;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class SubjectRefTest extends TestCase
@@ -50,13 +51,13 @@ final class SubjectRefTest extends TestCase
 
     public function testRejectsMalformedRef(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         SubjectRef::parse('nonsense');
     }
 
     public function testRejectsUnknownKind(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         SubjectRef::parse('gizmo:thing');
     }
 }

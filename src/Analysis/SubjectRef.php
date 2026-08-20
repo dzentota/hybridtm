@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Enums\SubjectKind;
-use InvalidArgumentException;
 
 /**
  * Stable, serialisable pointer to whatever a finding is about.
@@ -50,16 +51,16 @@ final readonly class SubjectRef implements \JsonSerializable, \Stringable
     {
         $parts = explode(':', $ref, 2);
         if (count($parts) !== 2) {
-            throw new InvalidArgumentException("Malformed subject ref: {$ref}");
+            throw new \InvalidArgumentException("Malformed subject ref: {$ref}");
         }
 
         $kind = SubjectKind::tryFrom($parts[0])
-            ?? throw new InvalidArgumentException("Unknown subject kind: {$parts[0]}");
+            ?? throw new \InvalidArgumentException("Unknown subject kind: {$parts[0]}");
 
         if ($kind === SubjectKind::Flow) {
             $ends = explode('->', $parts[1], 2);
             if (count($ends) !== 2) {
-                throw new InvalidArgumentException("Malformed flow ref: {$ref}");
+                throw new \InvalidArgumentException("Malformed flow ref: {$ref}");
             }
 
             return self::flow($ends[0], $ends[1]);

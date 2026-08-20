@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec\Layout;
 
 /** Canvas bounding box of a trust boundary, drawn as a group on the canvas (ADR-07). */

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis\Subjects;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -37,8 +39,10 @@ final readonly class FlowSubject
         $this->protocol = new ProtocolSubject($link->protocol);
         $this->props = $link->properties;
 
-        $sourceAsset = $model->getTechnicalAsset($sourceId);
-        $targetAsset = $model->getTechnicalAsset($this->targetId);
+        $sourceAsset = $model->getTechnicalAsset($sourceId)
+            ?? throw new \InvalidArgumentException("Unknown source technical asset: {$sourceId}");
+        $targetAsset = $model->getTechnicalAsset($this->targetId)
+            ?? throw new \InvalidArgumentException("Unknown target technical asset: {$this->targetId}");
         $this->source = new ComponentSubject($sourceAsset, $model, $derived);
         $this->target = new ComponentSubject($targetAsset, $model, $derived);
     }

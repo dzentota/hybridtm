@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Schema\Kb;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -16,22 +18,30 @@ final class TemplateSchemaTest extends KbSchemaTestCase
         return __DIR__ . '/../../../examples/kb/template.example.json';
     }
 
-    /** @return iterable<string, array{callable(object): void}> */
+    /** @return iterable<string, array{callable(\stdClass): void}> */
     public static function invalidMutations(): iterable
     {
-        yield 'wrong kind' => [static function (object $d): void { $d->kind = 'Component'; }];
-        yield 'missing components' => [static function (object $d): void { unset($d->spec->graph->components); }];
-        yield 'empty components list' => [static function (object $d): void { $d->spec->graph->components = []; }];
-        yield 'component missing type' => [static function (object $d): void {
+        yield 'wrong kind' => [static function (\stdClass $d): void {
+            $d->kind = 'Component';
+        }];
+        yield 'missing components' => [static function (\stdClass $d): void {
+            unset($d->spec->graph->components);
+        }];
+        yield 'empty components list' => [static function (\stdClass $d): void {
+            $d->spec->graph->components = [];
+        }];
+        yield 'component missing type' => [static function (\stdClass $d): void {
             unset($d->spec->graph->components[0]->type);
         }];
-        yield 'boundary missing contains' => [static function (object $d): void {
+        yield 'boundary missing contains' => [static function (\stdClass $d): void {
             unset($d->spec->graph->boundaries[0]->contains);
         }];
-        yield 'flow missing protocol' => [static function (object $d): void {
+        yield 'flow missing protocol' => [static function (\stdClass $d): void {
             unset($d->spec->graph->flows[0]->protocol);
         }];
-        yield 'missing description' => [static function (object $d): void { unset($d->spec->description); }];
+        yield 'missing description' => [static function (\stdClass $d): void {
+            unset($d->spec->description);
+        }];
     }
 
     #[DataProvider('invalidMutations')]

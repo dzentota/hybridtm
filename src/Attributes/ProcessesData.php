@@ -1,10 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Attributes;
 
-use Attribute;
-
-#[Attribute(Attribute::TARGET_METHOD | Attribute::TARGET_CLASS | Attribute::IS_REPEATABLE)]
+#[\Attribute(\Attribute::TARGET_METHOD | \Attribute::TARGET_CLASS | \Attribute::IS_REPEATABLE)]
 final class ProcessesData
 {
     /**
@@ -12,5 +12,6 @@ final class ProcessesData
      */
     public function __construct(
         public readonly array $dataAssets,
-    ) {}
+    ) {
+    }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 /**
@@ -9,14 +11,14 @@ namespace HybridTM\Analysis;
 final readonly class StandardsMapping implements \JsonSerializable
 {
     /**
-     * @param list<int>    $cwe            e.g. [311, 312]
-     * @param list<int>    $capec          e.g. [37]
-     * @param list<string> $owaspTop10     e.g. ['A02:2021']
-     * @param list<string> $owaspAsvs      e.g. ['V6.2.1']
-     * @param list<string> $mitreAttack    e.g. ['T1005']
-     * @param list<string> $pciDss         e.g. ['3.5.1']
-     * @param list<string> $iso27001       e.g. ['A.8.24']
-     * @param list<string> $nist80053      e.g. ['SC-28']
+     * @param list<int> $cwe e.g. [311, 312]
+     * @param list<int> $capec e.g. [37]
+     * @param list<string> $owaspTop10 e.g. ['A02:2021']
+     * @param list<string> $owaspAsvs e.g. ['V6.2.1']
+     * @param list<string> $mitreAttack e.g. ['T1005']
+     * @param list<string> $pciDss e.g. ['3.5.1']
+     * @param list<string> $iso27001 e.g. ['A.8.24']
+     * @param list<string> $nist80053 e.g. ['SC-28']
      */
     public function __construct(
         public array $cwe = [],
@@ -39,14 +41,14 @@ final readonly class StandardsMapping implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return array_filter([
-            'cwe'         => $this->cwe,
-            'capec'       => $this->capec,
-            'owaspTop10'  => $this->owaspTop10,
-            'owaspAsvs'   => $this->owaspAsvs,
+            'cwe' => $this->cwe,
+            'capec' => $this->capec,
+            'owaspTop10' => $this->owaspTop10,
+            'owaspAsvs' => $this->owaspAsvs,
             'mitreAttack' => $this->mitreAttack,
-            'pciDss'      => $this->pciDss,
-            'iso27001'    => $this->iso27001,
-            'nist80053'   => $this->nist80053,
+            'pciDss' => $this->pciDss,
+            'iso27001' => $this->iso27001,
+            'nist80053' => $this->nist80053,
         ], static fn (array $v): bool => $v !== []);
     }
 }

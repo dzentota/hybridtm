@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Kb;
 
 use HybridTM\Analysis\AnalysisOptions;
@@ -66,6 +68,7 @@ final class RuleGoldenFileTest extends TestCase
         }
     }
 
+    /** @param array<string, mixed> $fixture */
     #[DataProvider('fixtureProvider')]
     public function testPositiveFixtureTriggersExpectedThreat(array $fixture): void
     {
@@ -78,6 +81,7 @@ final class RuleGoldenFileTest extends TestCase
         );
     }
 
+    /** @param array<string, mixed> $fixture */
     #[DataProvider('fixtureProvider')]
     public function testNegativeFixtureDoesNotTrigger(array $fixture): void
     {
@@ -100,7 +104,10 @@ final class RuleGoldenFileTest extends TestCase
         return $fixtures;
     }
 
-    /** @param array<string, mixed> $canonicalModel @return list<string> */
+    /**
+     * @param array<string, mixed> $canonicalModel
+     * @return list<string>
+     */
     private function analyze(array $canonicalModel): array
     {
         static $kb = null;

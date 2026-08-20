@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\AssetType;
@@ -54,8 +56,11 @@ class TechnicalAsset
     /** @var list<string> declared and derived trait names (§3.3) */
     public array $traits = [];
 
-    public function __construct(public readonly string $id, public string $name = '') {
-        if ($this->name === '') $this->name = $this->id;
+    public function __construct(public readonly string $id, public string $name = '')
+    {
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
         $this->properties = new PropertyBag();
         $this->technologies = new TechnologyList();
     }

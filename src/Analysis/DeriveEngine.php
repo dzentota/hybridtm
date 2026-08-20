@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\DSL\ThreatModel;
@@ -74,7 +76,8 @@ final class DeriveEngine
     private function storesPii(ThreatModel $model, \HybridTM\DSL\TechnicalAsset $asset): bool
     {
         foreach ($asset->dataAssetsStored as $dataId) {
-            if (in_array('pii', $model->getDataAsset($dataId)?->tags ?? [], true)) {
+            $dataAsset = $model->getDataAsset($dataId);
+            if ($dataAsset !== null && in_array('pii', $dataAsset->tags, true)) {
                 return true;
             }
         }

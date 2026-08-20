@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Validation;
 
 use HybridTM\Analysis\SubjectRef;
@@ -37,10 +39,10 @@ final readonly class ValidationIssue implements \JsonSerializable
     {
         return [
             'severity' => $this->severity->value,
-            'code'     => $this->code,
-            'message'  => $this->message,
-            'subject'  => $this->subject?->__toString(),
-            'hint'     => $this->hint,
+            'code' => $this->code,
+            'message' => $this->message,
+            'subject' => $this->subject?->__toString(),
+            'hint' => $this->hint,
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use PhpParser\ErrorHandler\Collecting;
@@ -24,7 +26,7 @@ final class PhpDslReader
             return new DslReadResult(null, [new NonCanonicalConstruct(1, 'parse error: ' . implode('; ', $messages))]);
         }
 
-        return (new DslVisitor())->read($stmts);
+        return (new DslVisitor())->read(array_values($stmts));
     }
 
     public function readFile(string $path): DslReadResult

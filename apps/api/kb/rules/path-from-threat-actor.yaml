@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: topology/path-from-threat-actor
+  version: 1.0.0
+spec:
+  scope: model
+  description: 'Every strictly confidential datastore must be guarded on every path a modeled threat actor can privilege-appropriately reach it by.'
+  impl: HybridTM\Kb\Rules\PathFromThreatActorRule
+  config:
+    guard_traits: [waf, api_gateway, reverse_proxy, ids, ips]
+    max_hops: 4

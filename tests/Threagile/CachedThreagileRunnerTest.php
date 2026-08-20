@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Threagile;
 
 use HybridTM\Threagile\CachedThreagileRunner;
@@ -17,7 +19,7 @@ final class CachedThreagileRunnerTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_cached_runner_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
         $this->yamlPath = $this->tmpDir . '/model.yaml';
         file_put_contents($this->yamlPath, 'title: Test');
         $this->cacheDir = $this->tmpDir . '/cache';
@@ -30,9 +32,13 @@ final class CachedThreagileRunnerTest extends TestCase
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -51,6 +57,7 @@ final class CachedThreagileRunnerTest extends TestCase
 
         self::assertSame(1, $inner->callCount);
         self::assertTrue($result->succeeded());
+        self::assertNotNull($result->risksJsonPath, 'Expected a risks.json path on success.');
         self::assertSame('[{"id":"x"}]', file_get_contents($result->risksJsonPath));
     }
 
@@ -64,6 +71,7 @@ final class CachedThreagileRunnerTest extends TestCase
 
         self::assertSame(1, $inner->callCount, 'the second call must not invoke the inner runner again');
         self::assertTrue($result->succeeded());
+        self::assertNotNull($result->risksJsonPath, 'Expected a risks.json path on success.');
         self::assertSame('[{"id":"x"}]', file_get_contents($result->risksJsonPath));
     }
 

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 /** Full evaluation record of a rule against one subject. */
@@ -19,7 +21,11 @@ final readonly class RuleTrace implements \JsonSerializable, \Countable
         return array_values(array_filter($this->conditions, static fn (ConditionResult $c): bool => !$c->passed));
     }
 
-    /** Conditions that actively suppressed the finding. */
+    /**
+     * Conditions that actively suppressed the finding.
+     *
+     * @return list<ConditionResult>
+     */
     public function suppressedBy(): array
     {
         return array_values(array_filter(
@@ -37,8 +43,8 @@ final readonly class RuleTrace implements \JsonSerializable, \Countable
     public function jsonSerialize(): array
     {
         return [
-            'ruleId'     => $this->ruleId,
-            'matched'    => $this->matched,
+            'ruleId' => $this->ruleId,
+            'matched' => $this->matched,
             'conditions' => $this->conditions,
         ];
     }

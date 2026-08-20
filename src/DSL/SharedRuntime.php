@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 /**
@@ -19,7 +21,9 @@ class SharedRuntime
         public readonly string $id,
         public string $name = '',
     ) {
-        if ($this->name === '') $this->name = $this->id;
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
     }
 
     public function addAssets(string ...$assetIds): static

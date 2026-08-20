@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Yaml;
 
 use HybridTM\DSL\TechnicalAsset;
@@ -32,6 +34,7 @@ final class ThreagileSerializer
         return Yaml::dump($data, 8, 2, Yaml::DUMP_OBJECT_AS_MAP | Yaml::DUMP_EMPTY_ARRAY_AS_SEQUENCE);
     }
 
+    /** @return array<string, array<string, mixed>> */
     private function buildDataAssets(ThreatModel $model): array
     {
         $result = [];
@@ -53,6 +56,7 @@ final class ThreagileSerializer
         return $result;
     }
 
+    /** @return array<string, array<string, mixed>> */
     private function buildTechnicalAssets(ThreatModel $model): array
     {
         $result = [];
@@ -123,6 +127,7 @@ final class ThreagileSerializer
         return ['technology' => $asset->technology->value];
     }
 
+    /** @return array<string, array<string, mixed>> */
     private function buildTrustBoundaries(ThreatModel $model): array
     {
         $result = [];
@@ -139,6 +144,7 @@ final class ThreagileSerializer
         return $result;
     }
 
+    /** @return array<string, array<string, mixed>>|\stdClass */
     private function buildSharedRuntimes(ThreatModel $model): array|\stdClass
     {
         $result = [];
@@ -153,6 +159,7 @@ final class ThreagileSerializer
         return $result !== [] ? $result : (object) [];
     }
 
+    /** @return array<string, array<string, mixed>>|\stdClass */
     private function buildIndividualRiskCategories(ThreatModel $model): array|\stdClass
     {
         $result = [];
@@ -178,6 +185,7 @@ final class ThreagileSerializer
         return $result !== [] ? $result : (object) [];
     }
 
+    /** @return array<string, array<string, mixed>>|\stdClass */
     private function buildRiskTracking(ThreatModel $model): array|\stdClass
     {
         $result = [];
@@ -194,8 +202,10 @@ final class ThreagileSerializer
     }
 
     /**
-     * @param array<string, object{description?: string, answer?: ?string}> $items
-     * @param callable(object): string $value
+     * @template T of object
+     * @param array<string, T> $items
+     * @param callable(T): string $value
+     * @return array<string, string>|\stdClass
      */
     private function mapOrEmpty(array $items, callable $value): array|\stdClass
     {

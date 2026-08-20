@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/insider-privilege-abuse
+  version: 1.0.0
+spec:
+  scope: flow
+  description: 'A privileged threat actor (admin/system) with a flow into a component that has no audit logging leaves privilege abuse unattributable.'
+  when:
+    all:
+      - "flow.source.hasTrait('threat_actor')"
+      - "flow.source.props.get('privilege_level') in ['admin', 'system']"
+  unless:
+    any:
+      - "flow.target.props.bool('audit_logging_enabled')"
+  then:
+    - raise: THREAT-UNAUDITED-PRIVILEGED-ACTOR-ACCESS
+      evidence: '{{ flow.source.name }} ({{ flow.source.props.get("privilege_level") }}) -> {{ flow.target.name }}, no audit logging declared'

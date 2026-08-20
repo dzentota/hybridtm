@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis\Rules;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -16,6 +18,7 @@ use PHPUnit\Framework\TestCase;
 
 final class RuleContextTest extends TestCase
 {
+    /** @param array<string, mixed> $config */
     private function context(?InMemoryKnowledgeBase $kb = null, array $config = []): RuleContext
     {
         $model = new ThreatModel('App');

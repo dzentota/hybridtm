@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis\Subjects;
 
 use HybridTM\DSL\ThreatModel;

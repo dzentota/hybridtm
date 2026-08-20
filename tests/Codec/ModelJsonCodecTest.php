@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Codec;
 
 use HybridTM\Codec\ModelJsonCodec;
@@ -127,6 +129,7 @@ final class ModelJsonCodecTest extends TestCase
 
         $result = $this->roundTrip($model)->getTechnicalAsset('web-api');
 
+        self::assertNotNull($result, 'round-tripped model must still have the web-api component');
         self::assertSame('Web API', $result->name);
         self::assertSame('REST API', $result->description);
         self::assertSame(Technology::WebServiceRest, $result->technology);
@@ -158,6 +161,7 @@ final class ModelJsonCodecTest extends TestCase
         self::assertSame(['edge'], $component['tags'], 'marker tag is not duplicated into the plain tags list');
 
         $result = $this->roundTrip($model)->getTechnicalAsset('nginx');
+        self::assertNotNull($result, 'round-tripped model must still have the nginx component');
         self::assertContains('kb-component:web-server-nginx@1.4.0', $result->tags);
         self::assertContains('edge', $result->tags);
     }
@@ -170,6 +174,7 @@ final class ModelJsonCodecTest extends TestCase
         $model->addTechnicalAsset($asset);
 
         $result = $this->roundTrip($model)->getTechnicalAsset('nginx');
+        self::assertNotNull($result, 'round-tripped model must still have the nginx component');
         self::assertSame(['reverse-proxy', 'web-server', 'load-balancer'], $result->technologies->values());
     }
 
@@ -226,7 +231,9 @@ final class ModelJsonCodecTest extends TestCase
         $model->addTechnicalAsset($web)->addTechnicalAsset(new TechnicalAsset('db'));
 
         $result = $this->roundTrip($model);
-        $decodedLink = $result->getTechnicalAsset('web')->communicationLinks['web-to-db'];
+        $webAsset = $result->getTechnicalAsset('web');
+        self::assertNotNull($webAsset, 'round-tripped model must still have the web component');
+        $decodedLink = $webAsset->communicationLinks['web-to-db'];
 
         self::assertSame('db', $decodedLink->targetAssetId);
         self::assertSame('query db', $decodedLink->description);
@@ -250,6 +257,7 @@ final class ModelJsonCodecTest extends TestCase
         $model->addTechnicalAsset($web)->addTechnicalAsset(new TechnicalAsset('db'))->addTechnicalAsset(new TechnicalAsset('cache'));
 
         $result = $this->roundTrip($model)->getTechnicalAsset('web');
+        self::assertNotNull($result, 'round-tripped model must still have the web component');
         self::assertCount(2, $result->communicationLinks);
     }
 

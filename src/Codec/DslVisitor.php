@@ -1,8 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
-use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
@@ -76,8 +77,8 @@ final class DslVisitor
 
     /**
      * @var array<string, string> "ClassName:id" (or "ThreatModel" for the
-     *      root) => leading comment text, captured so PhpDslWriter can put
-     *      it back (T-4.5).
+     *                            root) => leading comment text, captured so PhpDslWriter can put
+     *                            it back (T-4.5).
      */
     private array $comments = [];
 
@@ -235,7 +236,11 @@ final class DslVisitor
             return;
         }
 
-        $args = $this->resolveArgs($new->args, $new);
+        $argNodes = $this->onlyArgs($new->args, $new);
+        if ($argNodes === null) {
+            return;
+        }
+        $args = $this->resolveArgs($argNodes, $new);
         if ($args === null) {
             return;
         }
@@ -254,7 +259,7 @@ final class DslVisitor
             $this->vars[$varName] = $entity;
 
             if ($this->pendingComment !== '') {
-                $key = $className === 'ThreatModel' ? 'ThreatModel' : "{$className}:{$entity->id}";
+                $key = $entity instanceof ThreatModel ? 'ThreatModel' : "{$className}:{$entity->id}";
                 $this->comments[$key] = $this->pendingComment;
             }
         } catch (\Throwable $e) {
@@ -300,38 +305,81 @@ final class DslVisitor
                 $this->reject($call, "->{$method}() argument is not a tracked variable");
                 return null;
             }
+            if (!($target instanceof ThreatModel)) {
+                $this->reject($call, "->{$method}() called on a value that is not a ThreatModel");
+                return null;
+            }
             try {
-                $target->{$method}($resolved);
+                match (true) {
+                    $method === 'addTechnicalAsset' && $resolved instanceof TechnicalAsset => $target->addTechnicalAsset($resolved),
+                    $method === 'addDataAsset' && $resolved instanceof DataAsset => $target->addDataAsset($resolved),
+                    $method === 'addTrustBoundary' && $resolved instanceof TrustBoundary => $target->addTrustBoundary($resolved),
+                    default => throw new \InvalidArgumentException("->{$method}() argument is not a " . $method),
+                };
             } catch (\Throwable $e) {
                 $this->reject($call, "->{$method}(...) failed: " . $e->getMessage());
             }
             return null;
         }
 
-        $args = $this->resolveArgs($call->args, $call);
+        $argNodes = $this->onlyArgs($call->args, $call);
+        if ($argNodes === null) {
+            return null;
+        }
+        $args = $this->resolveArgs($argNodes, $call);
         if ($args === null) {
             return null;
         }
 
         try {
             if ($method === 'addAssets') {
-                $target->addAssets(...array_values($args));
+                if (!($target instanceof TrustBoundary)) {
+                    $this->reject($call, '->addAssets() called on a value that is not a TrustBoundary');
+                    return null;
+                }
+                $target->addAssets(...array_map(static fn (mixed $v): string => (string) $v, array_values($args)));
                 return null;
             }
-            if ($method === 'communicatesTo') {
-                return $target->communicatesTo(
-                    targetId: (string) ($args['targetId'] ?? $args[0] ?? ''),
-                    protocol: $args['protocol'] ?? Protocol::Https,
-                    authentication: $args['authentication'] ?? Authentication::None,
-                    authorization: $args['authorization'] ?? Authorization::None,
-                    description: (string) ($args['description'] ?? ''),
-                );
+
+            // WHITELISTED_METHODS minus the add*() cases handled above leaves
+            // only 'communicatesTo' at this point.
+            if (!($target instanceof TechnicalAsset)) {
+                $this->reject($call, '->communicatesTo() called on a value that is not a TechnicalAsset');
+                return null;
             }
+            return $target->communicatesTo(
+                targetId: (string) ($args['targetId'] ?? $args[0] ?? ''),
+                protocol: $args['protocol'] ?? Protocol::Https,
+                authentication: $args['authentication'] ?? Authentication::None,
+                authorization: $args['authorization'] ?? Authorization::None,
+                description: (string) ($args['description'] ?? ''),
+            );
         } catch (\Throwable $e) {
             $this->reject($call, "->{$method}(...) failed: " . $e->getMessage());
         }
 
         return null;
+    }
+
+    /**
+     * Rejects `...$spread` call-site argument unpacking (a `VariadicPlaceholder`
+     * node, outside the recognizable subset) and returns the plain `Arg` list
+     * `resolveArgs()`/`DslVisitor::read()` need.
+     *
+     * @param array<Node\Arg|Node\VariadicPlaceholder> $args
+     * @return list<Node\Arg>|null null on failure (already recorded)
+     */
+    private function onlyArgs(array $args, Node $context): ?array
+    {
+        $result = [];
+        foreach ($args as $arg) {
+            if (!($arg instanceof Node\Arg)) {
+                $this->reject($context, 'argument unpacking (...$args) is outside the recognizable subset');
+                return null;
+            }
+            $result[] = $arg;
+        }
+        return $result;
     }
 
     /**
@@ -360,10 +408,10 @@ final class DslVisitor
         if ($expr instanceof Node\Scalar\String_) {
             return $expr->value;
         }
-        if ($expr instanceof Node\Scalar\LNumber || $expr instanceof Node\Scalar\Int_) {
+        if ($expr instanceof Node\Scalar\Int_) {
             return $expr->value;
         }
-        if ($expr instanceof Node\Scalar\DNumber || $expr instanceof Node\Scalar\Float_) {
+        if ($expr instanceof Node\Scalar\Float_) {
             return $expr->value;
         }
         if ($expr instanceof Expr\ConstFetch) {

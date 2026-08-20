@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Validation\Rules;
 
 /**
@@ -27,9 +29,12 @@ final readonly class KbComponentTag
             }
 
             $value = substr($tag, strlen('kb-component:'));
-            [$id, $version] = str_contains($value, '@')
-                ? explode('@', $value, 2)
-                : [$value, null];
+            if (str_contains($value, '@')) {
+                [$id, $version] = explode('@', $value, 2);
+            } else {
+                $id = $value;
+                $version = null;
+            }
 
             return new self($id, $version);
         }

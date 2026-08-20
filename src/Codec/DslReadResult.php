@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\DSL\ThreatModel;
@@ -16,9 +18,9 @@ final readonly class DslReadResult
     /**
      * @param list<NonCanonicalConstruct> $nonCanonical
      * @param array<string, string> $comments "ClassName:id" (or "ThreatModel")
-     *        => leading comment text captured above that entity's
-     *        construction statement (T-4.5). Feed straight back into
-     *        `PhpDslWriter::write($model, $comments)` to preserve it.
+     *                                        => leading comment text captured above that entity's
+     *                                        construction statement (T-4.5). Feed straight back into
+     *                                        `PhpDslWriter::write($model, $comments)` to preserve it.
      */
     public function __construct(
         public ?ThreatModel $model,

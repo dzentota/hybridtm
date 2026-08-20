@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis\Subjects;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -25,7 +27,7 @@ final readonly class BoundarySubject
         $this->id = $boundary->id;
         $this->name = $boundary->name;
         $this->type = $boundary->type->value;
-        $this->technicalAssetIds = $boundary->technicalAssetsInside;
+        $this->technicalAssetIds = array_values($boundary->technicalAssetsInside);
         $this->props = $boundary->properties;
     }
 

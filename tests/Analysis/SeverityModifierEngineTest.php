@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -194,6 +196,59 @@ final class SeverityModifierEngineTest extends TestCase
 
         $adjusted = $this->engine()->apply($this->finding(SubjectRef::flow('web', 'db')), $model, $index, $derived);
         self::assertSame(Likelihood::VeryLikely, $adjusted->likelihood);
+    }
+
+    public function testCapableThreatActorBumpsLikelihood(): void
+    {
+        $model = new ThreatModel('App');
+        $actor = new TechnicalAsset('attacker');
+        $actor->traits = ['threat_actor'];
+        $actor->properties->set('capability', 'apt');
+        $model->addTechnicalAsset($actor);
+        $index = ModelIndex::build($model);
+
+        $adjusted = $this->engine()->apply($this->finding(SubjectRef::component('attacker')), $model, $index, new DerivedTraits());
+        self::assertSame(Likelihood::VeryLikely, $adjusted->likelihood);
+    }
+
+    public function testLowCapabilityThreatActorLeavesLikelihoodUnchanged(): void
+    {
+        $model = new ThreatModel('App');
+        $actor = new TechnicalAsset('attacker');
+        $actor->traits = ['threat_actor'];
+        $actor->properties->set('capability', 'script_kiddie');
+        $model->addTechnicalAsset($actor);
+        $index = ModelIndex::build($model);
+
+        $adjusted = $this->engine()->apply($this->finding(SubjectRef::component('attacker')), $model, $index, new DerivedTraits());
+        self::assertSame(Likelihood::Likely, $adjusted->likelihood);
+    }
+
+    public function testPrivilegedThreatActorBumpsImpact(): void
+    {
+        $model = new ThreatModel('App');
+        $actor = new TechnicalAsset('insider');
+        $actor->traits = ['threat_actor'];
+        $actor->properties->set('privilege_level', 'admin');
+        $model->addTechnicalAsset($actor);
+        $index = ModelIndex::build($model);
+
+        $adjusted = $this->engine()->apply($this->finding(SubjectRef::component('insider')), $model, $index, new DerivedTraits());
+        self::assertSame(Impact::High, $adjusted->impact);
+    }
+
+    public function testFlowFromPrivilegedActorBumpsImpactOnTargetSubject(): void
+    {
+        $model = new ThreatModel('App');
+        $actor = new TechnicalAsset('insider');
+        $actor->traits = ['threat_actor'];
+        $actor->properties->set('privilege_level', 'system');
+        $actor->communicatesTo('db');
+        $model->addTechnicalAsset($actor)->addTechnicalAsset(new TechnicalAsset('db'));
+        $index = ModelIndex::build($model);
+
+        $adjusted = $this->engine()->apply($this->finding(SubjectRef::flow('insider', 'db')), $model, $index, new DerivedTraits());
+        self::assertSame(Impact::High, $adjusted->impact);
     }
 
     public function testBoundarySubjectChecksContainedAssets(): void

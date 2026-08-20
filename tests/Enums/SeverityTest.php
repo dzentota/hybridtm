@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Enums;
 
 use HybridTM\Enums\Impact;
@@ -22,10 +24,10 @@ final class SeverityTest extends TestCase
     {
         // Full 4x4 grid, values derived from Threagile's weight product.
         $expected = [
-            'unlikely'    => ['low' => Severity::Low,      'medium' => Severity::Medium,   'high' => Severity::Medium, 'very-high' => Severity::Elevated],
-            'likely'      => ['low' => Severity::Medium,   'medium' => Severity::Elevated, 'high' => Severity::Elevated, 'very-high' => Severity::Elevated],
+            'unlikely' => ['low' => Severity::Low,      'medium' => Severity::Medium,   'high' => Severity::Medium, 'very-high' => Severity::Elevated],
+            'likely' => ['low' => Severity::Medium,   'medium' => Severity::Elevated, 'high' => Severity::Elevated, 'very-high' => Severity::Elevated],
             'very-likely' => ['low' => Severity::Medium,   'medium' => Severity::Elevated, 'high' => Severity::High,   'very-high' => Severity::High],
-            'frequent'    => ['low' => Severity::Elevated, 'medium' => Severity::Elevated, 'high' => Severity::High,   'very-high' => Severity::Critical],
+            'frequent' => ['low' => Severity::Elevated, 'medium' => Severity::Elevated, 'high' => Severity::High,   'very-high' => Severity::Critical],
         ];
 
         foreach ($expected as $likelihood => $row) {

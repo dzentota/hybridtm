@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\DSL\CommunicationLink;
@@ -127,7 +129,7 @@ final class PhpDslWriter
             $lines[] = "\${$var}->justificationCiaRating = '" . $this->esc($asset->justificationCiaRating) . "';";
         }
         if ($asset->tags !== []) {
-            $lines[] = "\${$var}->tags = " . $this->literalArray($asset->tags) . ';';
+            $lines[] = "\${$var}->tags = " . $this->literalArray(array_values($asset->tags)) . ';';
         }
         $lines[] = "\$model->addDataAsset(\${$var});";
 
@@ -167,19 +169,19 @@ final class PhpDslWriter
         $lines[] = "\${$var}->redundant = " . $this->literalBool($asset->redundant) . ';';
         $lines[] = "\${$var}->customDevelopedParts = " . $this->literalBool($asset->customDevelopedParts) . ';';
         if ($asset->dataAssetsProcessed !== []) {
-            $lines[] = "\${$var}->dataAssetsProcessed = " . $this->literalArray($asset->dataAssetsProcessed) . ';';
+            $lines[] = "\${$var}->dataAssetsProcessed = " . $this->literalArray(array_values($asset->dataAssetsProcessed)) . ';';
         }
         if ($asset->dataAssetsStored !== []) {
-            $lines[] = "\${$var}->dataAssetsStored = " . $this->literalArray($asset->dataAssetsStored) . ';';
+            $lines[] = "\${$var}->dataAssetsStored = " . $this->literalArray(array_values($asset->dataAssetsStored)) . ';';
         }
         if ($asset->dataFormatsAccepted !== []) {
-            $lines[] = "\${$var}->dataFormatsAccepted = " . $this->literalArray($asset->dataFormatsAccepted) . ';';
+            $lines[] = "\${$var}->dataFormatsAccepted = " . $this->literalArray(array_values($asset->dataFormatsAccepted)) . ';';
         }
         if ($asset->tags !== []) {
-            $lines[] = "\${$var}->tags = " . $this->literalArray($asset->tags) . ';';
+            $lines[] = "\${$var}->tags = " . $this->literalArray(array_values($asset->tags)) . ';';
         }
         if ($asset->traits !== []) {
-            $lines[] = "\${$var}->traits = " . $this->literalArray($asset->traits) . ';';
+            $lines[] = "\${$var}->traits = " . $this->literalArray(array_values($asset->traits)) . ';';
         }
 
         foreach ($asset->communicationLinks as $link) {
@@ -229,13 +231,13 @@ final class PhpDslWriter
                 $lines[] = "\${$linkVar}->readonly = true;";
             }
             if ($link->dataSent !== []) {
-                $lines[] = "\${$linkVar}->dataSent = " . $this->literalArray($link->dataSent) . ';';
+                $lines[] = "\${$linkVar}->dataSent = " . $this->literalArray(array_values($link->dataSent)) . ';';
             }
             if ($link->dataReceived !== []) {
-                $lines[] = "\${$linkVar}->dataReceived = " . $this->literalArray($link->dataReceived) . ';';
+                $lines[] = "\${$linkVar}->dataReceived = " . $this->literalArray(array_values($link->dataReceived)) . ';';
             }
             if ($link->tags !== []) {
-                $lines[] = "\${$linkVar}->tags = " . $this->literalArray($link->tags) . ';';
+                $lines[] = "\${$linkVar}->tags = " . $this->literalArray(array_values($link->tags)) . ';';
             }
         }
 
@@ -251,10 +253,10 @@ final class PhpDslWriter
             $lines[] = "\${$var}->description = '" . $this->esc($boundary->description) . "';";
         }
         if ($boundary->trustBoundariesNested !== []) {
-            $lines[] = "\${$var}->trustBoundariesNested = " . $this->literalArray($boundary->trustBoundariesNested) . ';';
+            $lines[] = "\${$var}->trustBoundariesNested = " . $this->literalArray(array_values($boundary->trustBoundariesNested)) . ';';
         }
         if ($boundary->tags !== []) {
-            $lines[] = "\${$var}->tags = " . $this->literalArray($boundary->tags) . ';';
+            $lines[] = "\${$var}->tags = " . $this->literalArray(array_values($boundary->tags)) . ';';
         }
         if ($boundary->technicalAssetsInside !== []) {
             $lines[] = "\${$var}->addAssets(" . implode(', ', array_map(

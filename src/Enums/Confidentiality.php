@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
-enum Confidentiality: string {
+enum Confidentiality: string
+{
     case Public = 'public';
     case Internal = 'internal';
     case Restricted = 'restricted';
@@ -20,10 +23,10 @@ enum Confidentiality: string {
     public function rank(): int
     {
         return match ($this) {
-            self::Public               => 1,
-            self::Internal             => 2,
-            self::Restricted           => 3,
-            self::Confidential         => 4,
+            self::Public => 1,
+            self::Internal => 2,
+            self::Restricted => 3,
+            self::Confidential => 4,
             self::StrictlyConfidential => 5,
         };
     }

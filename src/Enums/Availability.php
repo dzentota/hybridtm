@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
-enum Availability: string {
+enum Availability: string
+{
     case Archive = 'archive';
     case Operational = 'operational';
     case Important = 'important';

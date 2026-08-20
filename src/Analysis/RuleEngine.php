@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Analysis\Rules\PhpRuleLoader;
@@ -11,7 +13,6 @@ use HybridTM\Analysis\Subjects\ComponentSubject;
 use HybridTM\Analysis\Subjects\FlowSubject;
 use HybridTM\Analysis\Subjects\ModelSubject;
 use HybridTM\DSL\ThreatModel;
-use HybridTM\Enums\DecisionStatus;
 use HybridTM\Kb\Kind;
 use HybridTM\Kb\KnowledgeBaseInterface;
 use HybridTM\Kb\RuleScope;

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Schema;
 
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -18,23 +20,23 @@ final class SchemaEnumConsistencyTest extends TestCase
     public static function pairs(): iterable
     {
         $map = [
-            'modelMeta.properties.businessCriticality'         => \HybridTM\Enums\BusinessCriticality::class,
-            'dataAsset.properties.usage'                       => \HybridTM\Enums\DataUsage::class,
-            'dataAsset.properties.origin'                      => \HybridTM\Enums\DataOrigin::class,
-            'dataAsset.properties.quantity'                    => \HybridTM\Enums\Quantity::class,
-            'dataAsset.properties.confidentiality'             => \HybridTM\Enums\Confidentiality::class,
-            'dataAsset.properties.integrity'                   => \HybridTM\Enums\Integrity::class,
-            'dataAsset.properties.availability'                => \HybridTM\Enums\Availability::class,
-            'component.properties.overrides.properties.type'   => \HybridTM\Enums\AssetType::class,
+            'modelMeta.properties.businessCriticality' => \HybridTM\Enums\BusinessCriticality::class,
+            'dataAsset.properties.usage' => \HybridTM\Enums\DataUsage::class,
+            'dataAsset.properties.origin' => \HybridTM\Enums\DataOrigin::class,
+            'dataAsset.properties.quantity' => \HybridTM\Enums\Quantity::class,
+            'dataAsset.properties.confidentiality' => \HybridTM\Enums\Confidentiality::class,
+            'dataAsset.properties.integrity' => \HybridTM\Enums\Integrity::class,
+            'dataAsset.properties.availability' => \HybridTM\Enums\Availability::class,
+            'component.properties.overrides.properties.type' => \HybridTM\Enums\AssetType::class,
             'component.properties.overrides.properties.technology' => \HybridTM\Enums\Technology::class,
-            'component.properties.overrides.properties.machine'    => \HybridTM\Enums\Machine::class,
-            'component.properties.overrides.properties.size'       => \HybridTM\Enums\Size::class,
+            'component.properties.overrides.properties.machine' => \HybridTM\Enums\Machine::class,
+            'component.properties.overrides.properties.size' => \HybridTM\Enums\Size::class,
             'component.properties.overrides.properties.encryption' => \HybridTM\Enums\Encryption::class,
-            'trustBoundary.properties.type'                    => \HybridTM\Enums\TrustBoundaryType::class,
-            'dataFlow.properties.protocol'                     => \HybridTM\Enums\Protocol::class,
-            'dataFlow.properties.authentication'               => \HybridTM\Enums\Authentication::class,
-            'dataFlow.properties.authorization'                => \HybridTM\Enums\Authorization::class,
-            'riskDecision.properties.status'                   => \HybridTM\Enums\DecisionStatus::class,
+            'trustBoundary.properties.type' => \HybridTM\Enums\TrustBoundaryType::class,
+            'dataFlow.properties.protocol' => \HybridTM\Enums\Protocol::class,
+            'dataFlow.properties.authentication' => \HybridTM\Enums\Authentication::class,
+            'dataFlow.properties.authorization' => \HybridTM\Enums\Authorization::class,
+            'riskDecision.properties.status' => \HybridTM\Enums\DecisionStatus::class,
         ];
 
         foreach ($map as $path => $enum) {

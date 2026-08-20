@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
 /**
@@ -13,10 +15,10 @@ namespace HybridTM\Enums;
  */
 enum Severity: string
 {
-    case Low      = 'low';
-    case Medium   = 'medium';
+    case Low = 'low';
+    case Medium = 'medium';
     case Elevated = 'elevated';
-    case High     = 'high';
+    case High = 'high';
     case Critical = 'critical';
 
     public static function calculate(Likelihood $likelihood, Impact $impact): self
@@ -24,11 +26,11 @@ enum Severity: string
         $product = $likelihood->weight() * $impact->weight();
 
         return match (true) {
-            $product <= 1  => self::Low,
-            $product <= 3  => self::Medium,
-            $product <= 8  => self::Elevated,
+            $product <= 1 => self::Low,
+            $product <= 3 => self::Medium,
+            $product <= 8 => self::Elevated,
             $product <= 12 => self::High,
-            default        => self::Critical,
+            default => self::Critical,
         };
     }
 
@@ -36,10 +38,10 @@ enum Severity: string
     public function rank(): int
     {
         return match ($this) {
-            self::Low      => 1,
-            self::Medium   => 2,
+            self::Low => 1,
+            self::Medium => 2,
             self::Elevated => 3,
-            self::High     => 4,
+            self::High => 4,
             self::Critical => 5,
         };
     }

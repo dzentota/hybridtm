@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\Codec\Layout\EdgeLayout;
@@ -55,7 +57,7 @@ final class LayoutCodec
                 (array) ($data['groups'] ?? []),
             ),
             edges: array_map(
-                static fn ($e): EdgeLayout => EdgeLayout::fromArray((array) $e),
+                static fn ($e): EdgeLayout => EdgeLayout::fromArray(array_values((array) $e)),
                 (array) ($data['edges'] ?? []),
             ),
             viewport: Viewport::fromArray((array) ($data['viewport'] ?? [])),
@@ -113,6 +115,10 @@ final class LayoutCodec
     /** @param array<string, NodeLayout> $nodes */
     private function boundingBox(array $nodes): GroupLayout
     {
+        if ($nodes === []) {
+            throw new \InvalidArgumentException('boundingBox() requires at least one node');
+        }
+
         $minX = min(array_map(static fn (NodeLayout $n): float => $n->x, $nodes));
         $minY = min(array_map(static fn (NodeLayout $n): float => $n->y, $nodes));
         $maxX = max(array_map(static fn (NodeLayout $n): float => $n->x + $n->w, $nodes));

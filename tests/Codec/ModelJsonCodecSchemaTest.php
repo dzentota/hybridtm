@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Codec;
 
 use HybridTM\Codec\ModelJsonCodec;
@@ -7,7 +9,6 @@ use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
-use HybridTM\Enums\Confidentiality;
 use Opis\JsonSchema\Errors\ErrorFormatter;
 use Opis\JsonSchema\Validator;
 use PHPUnit\Framework\TestCase;
@@ -24,11 +25,12 @@ final class ModelJsonCodecSchemaTest extends TestCase
         }
     }
 
-    private function schema(): object
+    private function schema(): \stdClass
     {
         return json_decode((string) file_get_contents(self::SCHEMA), false, 512, JSON_THROW_ON_ERROR);
     }
 
+    /** @param array<string, mixed> $encoded */
     private function assertValidAgainstSchema(array $encoded): void
     {
         // Round-trip through JSON so arrays become the objects/lists opis expects.

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Yaml;
 
 use HybridTM\DSL\AbuseCase;
@@ -47,9 +49,12 @@ final class ThreagileSerializerTest extends TestCase
         return new ThreatModel($title);
     }
 
+    /** @return array<string, mixed> */
     private function parse(ThreatModel $model): array
     {
-        return Yaml::parse($this->serializer->serialize($model));
+        $parsed = Yaml::parse($this->serializer->serialize($model));
+        self::assertIsArray($parsed);
+        return $parsed;
     }
 
     // ── Top-level fields ───────────────────────────────────────────────────────

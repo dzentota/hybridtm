@@ -1,8 +1,9 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Fuzzing;
 
-use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
@@ -41,6 +42,12 @@ final class ModelFuzzer
         mt_srand($seed);
     }
 
+    /** The seed this fuzzer was constructed with, for reproducing a failing run. */
+    public function getSeed(): int
+    {
+        return $this->seed;
+    }
+
     public function generate(): ThreatModel
     {
         $model = new ThreatModel($this->randomName('Model'));
@@ -72,6 +79,9 @@ final class ModelFuzzer
                 continue;
             }
             $source = $model->getTechnicalAsset($sourceId);
+            if ($source === null) {
+                continue;
+            }
             $link = $source->communicatesTo(
                 $targetId,
                 $this->randomCase(Protocol::class),

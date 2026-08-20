@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis\Rules;
 
 use HybridTM\Analysis\DerivedTraits;

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Enums\FindingSource;
@@ -18,10 +20,10 @@ use HybridTM\Enums\Stride;
 final readonly class Finding implements \JsonSerializable
 {
     /**
-     * @param list<string>      $evidence           human-readable reasons, rendered in the UI
-     * @param list<Stride>      $stride
-     * @param list<string>      $countermeasureIds
-     * @param list<FindingSource> $corroboratedBy   other engines that reported the same thing
+     * @param list<string> $evidence human-readable reasons, rendered in the UI
+     * @param list<Stride> $stride
+     * @param list<string> $countermeasureIds
+     * @param list<FindingSource> $corroboratedBy other engines that reported the same thing
      */
     public function __construct(
         public string $stableId,
@@ -165,24 +167,24 @@ final readonly class Finding implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'stableId'          => $this->stableId,
-            'threatId'          => $this->threatId,
-            'ruleId'            => $this->ruleId,
-            'source'            => $this->source->value,
-            'subject'           => (string) $this->subject,
-            'title'             => $this->title,
-            'description'       => $this->description,
-            'likelihood'        => $this->likelihood->value,
-            'impact'            => $this->impact->value,
-            'severity'          => $this->severity->value,
-            'stride'            => array_map(static fn (Stride $s): string => $s->value, $this->stride),
-            'evidence'          => $this->evidence,
+            'stableId' => $this->stableId,
+            'threatId' => $this->threatId,
+            'ruleId' => $this->ruleId,
+            'source' => $this->source->value,
+            'subject' => (string) $this->subject,
+            'title' => $this->title,
+            'description' => $this->description,
+            'likelihood' => $this->likelihood->value,
+            'impact' => $this->impact->value,
+            'severity' => $this->severity->value,
+            'stride' => array_map(static fn (Stride $s): string => $s->value, $this->stride),
+            'evidence' => $this->evidence,
             'countermeasureIds' => $this->countermeasureIds,
-            'standards'         => $this->standards,
-            'trace'             => $this->trace,
-            'mitigation'        => $this->mitigation,
-            'codeLocation'      => $this->codeLocation,
-            'corroboratedBy'    => array_map(static fn (FindingSource $s): string => $s->value, $this->corroboratedBy),
+            'standards' => $this->standards,
+            'trace' => $this->trace,
+            'mitigation' => $this->mitigation,
+            'codeLocation' => $this->codeLocation,
+            'corroboratedBy' => array_map(static fn (FindingSource $s): string => $s->value, $this->corroboratedBy),
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis;
 
 use HybridTM\Analysis\Finding;
@@ -8,11 +10,11 @@ use HybridTM\Enums\FindingSource;
 use HybridTM\Enums\Impact;
 use HybridTM\Enums\Likelihood;
 use HybridTM\Enums\Severity;
-use InvalidArgumentException;
 use PHPUnit\Framework\TestCase;
 
 final class FindingTest extends TestCase
 {
+    /** @param list<string> $evidence */
     private function finding(
         string $rule = 'storage/unencrypted-at-rest',
         string $threat = 'THREAT-DATA-AT-REST-UNENCRYPTED',
@@ -93,7 +95,7 @@ final class FindingTest extends TestCase
 
     public function testMergeRefusesDifferentFindings(): void
     {
-        $this->expectException(InvalidArgumentException::class);
+        $this->expectException(\InvalidArgumentException::class);
         $this->finding()->mergeWith($this->finding(subjectId: 'other-db'));
     }
 

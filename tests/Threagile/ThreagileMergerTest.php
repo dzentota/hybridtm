@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Threagile;
 
 use HybridTM\Analysis\Finding;

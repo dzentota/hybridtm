@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Threagile;
 
 /**
@@ -30,7 +32,7 @@ final class CachedThreagileRunner implements ThreagileRunnerInterface
             throw new ThreagileRunException("Output directory does not exist: {$outDir}");
         }
         if (!is_dir($this->cacheDir)) {
-            mkdir($this->cacheDir, 0755, true);
+            mkdir($this->cacheDir, 0o755, true);
         }
 
         $cacheFile = $this->cacheFileFor($yamlPath, $options);
@@ -61,7 +63,24 @@ final class CachedThreagileRunner implements ThreagileRunnerInterface
     {
         $contents = file_get_contents($cacheFile);
         $data = $contents !== false ? json_decode($contents, true) : null;
-        return is_array($data) ? $data : null;
+        if (!is_array($data)
+            || !isset($data['exitCode'], $data['stdout'], $data['stderr'], $data['risksJson'], $data['engineVersion'])
+            || !is_int($data['exitCode'])
+            || !is_string($data['stdout'])
+            || !is_string($data['stderr'])
+            || !is_string($data['risksJson'])
+            || !is_string($data['engineVersion'])
+        ) {
+            return null;
+        }
+
+        return [
+            'exitCode' => $data['exitCode'],
+            'stdout' => $data['stdout'],
+            'stderr' => $data['stderr'],
+            'risksJson' => $data['risksJson'],
+            'engineVersion' => $data['engineVersion'],
+        ];
     }
 
     /** @param array{exitCode: int, stdout: string, stderr: string, risksJson: string, engineVersion: string} $cached */

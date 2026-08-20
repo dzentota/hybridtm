@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Codec;
 
 use HybridTM\Codec\ModelMerger;
@@ -162,7 +164,9 @@ final class ModelMergerTest extends TestCase
         $result = $this->merger->merge3($base, $ours, $theirs);
 
         self::assertTrue($result->hasConflicts());
-        self::assertSame(Confidentiality::Confidential, $result->model->getDataAsset('pii')->confidentiality, 'ours wins');
+        $mergedPii = $result->model->getDataAsset('pii');
+        self::assertNotNull($mergedPii, 'merged model must still have the pii data asset');
+        self::assertSame(Confidentiality::Confidential, $mergedPii->confidentiality, 'ours wins');
     }
 
     public function testModifyVersusDeleteConflictKeepsTheModification(): void

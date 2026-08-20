@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Kb\Rules;
 
 use HybridTM\Analysis\Rules\RuleContext;

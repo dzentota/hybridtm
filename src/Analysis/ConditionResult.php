@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 /**
@@ -9,7 +11,7 @@ namespace HybridTM\Analysis;
  */
 final readonly class ConditionResult implements \JsonSerializable
 {
-    public const KIND_WHEN   = 'when';
+    public const KIND_WHEN = 'when';
     public const KIND_UNLESS = 'unless';
 
     public function __construct(
@@ -25,9 +27,9 @@ final readonly class ConditionResult implements \JsonSerializable
     {
         return [
             'expression' => $this->expression,
-            'passed'     => $this->passed,
-            'kind'       => $this->kind,
-            'detail'     => $this->detail,
+            'passed' => $this->passed,
+            'kind' => $this->kind,
+            'detail' => $this->detail,
         ];
     }
 }

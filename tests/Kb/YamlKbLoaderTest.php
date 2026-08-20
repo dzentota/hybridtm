@@ -1,9 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Kb;
 
-use HybridTM\Kb\Kind;
 use HybridTM\Kb\KbException;
+use HybridTM\Kb\Kind;
 use HybridTM\Kb\RuleScope;
 use HybridTM\Kb\YamlKbLoader;
 use PHPUnit\Framework\TestCase;
@@ -15,7 +17,7 @@ final class YamlKbLoaderTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_kb_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -25,9 +27,13 @@ final class YamlKbLoaderTest extends TestCase
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -37,7 +43,7 @@ final class YamlKbLoaderTest extends TestCase
     private function write(string $relativePath, string $yaml): string
     {
         $path = $this->tmpDir . '/' . $relativePath;
-        @mkdir(dirname($path), 0755, true);
+        @mkdir(dirname($path), 0o755, true);
         file_put_contents($path, $yaml);
         return $path;
     }
@@ -45,30 +51,30 @@ final class YamlKbLoaderTest extends TestCase
     private function component(string $id, string $body): string
     {
         return <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Component
-metadata:
-  id: {$id}
-  name: {$id}
-  version: 1.0.0
-spec:
-{$body}
-YAML;
+            apiVersion: hybridtm.io/kb/v1
+            kind: Component
+            metadata:
+              id: {$id}
+              name: {$id}
+              version: 1.0.0
+            spec:
+            {$body}
+            YAML;
     }
 
     private function rule(string $id, string $scope, int $priority = 100): string
     {
         return <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Rule
-metadata:
-  id: {$id}
-  priority: {$priority}
-spec:
-  scope: {$scope}
-  when: { all: ["true"] }
-  then: [{ raise: THREAT-X }]
-YAML;
+            apiVersion: hybridtm.io/kb/v1
+            kind: Rule
+            metadata:
+              id: {$id}
+              priority: {$priority}
+            spec:
+              scope: {$scope}
+              when: { all: ["true"] }
+              then: [{ raise: THREAT-X }]
+            YAML;
     }
 
     // ── basic loading ────────────────────────────────────────────────────────
@@ -76,14 +82,15 @@ YAML;
     public function testLoadsComponentWithoutExtends(): void
     {
         $this->write('web.yaml', $this->component('web-server-nginx', <<<YAML
-  mapping: { type: process, technologies: [web-server] }
-  traits: [http_server]
-YAML));
+              mapping: { type: process, technologies: [web-server] }
+              traits: [http_server]
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
 
         self::assertTrue($kb->has(Kind::Component, 'web-server-nginx'));
         $spec = $kb->get(Kind::Component, 'web-server-nginx');
+        self::assertNotNull($spec, 'Expected the web-server-nginx component to be loaded.');
         self::assertSame('process', $spec['mapping']['type']);
         self::assertSame(['http_server'], $spec['traits']);
         self::assertArrayNotHasKey('extends', $spec);
@@ -110,29 +117,30 @@ YAML));
     public function testThreeLevelExtendsChainMergesTraitsRulesAndProperties(): void
     {
         $this->write('grandparent.yaml', $this->component('abstract/network-component', <<<YAML
-  mapping: { type: process }
-  traits: [network_component]
-  rules: [base/rule]
-YAML));
+              mapping: { type: process }
+              traits: [network_component]
+              rules: [base/rule]
+            YAML));
         $this->write('parent.yaml', $this->component('abstract/reverse-proxy', <<<YAML
-  extends: abstract/network-component
-  mapping: { type: process, technologies: [reverse-proxy] }
-  traits: [traffic_forwarding]
-  rules: [proxy/no-tls-to-upstream]
-  properties:
-    - { id: internet_facing, type: boolean, default: false }
-YAML));
+              extends: abstract/network-component
+              mapping: { type: process, technologies: [reverse-proxy] }
+              traits: [traffic_forwarding]
+              rules: [proxy/no-tls-to-upstream]
+              properties:
+                - { id: internet_facing, type: boolean, default: false }
+            YAML));
         $this->write('nginx.yaml', $this->component('web-server-nginx', <<<YAML
-  extends: abstract/reverse-proxy
-  mapping: { type: process, technologies: [reverse-proxy, web-server], machine: container }
-  traits: [http_server]
-  rules: [nginx/server-tokens-disclosure]
-  properties:
-    - { id: version, type: string }
-YAML));
+              extends: abstract/reverse-proxy
+              mapping: { type: process, technologies: [reverse-proxy, web-server], machine: container }
+              traits: [http_server]
+              rules: [nginx/server-tokens-disclosure]
+              properties:
+                - { id: version, type: string }
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
         $nginx = $kb->get(Kind::Component, 'web-server-nginx');
+        self::assertNotNull($nginx, 'Expected the web-server-nginx component to be loaded.');
 
         self::assertSame(['network_component', 'traffic_forwarding', 'http_server'], $nginx['traits']);
         self::assertSame(
@@ -147,19 +155,21 @@ YAML));
     public function testChildPropertyWithSameIdReplacesParents(): void
     {
         $this->write('parent.yaml', $this->component('abstract/reverse-proxy', <<<YAML
-  mapping: { type: process }
-  properties:
-    - { id: internet_facing, type: boolean, default: false }
-YAML));
+              mapping: { type: process }
+              properties:
+                - { id: internet_facing, type: boolean, default: false }
+            YAML));
         $this->write('child.yaml', $this->component('nginx', <<<YAML
-  extends: abstract/reverse-proxy
-  mapping: { type: process }
-  properties:
-    - { id: internet_facing, type: boolean, default: true }
-YAML));
+              extends: abstract/reverse-proxy
+              mapping: { type: process }
+              properties:
+                - { id: internet_facing, type: boolean, default: true }
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
-        $properties = $kb->get(Kind::Component, 'nginx')['properties'];
+        $nginxSpec = $kb->get(Kind::Component, 'nginx');
+        self::assertNotNull($nginxSpec, 'Expected the nginx component to be loaded.');
+        $properties = $nginxSpec['properties'];
 
         self::assertCount(1, $properties, 'same-id property replaces, does not duplicate');
         self::assertTrue($properties[0]['default'], 'child value wins on collision (§4.3)');
@@ -168,19 +178,21 @@ YAML));
     public function testMappingDefaultsAreShallowMerged(): void
     {
         $this->write('parent.yaml', $this->component('abstract/datastore', <<<YAML
-  mapping:
-    type: datastore
-    defaults: { confidentiality: internal, integrity: important }
-YAML));
+              mapping:
+                type: datastore
+                defaults: { confidentiality: internal, integrity: important }
+            YAML));
         $this->write('child.yaml', $this->component('postgres', <<<YAML
-  extends: abstract/datastore
-  mapping:
-    type: datastore
-    defaults: { confidentiality: confidential }
-YAML));
+              extends: abstract/datastore
+              mapping:
+                type: datastore
+                defaults: { confidentiality: confidential }
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
-        $defaults = $kb->get(Kind::Component, 'postgres')['mapping']['defaults'];
+        $postgresSpec = $kb->get(Kind::Component, 'postgres');
+        self::assertNotNull($postgresSpec, 'Expected the postgres component to be loaded.');
+        $defaults = $postgresSpec['mapping']['defaults'];
 
         self::assertSame('confidential', $defaults['confidentiality'], 'child overrides shared key');
         self::assertSame('important', $defaults['integrity'], 'parent-only key survives');
@@ -190,21 +202,23 @@ YAML));
     {
         $core = $this->tmpDir . '/core';
         $org = $this->tmpDir . '/org';
-        mkdir($core, 0755, true);
-        mkdir($org, 0755, true);
+        mkdir($core, 0o755, true);
+        mkdir($org, 0o755, true);
 
         file_put_contents($core . '/base.yaml', $this->component('abstract/reverse-proxy', <<<YAML
-  mapping: { type: process }
-  traits: [traffic_forwarding]
-YAML));
+              mapping: { type: process }
+              traits: [traffic_forwarding]
+            YAML));
         file_put_contents($org . '/nginx.yaml', $this->component('web-server-nginx', <<<YAML
-  extends: abstract/reverse-proxy
-  mapping: { type: process }
-  traits: [http_server]
-YAML));
+              extends: abstract/reverse-proxy
+              mapping: { type: process }
+              traits: [http_server]
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$core, $org]);
-        self::assertSame(['traffic_forwarding', 'http_server'], $kb->get(Kind::Component, 'web-server-nginx')['traits']);
+        $nginxSpec = $kb->get(Kind::Component, 'web-server-nginx');
+        self::assertNotNull($nginxSpec, 'Expected the web-server-nginx component to be loaded.');
+        self::assertSame(['traffic_forwarding', 'http_server'], $nginxSpec['traits']);
     }
 
     public function testCircularExtendsThrows(): void
@@ -231,20 +245,22 @@ YAML));
     {
         $core = $this->tmpDir . '/core';
         $org = $this->tmpDir . '/org';
-        mkdir($core, 0755, true);
-        mkdir($org, 0755, true);
+        mkdir($core, 0o755, true);
+        mkdir($org, 0o755, true);
 
         file_put_contents($core . '/web.yaml', $this->component('web-server-nginx', <<<YAML
-  mapping: { type: process }
-  traits: [http_server]
-YAML));
+              mapping: { type: process }
+              traits: [http_server]
+            YAML));
         file_put_contents($org . '/web.yaml', $this->component('web-server-nginx', <<<YAML
-  mapping: { type: process }
-  traits: [http_server, custom_org_trait]
-YAML));
+              mapping: { type: process }
+              traits: [http_server, custom_org_trait]
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$core, $org]);
-        self::assertSame(['http_server', 'custom_org_trait'], $kb->get(Kind::Component, 'web-server-nginx')['traits']);
+        $nginxSpec = $kb->get(Kind::Component, 'web-server-nginx');
+        self::assertNotNull($nginxSpec, 'Expected the web-server-nginx component to be loaded.');
+        self::assertSame(['http_server', 'custom_org_trait'], $nginxSpec['traits']);
     }
 
     // ── envelope validation ──────────────────────────────────────────────────
@@ -300,15 +316,15 @@ YAML));
         $this->write('rules/db.yaml', $this->rule('storage/unencrypted', 'component'));
         $this->write('rules/web.yaml', $this->rule('web/hsts-missing', 'component'));
         $this->write('components/db.yaml', $this->component('postgres', <<<YAML
-  mapping: { type: datastore }
-  traits: [datastore]
-  rules: [storage/unencrypted]
-YAML));
+              mapping: { type: datastore }
+              traits: [datastore]
+              rules: [storage/unencrypted]
+            YAML));
         $this->write('components/web.yaml', $this->component('nginx', <<<YAML
-  mapping: { type: process }
-  traits: [http_server]
-  rules: [web/hsts-missing]
-YAML));
+              mapping: { type: process }
+              traits: [http_server]
+              rules: [web/hsts-missing]
+            YAML));
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
 
@@ -319,17 +335,17 @@ YAML));
     public function testComponentsByCategory(): void
     {
         $this->write('nginx.yaml', <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Component
-metadata: { id: web-server-nginx, name: Nginx, version: 1.0.0, categories: [web, edge] }
-spec: { mapping: { type: process } }
-YAML);
+            apiVersion: hybridtm.io/kb/v1
+            kind: Component
+            metadata: { id: web-server-nginx, name: Nginx, version: 1.0.0, categories: [web, edge] }
+            spec: { mapping: { type: process } }
+            YAML);
         $this->write('postgres.yaml', <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Component
-metadata: { id: db-postgresql, name: PostgreSQL, version: 1.0.0, categories: [data] }
-spec: { mapping: { type: datastore } }
-YAML);
+            apiVersion: hybridtm.io/kb/v1
+            kind: Component
+            metadata: { id: db-postgresql, name: PostgreSQL, version: 1.0.0, categories: [data] }
+            spec: { mapping: { type: datastore } }
+            YAML);
 
         $kb = (new YamlKbLoader())->load([$this->tmpDir]);
         self::assertSame(['web-server-nginx'], $kb->componentsByCategory('web'));

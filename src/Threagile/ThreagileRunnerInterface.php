@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Threagile;
 
 /**
@@ -12,7 +14,7 @@ interface ThreagileRunnerInterface
 {
     /**
      * @throws ThreagileRunException if `$outDir` doesn't exist — Threagile
-     *         does not create it, the project's own README warns about this
+     *                               does not create it, the project's own README warns about this
      */
     public function run(string $yamlPath, string $outDir, RunOptions $options = new RunOptions()): ThreagileRunResult;
 }

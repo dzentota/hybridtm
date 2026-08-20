@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec\Layout;
 
 /**
@@ -13,8 +15,8 @@ namespace HybridTM\Codec\Layout;
 final class ModelLayout
 {
     /** @param array<string, NodeLayout> $nodes assetId/runtimeId => layout
-     *  @param array<string, GroupLayout> $groups trustBoundaryId => layout
-     *  @param array<string, EdgeLayout> $edges communicationLinkId => layout
+     * @param array<string, GroupLayout> $groups trustBoundaryId => layout
+     * @param array<string, EdgeLayout> $edges communicationLinkId => layout
      */
     public function __construct(
         public array $nodes = [],

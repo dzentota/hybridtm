@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis\Subjects;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -18,7 +20,9 @@ final class FlowSubjectTest extends TestCase
     private function buildSubject(ThreatModel $model, string $sourceId, string $linkId): FlowSubject
     {
         $index = ModelIndex::build($model);
-        $link = $model->getTechnicalAsset($sourceId)->communicationLinks[$linkId];
+        $sourceAsset = $model->getTechnicalAsset($sourceId);
+        self::assertNotNull($sourceAsset, "source asset '{$sourceId}' must exist in the model");
+        $link = $sourceAsset->communicationLinks[$linkId];
         return new FlowSubject($link, $sourceId, $model, $index, new DerivedTraits());
     }
 

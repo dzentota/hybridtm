@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
-enum Authentication: string {
+enum Authentication: string
+{
     case None = 'none';
     case Credentials = 'credentials';
     case SessionId = 'session-id';

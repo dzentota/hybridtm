@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
 /**
@@ -9,18 +11,18 @@ namespace HybridTM\Enums;
  */
 enum Likelihood: string
 {
-    case Unlikely   = 'unlikely';
-    case Likely     = 'likely';
+    case Unlikely = 'unlikely';
+    case Likely = 'likely';
     case VeryLikely = 'very-likely';
-    case Frequent   = 'frequent';
+    case Frequent = 'frequent';
 
     public function weight(): int
     {
         return match ($this) {
-            self::Unlikely   => 1,
-            self::Likely     => 2,
+            self::Unlikely => 1,
+            self::Likely => 2,
             self::VeryLikely => 3,
-            self::Frequent   => 4,
+            self::Frequent => 4,
         };
     }
 
@@ -36,10 +38,10 @@ enum Likelihood: string
     public function label(): string
     {
         return match ($this) {
-            self::Unlikely   => 'Unlikely',
-            self::Likely     => 'Likely',
+            self::Unlikely => 'Unlikely',
+            self::Likely => 'Likely',
             self::VeryLikely => 'Very Likely',
-            self::Frequent   => 'Frequent',
+            self::Frequent => 'Frequent',
         };
     }
 }

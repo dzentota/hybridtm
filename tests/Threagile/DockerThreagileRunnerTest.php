@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Threagile;
 
 use HybridTM\Threagile\DockerThreagileRunner;
@@ -24,7 +26,7 @@ final class DockerThreagileRunnerTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_docker_runner_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
         $this->yamlPath = $this->tmpDir . '/model.yaml';
         file_put_contents($this->yamlPath, 'title: Test');
     }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Codec;
 
 use HybridTM\Codec\PhpDslWriter;
@@ -92,6 +94,7 @@ final class PhpDslWriterTest extends TestCase
 
         $reloaded = $this->reload($model)->getDataAsset('customer-pii');
 
+        self::assertNotNull($reloaded, "'customer-pii' must round-trip");
         self::assertSame("O'Brien's Data", $reloaded->name);
         self::assertSame('PII', $reloaded->description);
         self::assertSame(Confidentiality::Confidential, $reloaded->confidentiality);
@@ -110,6 +113,7 @@ final class PhpDslWriterTest extends TestCase
 
         $reloaded = $this->reload($model)->getTechnicalAsset('web-api');
 
+        self::assertNotNull($reloaded, "'web-api' must round-trip");
         self::assertSame('Web API', $reloaded->name);
         self::assertSame(Technology::WebServiceRest, $reloaded->technology);
         self::assertSame(Encryption::Transparent, $reloaded->encryption);
@@ -125,6 +129,7 @@ final class PhpDslWriterTest extends TestCase
         $model->addTechnicalAsset($web)->addTechnicalAsset(new TechnicalAsset('db'));
 
         $reloaded = $this->reload($model)->getTechnicalAsset('web');
+        self::assertNotNull($reloaded, "'web' must round-trip");
         $link = $reloaded->communicationLinks['web-to-db'];
 
         self::assertSame('db', $link->targetAssetId);
@@ -146,6 +151,7 @@ final class PhpDslWriterTest extends TestCase
         $model->addTechnicalAsset($web)->addTechnicalAsset(new TechnicalAsset('db'));
 
         $reloaded = $this->reload($model)->getTechnicalAsset('web');
+        self::assertNotNull($reloaded, "'web' must round-trip");
         $decodedLink = $reloaded->communicationLinks['web-to-db'];
 
         self::assertTrue($decodedLink->vpn);

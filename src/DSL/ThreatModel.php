@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\BusinessCriticality;
@@ -39,7 +41,9 @@ class ThreatModel
     /** @var RiskTracking[] keyed by syntheticRiskId */
     private array $riskTracking = [];
 
-    public function __construct(public readonly string $title) {}
+    public function __construct(public readonly string $title)
+    {
+    }
 
     public function addDataAsset(DataAsset $asset): static
     {
@@ -96,32 +100,65 @@ class ThreatModel
     }
 
     /** @return DataAsset[] */
-    public function getDataAssets(): array { return $this->dataAssets; }
+    public function getDataAssets(): array
+    {
+        return $this->dataAssets;
+    }
 
     /** @return TechnicalAsset[] */
-    public function getTechnicalAssets(): array { return $this->technicalAssets; }
+    public function getTechnicalAssets(): array
+    {
+        return $this->technicalAssets;
+    }
 
     /** @return TrustBoundary[] */
-    public function getTrustBoundaries(): array { return $this->trustBoundaries; }
+    public function getTrustBoundaries(): array
+    {
+        return $this->trustBoundaries;
+    }
 
     /** @return Question[] */
-    public function getQuestions(): array { return $this->questions; }
+    public function getQuestions(): array
+    {
+        return $this->questions;
+    }
 
     /** @return AbuseCase[] */
-    public function getAbuseCases(): array { return $this->abuseCases; }
+    public function getAbuseCases(): array
+    {
+        return $this->abuseCases;
+    }
 
     /** @return SecurityRequirement[] */
-    public function getSecurityRequirements(): array { return $this->securityRequirements; }
+    public function getSecurityRequirements(): array
+    {
+        return $this->securityRequirements;
+    }
 
     /** @return SharedRuntime[] */
-    public function getSharedRuntimes(): array { return $this->sharedRuntimes; }
+    public function getSharedRuntimes(): array
+    {
+        return $this->sharedRuntimes;
+    }
 
     /** @return IndividualRiskCategory[] */
-    public function getIndividualRiskCategories(): array { return $this->individualRiskCategories; }
+    public function getIndividualRiskCategories(): array
+    {
+        return $this->individualRiskCategories;
+    }
 
     /** @return RiskTracking[] */
-    public function getRiskTracking(): array { return $this->riskTracking; }
+    public function getRiskTracking(): array
+    {
+        return $this->riskTracking;
+    }
 
-    public function getDataAsset(string $id): ?DataAsset { return $this->dataAssets[$id] ?? null; }
-    public function getTechnicalAsset(string $id): ?TechnicalAsset { return $this->technicalAssets[$id] ?? null; }
+    public function getDataAsset(string $id): ?DataAsset
+    {
+        return $this->dataAssets[$id] ?? null;
+    }
+    public function getTechnicalAsset(string $id): ?TechnicalAsset
+    {
+        return $this->technicalAssets[$id] ?? null;
+    }
 }

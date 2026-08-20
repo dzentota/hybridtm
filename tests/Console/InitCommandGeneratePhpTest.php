@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Console;
 
 use HybridTM\Console\InitCommand;
@@ -76,11 +78,17 @@ final class InitCommandGeneratePhpTest extends TestCase
         self::assertInstanceOf(ThreatModel::class, $model);
         self::assertSame('My App', $model->title);
         self::assertSame(BusinessCriticality::Critical, $model->businessCriticality);
-        self::assertSame(Confidentiality::Confidential, $model->getDataAsset('customer-pii')->confidentiality);
-        self::assertSame(Integrity::Important, $model->getDataAsset('customer-pii')->integrity);
-        self::assertSame(Availability::Important, $model->getDataAsset('customer-pii')->availability);
-        self::assertTrue($model->getTechnicalAsset('web')->internet);
-        self::assertSame(['customer-pii'], $model->getTechnicalAsset('web')->dataAssetsProcessed);
+
+        $dataAsset = $model->getDataAsset('customer-pii');
+        self::assertNotNull($dataAsset, 'Expected the customer-pii data asset to be present.');
+        self::assertSame(Confidentiality::Confidential, $dataAsset->confidentiality);
+        self::assertSame(Integrity::Important, $dataAsset->integrity);
+        self::assertSame(Availability::Important, $dataAsset->availability);
+
+        $technicalAsset = $model->getTechnicalAsset('web');
+        self::assertNotNull($technicalAsset, 'Expected the web technical asset to be present.');
+        self::assertTrue($technicalAsset->internet);
+        self::assertSame(['customer-pii'], $technicalAsset->dataAssetsProcessed);
     }
 
     public function testGeneratePhpProducesValidRequireableCode(): void

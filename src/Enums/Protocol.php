@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
 /** Protocol values as accepted by Threagile 1.x (-list-types). */
-enum Protocol: string {
+enum Protocol: string
+{
     case Unknown = 'unknown-protocol';
     case Http = 'http';
     case Https = 'https';

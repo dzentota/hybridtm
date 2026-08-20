@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-ACTOR-REACHABLE-DATASTORE
+  version: 1.0.0
+spec:
+  title: 'Modeled threat actor can reach a strictly confidential datastore unguarded'
+  summary: 'A modeled Threat Actor (external anonymous, authenticated user, insider, or compromised third-party) has a path to a datastore handling strictly confidential data, with no guarding component (WAF, API gateway, reverse proxy, IDS/IPS) anywhere along the way, and with no intermediate link requiring authentication beyond what the actor already holds.'
+  stride: [information-disclosure, tampering, elevation-of-privilege]
+  base:
+    likelihood: very-likely
+    impact: very-high
+  standards:
+    cwe: [284, 306]
+    owasp_top10_2021: ['A01:2021']
+  countermeasures:
+    - CM-WAF-BLOCK-MODE
+    - CM-NETWORK-SEGMENTATION

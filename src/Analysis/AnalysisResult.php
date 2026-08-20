@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Enums\Severity;
@@ -53,11 +55,11 @@ final readonly class AnalysisResult implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'inputHash'  => $this->inputHash,
-            'findings'   => $this->findings,
+            'inputHash' => $this->inputHash,
+            'findings' => $this->findings,
             'validation' => $this->validation,
-            'stats'      => $this->stats,
-            'summary'    => $this->countsBySeverity(),
+            'stats' => $this->stats,
+            'summary' => $this->countsBySeverity(),
         ];
     }
 }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\Availability;
@@ -25,8 +27,11 @@ class DataAsset
     /** KB component properties (§3.2) — never serialized to Threagile YAML. */
     public PropertyBag $properties;
 
-    public function __construct(public readonly string $id, public string $name = '') {
-        if ($this->name === '') $this->name = $this->id;
+    public function __construct(public readonly string $id, public string $name = '')
+    {
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
         $this->properties = new PropertyBag();
     }
 }

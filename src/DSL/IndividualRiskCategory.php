@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\RiskFunction;
@@ -29,6 +31,7 @@ class IndividualRiskCategory
     /** @var string[] e.g. ["CWE-311"] */
     public array $cwe = [];
 
-    public function __construct(public readonly string $id) {
+    public function __construct(public readonly string $id)
+    {
     }
 }

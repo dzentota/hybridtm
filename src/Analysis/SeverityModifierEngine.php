@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\DSL\ThreatModel;
@@ -27,6 +29,12 @@ use HybridTM\Enums\SubjectKind;
  *    in RuleEngine's Suppress phase).
  *  - "customDevelopedParts: false for injection threats" -> likelihood -1:
  *    same missing "threat family" classification as the WAF modifier.
+ *
+ * Also implements two Threat-Actor-driven terms, outside the original 8:
+ * a subject reachable by a `threat_actor`-trait asset with `capability`
+ * apt/automated gets +1 likelihood (higher-resource adversary), and one
+ * with `privilege_level` admin/system gets +1 impact (a privileged actor
+ * reaching a target implies deeper compromise than an anonymous one).
  */
 final class SeverityModifierEngine
 {
@@ -41,6 +49,19 @@ final class SeverityModifierEngine
             if ($this->isInternetReachable($assetId, $derived)) {
                 ++$likelihoodSteps;
                 break;
+            }
+        }
+
+        foreach ($assetIds as $assetId) {
+            $actor = $model->getTechnicalAsset($assetId);
+            if ($actor === null || !$actor->hasTrait('threat_actor')) {
+                continue;
+            }
+            if (in_array($actor->properties->string('capability'), ['apt', 'automated'], true)) {
+                ++$likelihoodSteps;
+            }
+            if (in_array($actor->properties->string('privilege_level'), ['admin', 'system'], true)) {
+                ++$impactSteps;
             }
         }
 
@@ -91,12 +112,12 @@ final class SeverityModifierEngine
     /** @return list<string> */
     private function assetIdsForSubject(SubjectRef $subject, ThreatModel $model): array
     {
-        return match ($subject->kind) {
+        return array_values(match ($subject->kind) {
             SubjectKind::Component => [$subject->primaryId],
-            SubjectKind::Flow      => [$subject->primaryId, (string) $subject->secondaryId],
-            SubjectKind::Boundary  => $model->getTrustBoundaries()[$subject->primaryId]->technicalAssetsInside ?? [],
+            SubjectKind::Flow => [$subject->primaryId, (string) $subject->secondaryId],
+            SubjectKind::Boundary => $model->getTrustBoundaries()[$subject->primaryId]->technicalAssetsInside ?? [],
             SubjectKind::DataAsset, SubjectKind::Model => [],
-        };
+        });
     }
 
     /** @return list<string> */
@@ -104,12 +125,12 @@ final class SeverityModifierEngine
     {
         if ($subject->kind === SubjectKind::Component) {
             $asset = $model->getTechnicalAsset($subject->primaryId);
-            return $asset === null ? [] : [...$asset->dataAssetsProcessed, ...$asset->dataAssetsStored];
+            return $asset === null ? [] : array_values([...$asset->dataAssetsProcessed, ...$asset->dataAssetsStored]);
         }
 
         if ($subject->kind === SubjectKind::Flow) {
             $link = $this->findLinkTo($model->getTechnicalAsset($subject->primaryId), (string) $subject->secondaryId);
-            return $link === null ? [] : [...$link->dataSent, ...$link->dataReceived];
+            return $link === null ? [] : array_values([...$link->dataSent, ...$link->dataReceived]);
         }
 
         return [];

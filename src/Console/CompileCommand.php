@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Console;
 
 use HybridTM\Compiler\AstScanner;
@@ -33,8 +35,8 @@ final class CompileCommand extends Command
         $io->title('HybridTM → Threagile Compiler');
 
         $infraPath = (string) $input->getOption('infra');
-        $srcPath   = (string) $input->getOption('source');
-        $outPath   = (string) $input->getOption('out');
+        $srcPath = (string) $input->getOption('source');
+        $outPath = (string) $input->getOption('out');
 
         $io->section('Step 1 — Loading infrastructure DSL');
         if (!file_exists($infraPath)) {
@@ -102,7 +104,7 @@ final class CompileCommand extends Command
 
         $io->success("Threagile YAML written to: {$outPath}");
 
-        $totalLinks = array_sum(array_map(fn($a) => count($a->communicationLinks), $model->getTechnicalAssets()));
+        $totalLinks = array_sum(array_map(fn ($a) => count($a->communicationLinks), $model->getTechnicalAssets()));
         $io->table(
             ['Metric', 'Count'],
             [

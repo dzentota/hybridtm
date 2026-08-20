@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec\Layout;
 
 /** Canvas pan/zoom state, ADR-07. */

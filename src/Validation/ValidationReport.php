@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Validation;
 
 use HybridTM\Enums\ValidationSeverity;
@@ -72,9 +74,9 @@ final class ValidationReport implements \JsonSerializable, \Countable
         }
 
         return [
-            'issues'    => $this->issues,
+            'issues' => $this->issues,
             'hasErrors' => $this->hasErrors(),
-            'counts'    => $counts,
+            'counts' => $counts,
         ];
     }
 }

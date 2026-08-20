@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Yaml;
 
 use HybridTM\DSL\AbuseCase;
@@ -13,9 +15,9 @@ use HybridTM\DSL\SharedRuntime;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
-use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Availability;
 use HybridTM\Enums\BusinessCriticality;
 use HybridTM\Enums\Confidentiality;

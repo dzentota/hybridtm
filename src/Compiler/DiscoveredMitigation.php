@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Compiler;
 
 use HybridTM\Analysis\CodeLocation;
@@ -13,5 +15,6 @@ final class DiscoveredMitigation
         public readonly MitigationStatus $status,
         public readonly string $context,
         public readonly ?CodeLocation $location = null,
-    ) {}
+    ) {
+    }
 }

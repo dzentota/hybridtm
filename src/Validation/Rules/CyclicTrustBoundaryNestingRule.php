@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Validation\Rules;
 
 use HybridTM\Analysis\SubjectRef;
@@ -52,8 +54,8 @@ final class CyclicTrustBoundaryNestingRule implements RuleInterface
      */
     private function findCycle(array $boundaries, string $current, array $path, array &$globallyVisited): ?array
     {
-        if (in_array($current, $path, true)) {
-            $start = array_search($current, $path, true);
+        $start = array_search($current, $path, true);
+        if ($start !== false) {
             return [...array_slice($path, $start), $current];
         }
 

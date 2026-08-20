@@ -1,0 +1,29 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: threat-actor-malicious-insider
+  name: Malicious Insider
+  version: 1.0.0
+  categories: [actor]
+  icon: mdi:account-key-outline
+  maturity: stable
+spec:
+  extends: abstract/threat-actor
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+  traits: []
+  properties:
+    - id: privilege_level
+      label: 'Privilege level this actor holds'
+      type: enum
+      values: [none, user, admin, system]
+      default: admin
+      group: 'Actor profile'
+    - id: intent
+      label: 'Motivation'
+      type: enum
+      values: [financial, espionage, disruption, accidental, unknown]
+      default: financial
+      group: 'Actor profile'
+  rules: []

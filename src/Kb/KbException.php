@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Kb;
 
 final class KbException extends \RuntimeException

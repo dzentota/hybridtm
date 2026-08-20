@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Enums\FindingSource;
@@ -89,7 +91,10 @@ final class RuleEvaluator
         return [$allPassed && $anyPassed, $results];
     }
 
-    /** @param list<ConditionResult> $results appended to by reference */
+    /**
+     * @param array<string, mixed> $context
+     * @param list<ConditionResult> $results appended to by reference
+     */
     private function safeEvaluate(string $expression, array $context, array &$results, string $kind): bool
     {
         try {
@@ -151,10 +156,10 @@ final class RuleEvaluator
 
     /**
      * @param array<string, mixed> $context
-     * Renders a `then[]` action string, falling back to the raw text on any
-     * evaluation error (e.g. an expression referencing a method the current
-     * Subject wrappers don't implement) — a bad `impact`/`evidence` template
-     * must never abort the whole analysis run.
+     *                                      Renders a `then[]` action string, falling back to the raw text on any
+     *                                      evaluation error (e.g. an expression referencing a method the current
+     *                                      Subject wrappers don't implement) — a bad `impact`/`evidence` template
+     *                                      must never abort the whole analysis run.
      */
     private function safeRender(string $template, array $context): string
     {
@@ -169,8 +174,8 @@ final class RuleEvaluator
     private function buildStandardsMapping(array $standards): StandardsMapping
     {
         return new StandardsMapping(
-            cwe: array_map(static fn ($v): int => (int) $v, $standards['cwe'] ?? []),
-            capec: array_map(static fn ($v): int => (int) $v, $standards['capec'] ?? []),
+            cwe: array_values(array_map(static fn ($v): int => (int) $v, $standards['cwe'] ?? [])),
+            capec: array_values(array_map(static fn ($v): int => (int) $v, $standards['capec'] ?? [])),
             owaspTop10: $standards['owasp_top10_2021'] ?? [],
             owaspAsvs: $standards['owasp_asvs'] ?? [],
             mitreAttack: $standards['mitre_attack'] ?? [],

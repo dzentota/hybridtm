@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\DSL\ThreatModel;
@@ -71,9 +73,9 @@ final class ModelMerger
 
         foreach (self::KEYED_ARRAYS as $field => $keyField) {
             $merged[$field] = $this->mergeKeyedList(
-                (array) ($baseData[$field] ?? []),
-                (array) ($oursData[$field] ?? []),
-                (array) ($theirsData[$field] ?? []),
+                $this->toEntityList($baseData[$field] ?? []),
+                $this->toEntityList($oursData[$field] ?? []),
+                $this->toEntityList($theirsData[$field] ?? []),
                 $keyField,
                 $field,
                 $conflicts,
@@ -184,8 +186,10 @@ final class ModelMerger
                 continue;
             }
 
-            if ($t !== null && $o === null) {
-                // Present in theirs, absent from ours (symmetric case).
+            if ($t !== null) {
+                // Present in theirs, absent from ours (symmetric case) — $o
+                // must be null here: the first branch above already handled
+                // "present in both" and the second handled "present in ours".
                 if ($b === null || $t === $b) {
                     if ($b !== null && $t === $b) {
                         continue; // clean delete by ours
@@ -202,6 +206,15 @@ final class ModelMerger
         }
 
         return $result;
+    }
+
+    /** @return list<array<string, mixed>> */
+    private function toEntityList(mixed $value): array
+    {
+        return array_values(array_map(
+            static fn (mixed $item): array => is_array($item) ? $item : [],
+            array_values((array) $value),
+        ));
     }
 
     /**

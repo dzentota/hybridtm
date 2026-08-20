@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Compiler;
 
 use HybridTM\Compiler\AstScanner;
@@ -18,7 +20,7 @@ final class AstScannerTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_test_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -28,9 +30,13 @@ final class AstScannerTest extends TestCase
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -60,15 +66,15 @@ final class AstScannerTest extends TestCase
     public function testVisitorExtractsDataFlow(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-use HybridTM\Enums\Protocol;
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            use HybridTM\Enums\Protocol;
 
-class MyService {
-    #[DataFlow(target: 'db', protocol: Protocol::SqlAccessProtocol)]
-    public function save(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'db', protocol: Protocol::SqlAccessProtocol)]
+                public function save(): void {}
+            }
+            PHP);
         self::assertCount(1, $result->dataFlows);
         $flow = $result->dataFlows[0];
         self::assertSame('db', $flow->targetAssetId);
@@ -78,16 +84,16 @@ PHP);
     public function testVisitorExtractsAssetId(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\AssetId;
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\AssetId;
+            use HybridTM\Attributes\DataFlow;
 
-#[AssetId('my-service')]
-class MyService {
-    #[DataFlow(target: 'db')]
-    public function save(): void {}
-}
-PHP);
+            #[AssetId('my-service')]
+            class MyService {
+                #[DataFlow(target: 'db')]
+                public function save(): void {}
+            }
+            PHP);
         self::assertCount(1, $result->dataFlows);
         self::assertSame('my-service', $result->dataFlows[0]->sourceAssetId);
     }
@@ -95,21 +101,21 @@ PHP);
     public function testVisitorResetsAssetIdBetweenClasses(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\AssetId;
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\AssetId;
+            use HybridTM\Attributes\DataFlow;
 
-#[AssetId('svc-a')]
-class ServiceA {
-    #[DataFlow(target: 'db')]
-    public function queryA(): void {}
-}
+            #[AssetId('svc-a')]
+            class ServiceA {
+                #[DataFlow(target: 'db')]
+                public function queryA(): void {}
+            }
 
-class ServiceB {
-    #[DataFlow(target: 'cache')]
-    public function queryB(): void {}
-}
-PHP);
+            class ServiceB {
+                #[DataFlow(target: 'cache')]
+                public function queryB(): void {}
+            }
+            PHP);
         self::assertCount(2, $result->dataFlows);
         self::assertSame('svc-a', $result->dataFlows[0]->sourceAssetId);
         self::assertSame('', $result->dataFlows[1]->sourceAssetId);
@@ -118,15 +124,15 @@ PHP);
     public function testVisitorExtractsMitigation(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\Mitigation;
-use HybridTM\Enums\MitigationStatus;
+            <?php
+            use HybridTM\Attributes\Mitigation;
+            use HybridTM\Enums\MitigationStatus;
 
-class MyService {
-    #[Mitigation(cwe: 'CWE-89', description: 'Use PDO', status: MitigationStatus::Mitigated)]
-    public function query(): void {}
-}
-PHP);
+            class MyService {
+                #[Mitigation(cwe: 'CWE-89', description: 'Use PDO', status: MitigationStatus::Mitigated)]
+                public function query(): void {}
+            }
+            PHP);
         self::assertCount(1, $result->mitigations);
         $m = $result->mitigations[0];
         self::assertSame('CWE-89', $m->cwe);
@@ -137,12 +143,12 @@ PHP);
     public function testVisitorExtractsProcessesDataOnClass(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\ProcessesData;
+            <?php
+            use HybridTM\Attributes\ProcessesData;
 
-#[ProcessesData(dataAssets: ['user-pii', 'session'])]
-class MyService {}
-PHP);
+            #[ProcessesData(dataAssets: ['user-pii', 'session'])]
+            class MyService {}
+            PHP);
         self::assertCount(1, $result->processesData);
         self::assertSame(['user-pii', 'session'], $result->processesData[0]->dataAssets);
     }
@@ -150,14 +156,14 @@ PHP);
     public function testVisitorExtractsProcessesDataOnMethod(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\ProcessesData;
+            <?php
+            use HybridTM\Attributes\ProcessesData;
 
-class MyService {
-    #[ProcessesData(dataAssets: ['token'])]
-    public function authenticate(): void {}
-}
-PHP);
+            class MyService {
+                #[ProcessesData(dataAssets: ['token'])]
+                public function authenticate(): void {}
+            }
+            PHP);
         self::assertCount(1, $result->processesData);
         self::assertSame(['token'], $result->processesData[0]->dataAssets);
     }
@@ -165,14 +171,14 @@ PHP);
     public function testVisitorWarnsOnMissingDataFlowTarget(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class MyService {
-    #[DataFlow()]
-    public function brokenMethod(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow()]
+                public function brokenMethod(): void {}
+            }
+            PHP);
         self::assertCount(0, $result->dataFlows);
         self::assertNotEmpty($result->warnings);
         self::assertStringContainsString('Missing required', $result->warnings[0]);
@@ -181,14 +187,14 @@ PHP);
     public function testVisitorExtractsDataFlowBooleanArgs(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class MyService {
-    #[DataFlow(target: 'svc', vpn: true, ipFiltered: true, readonly: false)]
-    public function send(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'svc', vpn: true, ipFiltered: true, readonly: false)]
+                public function send(): void {}
+            }
+            PHP);
         $flow = $result->dataFlows[0];
         self::assertTrue($flow->vpn);
         self::assertTrue($flow->ipFiltered);
@@ -198,14 +204,14 @@ PHP);
     public function testVisitorExtractsDataSentAndReceived(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class MyService {
-    #[DataFlow(target: 'db', dataSent: ['payload'], dataReceived: ['result'])]
-    public function call(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'db', dataSent: ['payload'], dataReceived: ['result'])]
+                public function call(): void {}
+            }
+            PHP);
         $flow = $result->dataFlows[0];
         self::assertSame(['payload'], $flow->dataSent);
         self::assertSame(['result'], $flow->dataReceived);
@@ -214,17 +220,17 @@ PHP);
     public function testVisitorExtractsMultipleDataFlowsOnMethod(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class MyService {
-    #[DataFlow(target: 'svc-a')]
-    #[DataFlow(target: 'svc-b')]
-    public function fanOut(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'svc-a')]
+                #[DataFlow(target: 'svc-b')]
+                public function fanOut(): void {}
+            }
+            PHP);
         self::assertCount(2, $result->dataFlows);
-        $targets = array_map(fn($f) => $f->targetAssetId, $result->dataFlows);
+        $targets = array_map(fn ($f) => $f->targetAssetId, $result->dataFlows);
         self::assertContains('svc-a', $targets);
         self::assertContains('svc-b', $targets);
     }
@@ -232,14 +238,14 @@ PHP);
     public function testVisitorContextIncludesClassAndMethod(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class OrderController {
-    #[DataFlow(target: 'payment-svc')]
-    public function checkout(): void {}
-}
-PHP);
+            class OrderController {
+                #[DataFlow(target: 'payment-svc')]
+                public function checkout(): void {}
+            }
+            PHP);
         self::assertStringContainsString('OrderController', $result->dataFlows[0]->context);
         self::assertStringContainsString('checkout', $result->dataFlows[0]->context);
     }
@@ -247,29 +253,29 @@ PHP);
     public function testVisitorExtractsAuthenticationEnum(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-use HybridTM\Enums\Authentication;
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            use HybridTM\Enums\Authentication;
 
-class MyService {
-    #[DataFlow(target: 'db', authentication: Authentication::Credentials)]
-    public function connect(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'db', authentication: Authentication::Credentials)]
+                public function connect(): void {}
+            }
+            PHP);
         self::assertSame(Authentication::Credentials, $result->dataFlows[0]->authentication);
     }
 
     public function testVisitorHandlesMitigationDefaultStatus(): void
     {
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\Mitigation;
+            <?php
+            use HybridTM\Attributes\Mitigation;
 
-class MyService {
-    #[Mitigation(cwe: 'CWE-79', description: 'Escape output')]
-    public function render(): void {}
-}
-PHP);
+            class MyService {
+                #[Mitigation(cwe: 'CWE-79', description: 'Escape output')]
+                public function render(): void {}
+            }
+            PHP);
         self::assertSame(MitigationStatus::Mitigated, $result->mitigations[0]->status);
     }
 
@@ -278,14 +284,14 @@ PHP);
         // parse() drives the visitor directly, without AstScanner ever calling
         // setCurrentFile() — there is no file path to attach.
         $result = $this->parse(<<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class MyService {
-    #[DataFlow(target: 'db')]
-    public function save(): void {}
-}
-PHP);
+            class MyService {
+                #[DataFlow(target: 'db')]
+                public function save(): void {}
+            }
+            PHP);
         self::assertNull($result->dataFlows[0]->location);
     }
 
@@ -294,16 +300,16 @@ PHP);
     public function testScannerFindsDataFlowsInDirectory(): void
     {
         $this->write('Controller.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\AssetId;
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\AssetId;
+            use HybridTM\Attributes\DataFlow;
 
-#[AssetId('web')]
-class Controller {
-    #[DataFlow(target: 'db')]
-    public function index(): void {}
-}
-PHP);
+            #[AssetId('web')]
+            class Controller {
+                #[DataFlow(target: 'db')]
+                public function index(): void {}
+            }
+            PHP);
         $scanner = new AstScanner();
         $result = $scanner->scan($this->tmpDir);
 
@@ -322,14 +328,14 @@ PHP);
     public function testScannerRecordsMitigationLocation(): void
     {
         $this->write('Repo.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\Mitigation;
+            <?php
+            use HybridTM\Attributes\Mitigation;
 
-class Repo {
-    #[Mitigation(cwe: 'CWE-89', description: 'Prepared statements')]
-    public function query(): void {}
-}
-PHP);
+            class Repo {
+                #[Mitigation(cwe: 'CWE-89', description: 'Prepared statements')]
+                public function query(): void {}
+            }
+            PHP);
         $scanner = new AstScanner();
         $result = $scanner->scan($this->tmpDir);
 
@@ -344,15 +350,15 @@ PHP);
     public function testScannerLocationsAreIndependentPerFile(): void
     {
         $this->write('A.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-class A { #[DataFlow(target: 'x')] public function go(): void {} }
-PHP);
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            class A { #[DataFlow(target: 'x')] public function go(): void {} }
+            PHP);
         $this->write('B.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-class B { #[DataFlow(target: 'y')] public function go(): void {} }
-PHP);
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            class B { #[DataFlow(target: 'y')] public function go(): void {} }
+            PHP);
         $scanner = new AstScanner();
         $result = $scanner->scan($this->tmpDir);
 
@@ -363,16 +369,16 @@ PHP);
 
     public function testScannerScansSubdirectories(): void
     {
-        mkdir($this->tmpDir . '/Services', 0755, true);
+        mkdir($this->tmpDir . '/Services', 0o755, true);
         $this->write('Services/UserService.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
+            <?php
+            use HybridTM\Attributes\DataFlow;
 
-class UserService {
-    #[DataFlow(target: 'users-db')]
-    public function find(): void {}
-}
-PHP);
+            class UserService {
+                #[DataFlow(target: 'users-db')]
+                public function find(): void {}
+            }
+            PHP);
         $scanner = new AstScanner();
         $result = $scanner->scan($this->tmpDir);
 
@@ -400,15 +406,15 @@ PHP);
     public function testScannerAggregatesMultipleFiles(): void
     {
         $this->write('A.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-class A { #[DataFlow(target: 'x')] public function go(): void {} }
-PHP);
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            class A { #[DataFlow(target: 'x')] public function go(): void {} }
+            PHP);
         $this->write('B.php', <<<'PHP'
-<?php
-use HybridTM\Attributes\DataFlow;
-class B { #[DataFlow(target: 'y')] public function go(): void {} }
-PHP);
+            <?php
+            use HybridTM\Attributes\DataFlow;
+            class B { #[DataFlow(target: 'y')] public function go(): void {} }
+            PHP);
         $scanner = new AstScanner();
         $result = $scanner->scan($this->tmpDir);
 

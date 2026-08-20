@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Schema\Kb;
 
 use Opis\JsonSchema\Errors\ErrorFormatter;
@@ -28,7 +30,7 @@ abstract class KbSchemaTestCase extends TestCase
         self::assertTrue($result->isValid(), 'Example document must validate: ' . json_encode($errors));
     }
 
-    /** @param callable(object): void $mutate */
+    /** @param callable(\stdClass): void $mutate */
     protected function assertRejected(callable $mutate): void
     {
         $document = $this->example();
@@ -45,12 +47,12 @@ abstract class KbSchemaTestCase extends TestCase
         return new Validator();
     }
 
-    protected function schema(): object
+    protected function schema(): \stdClass
     {
         return json_decode((string) file_get_contents($this->schemaPath()), false, 512, JSON_THROW_ON_ERROR);
     }
 
-    protected function example(): object
+    protected function example(): \stdClass
     {
         return json_decode((string) file_get_contents($this->examplePath()), false, 512, JSON_THROW_ON_ERROR);
     }

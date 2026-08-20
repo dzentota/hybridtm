@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec\Layout;
 
 /** Canvas position and size of one node (component or shared runtime), ADR-07. */

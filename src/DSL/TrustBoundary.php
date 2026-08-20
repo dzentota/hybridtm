@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\TrustBoundaryType;
@@ -21,7 +23,9 @@ class TrustBoundary
         public string $name = '',
         public TrustBoundaryType $type = TrustBoundaryType::NetworkOnPrem,
     ) {
-        if ($this->name === '') $this->name = $this->id;
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
         $this->properties = new PropertyBag();
     }
 

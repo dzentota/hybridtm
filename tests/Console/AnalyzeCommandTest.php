@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Console;
 
 use HybridTM\Console\AnalyzeCommand;
@@ -20,8 +22,8 @@ final class AnalyzeCommandTest extends TestCase
         }
 
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_analyze_cmd_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
-        mkdir($this->tmpDir . '/kb', 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
+        mkdir($this->tmpDir . '/kb', 0o755, true);
     }
 
     protected function tearDown(): void
@@ -33,9 +35,13 @@ final class AnalyzeCommandTest extends TestCase
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -52,26 +58,26 @@ final class AnalyzeCommandTest extends TestCase
     private function writeKbFiles(): void
     {
         file_put_contents($this->tmpDir . '/kb/threat.yaml', <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Threat
-metadata: { id: THREAT-DATA-AT-REST-UNENCRYPTED, version: 1.0.0 }
-spec:
-  title: Unencrypted data at rest
-  summary: summary
-  stride: [information-disclosure]
-  base: { likelihood: likely, impact: medium }
-YAML);
+            apiVersion: hybridtm.io/kb/v1
+            kind: Threat
+            metadata: { id: THREAT-DATA-AT-REST-UNENCRYPTED, version: 1.0.0 }
+            spec:
+              title: Unencrypted data at rest
+              summary: summary
+              stride: [information-disclosure]
+              base: { likelihood: likely, impact: medium }
+            YAML);
         file_put_contents($this->tmpDir . '/kb/rule.yaml', <<<YAML
-apiVersion: hybridtm.io/kb/v1
-kind: Rule
-metadata: { id: storage/unencrypted-at-rest, priority: 100 }
-spec:
-  scope: component
-  when:
-    all: ["component.hasTrait('datastore')", "component.encryption == 'none'"]
-  then:
-    - raise: THREAT-DATA-AT-REST-UNENCRYPTED
-YAML);
+            apiVersion: hybridtm.io/kb/v1
+            kind: Rule
+            metadata: { id: storage/unencrypted-at-rest, priority: 100 }
+            spec:
+              scope: component
+              when:
+                all: ["component.hasTrait('datastore')", "component.encryption == 'none'"]
+              then:
+                - raise: THREAT-DATA-AT-REST-UNENCRYPTED
+            YAML);
     }
 
     private function tester(): CommandTester
@@ -133,12 +139,12 @@ YAML);
     public function testFailsOnModelValidationError(): void
     {
         $path = $this->writeDsl(<<<'PHP'
-$model = new ThreatModel('App');
-$web = new TechnicalAsset('web');
-$web->communicatesTo('nonexistent');
-$model->addTechnicalAsset($web);
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            $web = new TechnicalAsset('web');
+            $web->communicatesTo('nonexistent');
+            $model->addTechnicalAsset($web);
+            return $model;
+            PHP);
         $tester = $this->tester();
         $exit = $tester->execute(['--infra' => $path]);
 
@@ -171,12 +177,12 @@ PHP);
     {
         $this->writeKbFiles();
         $path = $this->writeDsl(<<<'PHP'
-$model = new ThreatModel('App');
-$db = new TechnicalAsset('db');
-$db->traits = ['datastore'];
-$model->addTechnicalAsset($db);
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            $db = new TechnicalAsset('db');
+            $db->traits = ['datastore'];
+            $model->addTechnicalAsset($db);
+            return $model;
+            PHP);
 
         $tester = $this->tester();
         $exit = $tester->execute(['--infra' => $path, '--kb' => [$this->tmpDir . '/kb'], '--format' => 'json']);
@@ -191,12 +197,12 @@ PHP);
     {
         $this->writeKbFiles();
         $path = $this->writeDsl(<<<'PHP'
-$model = new ThreatModel('App');
-$db = new TechnicalAsset('db');
-$db->traits = ['datastore'];
-$model->addTechnicalAsset($db);
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            $db = new TechnicalAsset('db');
+            $db->traits = ['datastore'];
+            $model->addTechnicalAsset($db);
+            return $model;
+            PHP);
 
         $tester = $this->tester();
         // storage/unencrypted-at-rest -> likely x medium -> Elevated severity.
@@ -209,12 +215,12 @@ PHP);
     {
         $this->writeKbFiles();
         $path = $this->writeDsl(<<<'PHP'
-$model = new ThreatModel('App');
-$db = new TechnicalAsset('db');
-$db->traits = ['datastore'];
-$model->addTechnicalAsset($db);
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            $db = new TechnicalAsset('db');
+            $db->traits = ['datastore'];
+            $model->addTechnicalAsset($db);
+            return $model;
+            PHP);
 
         $tester = $this->tester();
         $exit = $tester->execute(['--infra' => $path, '--kb' => [$this->tmpDir . '/kb'], '--fail-on' => 'critical']);

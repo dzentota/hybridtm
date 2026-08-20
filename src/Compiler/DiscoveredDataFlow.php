@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Compiler;
 
 use HybridTM\Analysis\CodeLocation;
@@ -9,6 +11,10 @@ use HybridTM\Enums\Protocol;
 
 final class DiscoveredDataFlow
 {
+    /**
+     * @param list<string> $dataSent
+     * @param list<string> $dataReceived
+     */
     public function __construct(
         public readonly string $sourceAssetId,
         public readonly string $targetAssetId,
@@ -22,5 +28,6 @@ final class DiscoveredDataFlow
         public readonly bool $readonly,
         public readonly string $context,
         public readonly ?CodeLocation $location = null,
-    ) {}
+    ) {
+    }
 }

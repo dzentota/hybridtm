@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\DSL\AbuseCase;
@@ -13,9 +15,9 @@ use HybridTM\DSL\SharedRuntime;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
-use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Availability;
 use HybridTM\Enums\BusinessCriticality;
 use HybridTM\Enums\Confidentiality;
@@ -236,7 +238,7 @@ final class ModelJsonCodec
         $asset = new TechnicalAsset((string) $raw['id'], (string) ($raw['name'] ?? $raw['id']));
         $asset->description = (string) ($raw['description'] ?? '');
         $asset->properties = new PropertyBag($this->nonNullProperties((array) ($raw['properties'] ?? [])));
-        $asset->traits = array_map(static fn ($t): string => (string) $t, (array) ($raw['traits'] ?? []));
+        $asset->traits = array_values(array_map(static fn ($t): string => (string) $t, (array) ($raw['traits'] ?? [])));
         $asset->dataAssetsProcessed = array_map(static fn ($v): string => (string) $v, (array) ($raw['dataAssetsProcessed'] ?? []));
         $asset->dataAssetsStored = array_map(static fn ($v): string => (string) $v, (array) ($raw['dataAssetsStored'] ?? []));
         $asset->dataFormatsAccepted = array_map(static fn ($v): string => (string) $v, (array) ($raw['dataFormatsAccepted'] ?? []));

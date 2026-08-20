@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis\Rules;
 
 use HybridTM\Analysis\DerivedTraits;
@@ -31,7 +33,7 @@ final readonly class RuleContextModel
     {
         $result = [];
         foreach ($this->model->getTechnicalAssets() as $asset) {
-            if ($this->hasAllTraits($asset, $traits)) {
+            if ($this->hasAllTraits($asset, array_values($traits))) {
                 $result[] = $asset;
             }
         }

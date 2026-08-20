@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Threagile;
 
 use HybridTM\Threagile\BinaryThreagileRunner;
@@ -26,33 +28,33 @@ final class BinaryThreagileRunnerTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_binary_runner_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
         $this->yamlPath = $this->tmpDir . '/model.yaml';
         file_put_contents($this->yamlPath, 'title: Test');
 
         $this->fakeBinary = $this->tmpDir . '/fake-threagile';
         file_put_contents($this->fakeBinary, <<<'PHP'
-#!/usr/bin/env php
-<?php
-$args = $argv;
-$output = null;
-$verbose = false;
-$generateRisksJson = false;
-for ($i = 1; $i < count($args); $i++) {
-    if ($args[$i] === '-output') { $output = $args[++$i]; }
-    elseif ($args[$i] === '-model') { $i++; }
-    elseif ($args[$i] === '-verbose') { $verbose = true; }
-    elseif ($args[$i] === '-generate-risks-json') { $generateRisksJson = true; }
-}
-if ($verbose) { fwrite(STDOUT, "verbose output\n"); }
-if (getenv('FAKE_THREAGILE_SLEEP')) { sleep((int) getenv('FAKE_THREAGILE_SLEEP')); }
-if (getenv('FAKE_THREAGILE_FAIL')) { fwrite(STDERR, "simulated failure\n"); exit(1); }
-if ($generateRisksJson && $output !== null && !getenv('FAKE_THREAGILE_NO_RISKS_FILE')) {
-    file_put_contents($output . '/risks.json', getenv('FAKE_THREAGILE_RISKS') ?: '[]');
-}
-exit(0);
-PHP);
-        chmod($this->fakeBinary, 0755);
+            #!/usr/bin/env php
+            <?php
+            $args = $argv;
+            $output = null;
+            $verbose = false;
+            $generateRisksJson = false;
+            for ($i = 1; $i < count($args); $i++) {
+                if ($args[$i] === '-output') { $output = $args[++$i]; }
+                elseif ($args[$i] === '-model') { $i++; }
+                elseif ($args[$i] === '-verbose') { $verbose = true; }
+                elseif ($args[$i] === '-generate-risks-json') { $generateRisksJson = true; }
+            }
+            if ($verbose) { fwrite(STDOUT, "verbose output\n"); }
+            if (getenv('FAKE_THREAGILE_SLEEP')) { sleep((int) getenv('FAKE_THREAGILE_SLEEP')); }
+            if (getenv('FAKE_THREAGILE_FAIL')) { fwrite(STDERR, "simulated failure\n"); exit(1); }
+            if ($generateRisksJson && $output !== null && !getenv('FAKE_THREAGILE_NO_RISKS_FILE')) {
+                file_put_contents($output . '/risks.json', getenv('FAKE_THREAGILE_RISKS') ?: '[]');
+            }
+            exit(0);
+            PHP);
+        chmod($this->fakeBinary, 0o755);
     }
 
     protected function tearDown(): void
@@ -66,9 +68,13 @@ PHP);
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -87,6 +93,7 @@ PHP);
 
         self::assertTrue($result->succeeded());
         self::assertSame(0, $result->exitCode);
+        self::assertNotNull($result->risksJsonPath, 'Expected a risks.json path on success.');
         self::assertSame('[{"id":"unencrypted-asset"}]', file_get_contents($result->risksJsonPath));
         self::assertSame('1.0.0', $result->engineVersion);
     }

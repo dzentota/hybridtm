@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 use HybridTM\Enums\MitigationStatus;
@@ -23,10 +25,10 @@ final readonly class MitigationEvidence implements \JsonSerializable
     public function jsonSerialize(): array
     {
         return [
-            'cwe'         => $this->cwe,
+            'cwe' => $this->cwe,
             'description' => $this->description,
-            'status'      => $this->status->value,
-            'location'    => $this->location,
+            'status' => $this->status->value,
+            'location' => $this->location,
         ];
     }
 }

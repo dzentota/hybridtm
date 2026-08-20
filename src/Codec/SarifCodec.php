@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 use HybridTM\Analysis\AnalysisResult;
@@ -90,6 +92,8 @@ final class SarifCodec
     private function result(Finding $finding): array
     {
         $location = $finding->codeLocation;
+        $file = $location !== null ? $location->file : 'threat-model.php';
+        $line = $location !== null ? $location->line : 1;
 
         return [
             'ruleId' => $finding->threatId,
@@ -98,8 +102,8 @@ final class SarifCodec
             'locations' => [
                 [
                     'physicalLocation' => [
-                        'artifactLocation' => ['uri' => $location?->file ?? 'threat-model.php'],
-                        'region' => ['startLine' => $location?->line ?? 1],
+                        'artifactLocation' => ['uri' => $file],
+                        'region' => ['startLine' => $line],
                     ],
                     'logicalLocations' => [
                         ['fullyQualifiedName' => $finding->subject],

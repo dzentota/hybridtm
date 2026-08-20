@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Compiler;
 
 use HybridTM\Compiler\AstResult;
@@ -27,6 +29,10 @@ final class LinkerTest extends TestCase
         return $tm;
     }
 
+    /**
+     * @param list<string> $dataSent
+     * @param list<string> $dataReceived
+     */
     private function makeFlow(
         string $source,
         string $target,
@@ -59,7 +65,9 @@ final class LinkerTest extends TestCase
         $linker = new Linker();
         $linker->link($tm, new AstResult([$this->makeFlow('web', 'db')]));
 
-        self::assertArrayHasKey('web-to-db', $tm->getTechnicalAsset('web')->communicationLinks);
+        $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
+        self::assertArrayHasKey('web-to-db', $web->communicationLinks);
     }
 
     public function testLinkSetsProtocolAndAuth(): void
@@ -70,7 +78,9 @@ final class LinkerTest extends TestCase
             $this->makeFlow('web', 'db', protocol: Protocol::SqlAccessProtocol, auth: Authentication::Credentials),
         ]));
 
-        $link = $tm->getTechnicalAsset('web')->communicationLinks['web-to-db'];
+        $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
+        $link = $web->communicationLinks['web-to-db'];
         self::assertSame(Protocol::SqlAccessProtocol, $link->protocol);
         self::assertSame(Authentication::Credentials, $link->authentication);
     }
@@ -81,7 +91,9 @@ final class LinkerTest extends TestCase
         $linker = new Linker();
         $linker->link($tm, new AstResult([$this->makeFlow('web', 'db', dataSent: ['user-data'])]));
 
-        $link = $tm->getTechnicalAsset('web')->communicationLinks['web-to-db'];
+        $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
+        $link = $web->communicationLinks['web-to-db'];
         self::assertContains('user-data', $link->dataSent);
     }
 
@@ -91,7 +103,9 @@ final class LinkerTest extends TestCase
         $linker = new Linker();
         $linker->link($tm, new AstResult([$this->makeFlow('web', 'db', dataReceived: ['user-data'])]));
 
-        $link = $tm->getTechnicalAsset('web')->communicationLinks['web-to-db'];
+        $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
+        $link = $web->communicationLinks['web-to-db'];
         self::assertContains('user-data', $link->dataReceived);
     }
 
@@ -101,7 +115,9 @@ final class LinkerTest extends TestCase
         $linker = new Linker();
         $linker->link($tm, new AstResult([$this->makeFlow('web', 'db', dataSent: ['user-data'])]));
 
-        self::assertContains('user-data', $tm->getTechnicalAsset('web')->dataAssetsProcessed);
+        $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
+        self::assertContains('user-data', $web->dataAssetsProcessed);
     }
 
     public function testLinkNoDuplicateDataAssets(): void
@@ -115,9 +131,10 @@ final class LinkerTest extends TestCase
         ]));
 
         $web = $tm->getTechnicalAsset('web');
-        self::assertCount(1, array_filter($web->dataAssetsProcessed, fn($id) => $id === 'user-data'));
+        self::assertNotNull($web, "'web' must exist");
+        self::assertCount(1, array_filter($web->dataAssetsProcessed, fn ($id) => $id === 'user-data'));
         $link = $web->communicationLinks['web-to-db'];
-        self::assertCount(1, array_filter($link->dataSent, fn($id) => $id === 'user-data'));
+        self::assertCount(1, array_filter($link->dataSent, fn ($id) => $id === 'user-data'));
     }
 
     public function testLinkReusesExistingCommLink(): void
@@ -125,6 +142,7 @@ final class LinkerTest extends TestCase
         $tm = $this->makeModel();
         // Pre-create link in DSL
         $web = $tm->getTechnicalAsset('web');
+        self::assertNotNull($web, "'web' must exist");
         $existing = $web->communicatesTo('db', Protocol::BinaryEncrypted);
 
         $linker = new Linker();
@@ -162,7 +180,9 @@ final class LinkerTest extends TestCase
         $flow = $this->makeFlow('', 'db', dataSent: ['user-data']);
         $linker->link($tm, new AstResult([$flow]));
 
-        self::assertContains('user-data', $tm->getTechnicalAsset('db')->dataAssetsProcessed);
+        $db = $tm->getTechnicalAsset('db');
+        self::assertNotNull($db, "'db' must exist");
+        self::assertContains('user-data', $db->dataAssetsProcessed);
     }
 
     // ── Error cases ────────────────────────────────────────────────────────────

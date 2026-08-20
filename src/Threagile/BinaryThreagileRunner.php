@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Threagile;
 
 /**
@@ -12,8 +14,8 @@ final class BinaryThreagileRunner extends AbstractProcessThreagileRunner
 {
     /**
      * @param string $version recorded as the run's engineVersion — the
-     *        binary has no reliable self-reported version flag to
-     *        introspect, so the caller states what they installed.
+     *                        binary has no reliable self-reported version flag to
+     *                        introspect, so the caller states what they installed.
      */
     public function __construct(
         private readonly string $binaryPath = 'threagile',

@@ -5,6 +5,3 @@ parameters:
         - tests
     tmpDir: build/phpstan
     treatPhpDocTypesAsCertain: false
-    ignoreErrors:
-        # The DSL file returns a ThreatModel; the CLI verifies this at runtime.
-        - identifier: require.fileNotFound

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Threagile;
 
 /** Outcome of one `ThreagileRunnerInterface::run()` call. */

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Scanner;
 
 /**
@@ -30,7 +32,10 @@ final class ScannerReportParser
         };
     }
 
-    /** @param array<string, mixed> $data @return list<ScannerFinding> */
+    /**
+     * @param array<string, mixed> $data
+     * @return list<ScannerFinding>
+     */
     private function parseCheckov(array $data): array
     {
         $findings = [];
@@ -46,7 +51,10 @@ final class ScannerReportParser
         return $findings;
     }
 
-    /** @param array<string, mixed> $data @return list<ScannerFinding> */
+    /**
+     * @param array<string, mixed> $data
+     * @return list<ScannerFinding>
+     */
     private function parseTrivy(array $data): array
     {
         $findings = [];
@@ -65,7 +73,10 @@ final class ScannerReportParser
         return $findings;
     }
 
-    /** @param array<string, mixed> $data @return list<ScannerFinding> */
+    /**
+     * @param array<string, mixed> $data
+     * @return list<ScannerFinding>
+     */
     private function parseSonarQube(array $data): array
     {
         $findings = [];

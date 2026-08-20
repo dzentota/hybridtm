@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Console;
 
 use HybridTM\Console\ExportCommand;
@@ -15,7 +17,7 @@ final class ExportImportNormalizeCommandTest extends TestCase
     protected function setUp(): void
     {
         $this->tmpDir = sys_get_temp_dir() . '/hybridtm_ien_cmd_' . uniqid('', true);
-        mkdir($this->tmpDir, 0755, true);
+        mkdir($this->tmpDir, 0o755, true);
     }
 
     protected function tearDown(): void
@@ -25,9 +27,13 @@ final class ExportImportNormalizeCommandTest extends TestCase
 
     private function removeDir(string $path): void
     {
-        if (!is_dir($path)) return;
+        if (!is_dir($path)) {
+            return;
+        }
         foreach (scandir($path) as $entry) {
-            if ($entry === '.' || $entry === '..') continue;
+            if ($entry === '.' || $entry === '..') {
+                continue;
+            }
             $full = $path . '/' . $entry;
             is_dir($full) ? $this->removeDir($full) : unlink($full);
         }
@@ -53,10 +59,10 @@ final class ExportImportNormalizeCommandTest extends TestCase
     public function testExportWritesCanonicalJson(): void
     {
         $path = $this->writeDsl('model.php', <<<'PHP'
-$model = new ThreatModel('My App');
-$model->addTechnicalAsset(new TechnicalAsset('web'));
-return $model;
-PHP);
+            $model = new ThreatModel('My App');
+            $model->addTechnicalAsset(new TechnicalAsset('web'));
+            return $model;
+            PHP);
         $outPath = $this->tmpDir . '/out.json';
 
         $tester = new CommandTester(new ExportCommand());
@@ -121,11 +127,11 @@ PHP);
     public function testNormalizeRewritesCanonicalFileToDeterministicForm(): void
     {
         $path = $this->writeDsl('model.php', <<<'PHP'
-$model = new ThreatModel('App');
-$web = new TechnicalAsset('web');
-$model->addTechnicalAsset($web);
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            $web = new TechnicalAsset('web');
+            $model->addTechnicalAsset($web);
+            return $model;
+            PHP);
         $outPath = $this->tmpDir . '/normalized.php';
 
         $tester = new CommandTester(new NormalizeCommand());
@@ -140,9 +146,9 @@ PHP);
     public function testNormalizeDefaultsToOverwritingInPlace(): void
     {
         $path = $this->writeDsl('model.php', <<<'PHP'
-$model = new ThreatModel('App');
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            return $model;
+            PHP);
         $before = file_get_contents($path);
 
         $tester = new CommandTester(new NormalizeCommand());
@@ -159,12 +165,12 @@ PHP);
     public function testNormalizeRefusesNonCanonicalFileAndDoesNotModifyIt(): void
     {
         $path = $this->writeDsl('model.php', <<<'PHP'
-$model = new ThreatModel('App');
-foreach ([1, 2] as $x) {
-    // non-canonical construct
-}
-return $model;
-PHP);
+            $model = new ThreatModel('App');
+            foreach ([1, 2] as $x) {
+                // non-canonical construct
+            }
+            return $model;
+            PHP);
         $before = file_get_contents($path);
 
         $tester = new CommandTester(new NormalizeCommand());
@@ -178,12 +184,12 @@ PHP);
     public function testNormalizeIsIdempotent(): void
     {
         $path = $this->writeDsl('model.php', <<<'PHP'
-$web = new TechnicalAsset('web', 'Web App');
-$web->internet = true;
-$model = new ThreatModel('App');
-$model->addTechnicalAsset($web);
-return $model;
-PHP);
+            $web = new TechnicalAsset('web', 'Web App');
+            $web->internet = true;
+            $model = new ThreatModel('App');
+            $model->addTechnicalAsset($web);
+            return $model;
+            PHP);
 
         (new CommandTester(new NormalizeCommand()))->execute(['--infra' => $path]);
         $firstPass = file_get_contents($path);
@@ -199,12 +205,12 @@ PHP);
     public function testExportThenImportRoundTrips(): void
     {
         $originalPath = $this->writeDsl('original.php', <<<'PHP'
-$model = new ThreatModel('Round Trip App');
-$web = new TechnicalAsset('web', 'Web');
-$web->internet = true;
-$model->addTechnicalAsset($web);
-return $model;
-PHP);
+            $model = new ThreatModel('Round Trip App');
+            $web = new TechnicalAsset('web', 'Web');
+            $web->internet = true;
+            $model->addTechnicalAsset($web);
+            return $model;
+            PHP);
 
         $jsonPath = $this->tmpDir . '/model.json';
         (new CommandTester(new ExportCommand()))->execute(['--infra' => $originalPath, '--out' => $jsonPath]);

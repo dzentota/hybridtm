@@ -1,13 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Compiler;
 
+use PhpParser\ErrorHandler\Collecting;
 use PhpParser\NodeTraverser;
 use PhpParser\ParserFactory;
-use PhpParser\ErrorHandler\Collecting;
-use RecursiveDirectoryIterator;
-use RecursiveIteratorIterator;
-use SplFileInfo;
 
 final class AstScanner
 {
@@ -20,22 +19,26 @@ final class AstScanner
 
         $warnings = [];
 
-        $it = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));
+        $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($directory));
         foreach ($it as $file) {
-            if (!($file instanceof SplFileInfo) || $file->getExtension() !== 'php') {
+            if (!($file instanceof \SplFileInfo) || $file->getExtension() !== 'php') {
                 continue;
             }
 
             $code = file_get_contents($file->getPathname());
-            if ($code === false) continue;
+            if ($code === false) {
+                continue;
+            }
 
             $errorHandler = new Collecting();
             $stmts = $parser->parse($code, $errorHandler);
 
             if ($stmts === null || $errorHandler->hasErrors()) {
-                $errors = array_map(fn($e) => $e->getMessage(), $errorHandler->getErrors());
+                $errors = array_map(fn ($e) => $e->getMessage(), $errorHandler->getErrors());
                 $warnings[] = "Parse error in {$file->getPathname()}: " . implode('; ', $errors);
-                if ($stmts === null) continue;
+                if ($stmts === null) {
+                    continue;
+                }
             }
 
             $visitor->setCurrentFile($file->getPathname());

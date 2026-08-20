@@ -1,9 +1,10 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Yaml;
 
 use HybridTM\DSL\AbuseCase;
-use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\IndividualRiskCategory;
 use HybridTM\DSL\RiskTracking;
@@ -12,9 +13,9 @@ use HybridTM\DSL\SharedRuntime;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
-use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Availability;
 use HybridTM\Enums\BusinessCriticality;
 use HybridTM\Enums\Confidentiality;
@@ -140,6 +141,7 @@ final class ThreagileDeserializerTest extends TestCase
         $model->addTechnicalAsset($nginx);
 
         $roundTripped = $this->roundTrip($model)->getTechnicalAsset('nginx');
+        self::assertNotNull($roundTripped, 'Expected the nginx technical asset to round-trip.');
 
         self::assertSame(
             ['reverse-proxy', 'web-server', 'load-balancer'],
@@ -253,6 +255,7 @@ final class ThreagileDeserializerTest extends TestCase
         $model->addTechnicalAsset(new TechnicalAsset('web-api', 'Web API'));
 
         $roundTripped = $this->roundTrip($model)->getTechnicalAsset('web-api');
+        self::assertNotNull($roundTripped, 'Expected the web-api technical asset to round-trip.');
 
         self::assertSame('web-api', $roundTripped->name, 'name degrades to id, it is not preserved');
     }

@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\DecisionStatus;
@@ -19,6 +21,7 @@ class RiskTracking
     public ?string $expiresAt = null;
 
     /** @param string $syntheticRiskId Threagile's synthetic risk id, or a Finding::$stableId. */
-    public function __construct(public readonly string $syntheticRiskId) {
+    public function __construct(public readonly string $syntheticRiskId)
+    {
     }
 }

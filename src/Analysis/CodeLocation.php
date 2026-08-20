@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Analysis;
 
 /**
@@ -26,9 +28,9 @@ final readonly class CodeLocation implements \JsonSerializable, \Stringable
     public function jsonSerialize(): array
     {
         return [
-            'file'   => $this->file,
-            'line'   => $this->line,
-            'class'  => $this->class,
+            'file' => $this->file,
+            'line' => $this->line,
+            'class' => $this->class,
             'method' => $this->method,
         ];
     }

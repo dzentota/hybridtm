@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Codec;
 
 use HybridTM\Codec\OtmCodec;
@@ -104,7 +106,9 @@ final class OtmCodecTest extends TestCase
 
         self::assertSame('Imported App', $model->title);
         self::assertSame('from OTM', $model->description);
-        self::assertSame(Technology::WebServiceRest, $model->getTechnicalAsset('web')->technology);
+        $web = $model->getTechnicalAsset('web');
+        self::assertNotNull($web, 'imported model must have the web component');
+        self::assertSame(Technology::WebServiceRest, $web->technology);
         self::assertSame(['web'], $model->getTrustBoundaries()['dmz']->technicalAssetsInside);
     }
 
@@ -115,7 +119,9 @@ final class OtmCodecTest extends TestCase
             'components' => [['id' => 'thing', 'name' => 'Thing', 'type' => 'some-otm-only-type']],
         ]);
 
-        self::assertSame(Technology::Unknown, $model->getTechnicalAsset('thing')->technology);
+        $thing = $model->getTechnicalAsset('thing');
+        self::assertNotNull($thing, 'imported model must have the thing component');
+        self::assertSame(Technology::Unknown, $thing->technology);
     }
 
     public function testImportsNestedTrustZones(): void
@@ -145,7 +151,9 @@ final class OtmCodecTest extends TestCase
             ],
         ]);
 
-        $link = $model->getTechnicalAsset('web')->communicationLinks['web-to-db'];
+        $web = $model->getTechnicalAsset('web');
+        self::assertNotNull($web, 'imported model must have the web component');
+        $link = $web->communicationLinks['web-to-db'];
         self::assertSame('db', $link->targetAssetId);
         self::assertSame('reads data', $link->description);
     }
@@ -178,8 +186,10 @@ final class OtmCodecTest extends TestCase
 
         self::assertSame('E-Commerce', $reimported->title);
         self::assertCount(2, $reimported->getTechnicalAssets());
-        self::assertSame(Technology::WebServiceRest, $reimported->getTechnicalAsset('web')->technology);
+        $reimportedWeb = $reimported->getTechnicalAsset('web');
+        self::assertNotNull($reimportedWeb, 'reimported model must have the web component');
+        self::assertSame(Technology::WebServiceRest, $reimportedWeb->technology);
         self::assertSame(['web'], $reimported->getTrustBoundaries()['dmz']->technicalAssetsInside);
-        self::assertArrayHasKey('web-to-db', $reimported->getTechnicalAsset('web')->communicationLinks);
+        self::assertArrayHasKey('web-to-db', $reimportedWeb->communicationLinks);
     }
 }

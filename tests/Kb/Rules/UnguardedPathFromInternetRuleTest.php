@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Kb\Rules;
 
 use HybridTM\Analysis\DerivedTraits;
+use HybridTM\Analysis\Finding;
 use HybridTM\Analysis\ModelIndex;
 use HybridTM\Analysis\Rules\RuleContext;
 use HybridTM\Analysis\Rules\RuleContextGraph;
@@ -31,7 +34,10 @@ final class UnguardedPathFromInternetRuleTest extends TestCase
         ], 'test-kb');
     }
 
-    /** @param array<string, mixed> $config */
+    /**
+     * @param array<string, mixed> $config
+     * @return list<Finding>
+     */
     private function evaluate(ThreatModel $model, array $config = []): array
     {
         $index = ModelIndex::build($model);

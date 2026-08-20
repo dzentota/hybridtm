@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Scanner;
 
 use HybridTM\Scanner\ScannerReportParser;
@@ -25,7 +27,7 @@ final class ScannerReportParserTest extends TestCase
                     ['check_id' => 'CKV_AWS_17', 'resource' => 'aws_db_instance.main'],
                 ],
             ],
-        ]);
+        ], JSON_THROW_ON_ERROR);
 
         $findings = $this->parser->parse('checkov', $json);
 
@@ -49,7 +51,7 @@ final class ScannerReportParserTest extends TestCase
                     ],
                 ],
             ],
-        ]);
+        ], JSON_THROW_ON_ERROR);
 
         $findings = $this->parser->parse('trivy', $json);
 
@@ -67,7 +69,7 @@ final class ScannerReportParserTest extends TestCase
                 ['rule' => 'phpsecurity:S1234', 'status' => 'RESOLVED', 'component' => 'src/Foo.php'],
                 ['rule' => 'phpsecurity:S5678', 'status' => 'OPEN', 'component' => 'src/Bar.php'],
             ],
-        ]);
+        ], JSON_THROW_ON_ERROR);
 
         $findings = $this->parser->parse('sonarqube', $json);
 

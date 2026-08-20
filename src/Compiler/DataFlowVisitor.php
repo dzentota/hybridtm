@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Compiler;
 
 use HybridTM\Analysis\CodeLocation;
@@ -12,16 +14,16 @@ use PhpParser\NodeVisitorAbstract;
 
 final class DataFlowVisitor extends NodeVisitorAbstract
 {
-    /** @var DiscoveredDataFlow[] */
+    /** @var list<DiscoveredDataFlow> */
     private array $dataFlows = [];
 
-    /** @var DiscoveredMitigation[] */
+    /** @var list<DiscoveredMitigation> */
     private array $mitigations = [];
 
-    /** @var DiscoveredProcessesData[] */
+    /** @var list<DiscoveredProcessesData> */
     private array $processesData = [];
 
-    /** @var string[] */
+    /** @var list<string> */
     public array $warnings = [];
 
     private string $currentClass = '';
@@ -126,8 +128,8 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         $authzRaw = $args['authorization'] ?? Authorization::None;
         $authz = $authzRaw instanceof Authorization ? $authzRaw : Authorization::tryFrom((string)$authzRaw) ?? Authorization::None;
 
-        $dataSent = (array) ($args['dataSent'] ?? []);
-        $dataReceived = (array) ($args['dataReceived'] ?? []);
+        $dataSent = array_values(array_map(static fn (mixed $v): string => (string) $v, (array) ($args['dataSent'] ?? [])));
+        $dataReceived = array_values(array_map(static fn (mixed $v): string => (string) $v, (array) ($args['dataReceived'] ?? [])));
 
         $this->dataFlows[] = new DiscoveredDataFlow(
             sourceAssetId: $this->sourceAssetId,
@@ -170,7 +172,10 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         );
     }
 
-    /** @param Node\Arg[] $argNodes */
+    /**
+     * @param Node\Arg[] $argNodes
+     * @return array<int|string, mixed>
+     */
     private function extractArgs(array $argNodes): array
     {
         $result = [];
@@ -184,23 +189,26 @@ final class DataFlowVisitor extends NodeVisitorAbstract
     private function resolveValue(Node\Expr $expr): mixed
     {
         return match (true) {
-            $expr instanceof Node\Scalar\String_       => $expr->value,
-            $expr instanceof Node\Scalar\LNumber       => $expr->value,
-            $expr instanceof Node\Scalar\DNumber       => $expr->value,
-            $expr instanceof Node\Expr\ConstFetch      => match(strtolower($expr->name->toString())) {
+            $expr instanceof Node\Scalar\String_ => $expr->value,
+            $expr instanceof Node\Scalar\LNumber => $expr->value,
+            $expr instanceof Node\Scalar\DNumber => $expr->value,
+            $expr instanceof Node\Expr\ConstFetch => match(strtolower($expr->name->toString())) {
                 'true' => true, 'false' => false, 'null' => null, default => $expr->name->toString(),
             },
-            $expr instanceof Node\Expr\Array_          => $this->resolveArray($expr),
+            $expr instanceof Node\Expr\Array_ => $this->resolveArray($expr),
             $expr instanceof Node\Expr\ClassConstFetch => $this->resolveClassConst($expr),
-            default                                     => null,
+            default => null,
         };
     }
 
+    /** @return array<int|string, mixed> */
     private function resolveArray(Node\Expr\Array_ $arr): array
     {
         $result = [];
         foreach ($arr->items as $item) {
-            if ($item === null) continue;
+            if ($item === null) {
+                continue;
+            }
             $value = $this->resolveValue($item->value);
             if ($item->key !== null) {
                 $result[$this->resolveValue($item->key)] = $value;
@@ -217,9 +225,9 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         $const = $expr->name instanceof Node\Identifier ? $expr->name->name : '';
 
         $enumMap = [
-            'Protocol'         => Protocol::class,
-            'Authentication'   => Authentication::class,
-            'Authorization'    => Authorization::class,
+            'Protocol' => Protocol::class,
+            'Authentication' => Authentication::class,
+            'Authorization' => Authorization::class,
             'MitigationStatus' => MitigationStatus::class,
         ];
 

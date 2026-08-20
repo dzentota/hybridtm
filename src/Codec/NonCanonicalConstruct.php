@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Codec;
 
 /** One construct `PhpDslReader` couldn't recognize (ADR-08). */

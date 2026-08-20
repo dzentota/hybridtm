@@ -1,8 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Fuzzing;
 
 use HybridTM\Analysis\AnalysisOptions;
+use HybridTM\Analysis\Finding;
 use HybridTM\Analysis\RuleEngine;
 use HybridTM\Codec\ModelJsonCodec;
 use HybridTM\Enums\Severity;
@@ -67,7 +70,7 @@ final class ModelFuzzerTest extends TestCase
                 self::fail("RuleEngine threw for seed {$seed}: {$e->getMessage()}");
             }
 
-            self::assertIsArray($result->findings);
+            self::assertContainsOnlyInstancesOf(Finding::class, $result->findings);
         }
     }
 
@@ -75,9 +78,12 @@ final class ModelFuzzerTest extends TestCase
     {
         $codec = new ModelJsonCodec();
 
-        $a = $codec->encode((new ModelFuzzer(42))->generate());
-        $b = $codec->encode((new ModelFuzzer(42))->generate());
+        $fuzzerA = new ModelFuzzer(42);
+        $a = $codec->encode($fuzzerA->generate());
+        $fuzzerB = new ModelFuzzer(42);
+        $b = $codec->encode($fuzzerB->generate());
 
+        self::assertSame($fuzzerA->getSeed(), $fuzzerB->getSeed());
         self::assertSame($a, $b, 'The same seed must reproduce the exact same model.');
     }
 

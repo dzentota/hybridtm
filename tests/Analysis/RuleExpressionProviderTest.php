@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Analysis;
 
 use HybridTM\Analysis\RuleExpressionException;
@@ -27,8 +29,11 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testEvaluatesMethodCallOnContextObject(): void
     {
-        $subject = new class {
-            public function hasTrait(string $t): bool { return $t === 'datastore'; }
+        $subject = new class () {
+            public function hasTrait(string $t): bool
+            {
+                return $t === 'datastore';
+            }
         };
 
         self::assertTrue($this->provider->evaluate("component.hasTrait('datastore')", ['component' => $subject]));
@@ -37,15 +42,24 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testEvaluatesPublicPropertyAccess(): void
     {
-        $subject = new class { public bool $internet = true; };
+        $subject = new class () {
+            public bool $internet = true;
+        };
         self::assertTrue($this->provider->evaluate('component.internet', ['component' => $subject]));
     }
 
     public function testEvaluatesChainedPropertyThenMethod(): void
     {
-        $props = new class { public function bool(string $k): bool { return $k === 'internet_facing'; } };
-        $subject = new class($props) {
-            public function __construct(public object $props) {}
+        $props = new class () {
+            public function bool(string $k): bool
+            {
+                return $k === 'internet_facing';
+            }
+        };
+        $subject = new class ($props) {
+            public function __construct(public object $props)
+            {
+            }
         };
 
         self::assertTrue($this->provider->evaluate("component.props.bool('internet_facing')", ['component' => $subject]));
@@ -59,9 +73,9 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testUndefinedMethodThrows(): void
     {
-        $subject = new class {};
+        $subject = new class () {};
         $this->expectException(RuleExpressionException::class);
-        $this->provider->evaluate("component.nonexistentMethod()", ['component' => $subject]);
+        $this->provider->evaluate('component.nonexistentMethod()', ['component' => $subject]);
     }
 
     public function testRenderLeavesPlainTextUnchanged(): void
@@ -71,7 +85,9 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testRenderSubstitutesExpression(): void
     {
-        $subject = new class { public string $name = 'Nginx'; };
+        $subject = new class () {
+            public string $name = 'Nginx';
+        };
         self::assertSame(
             'Component Nginx is affected',
             $this->provider->render('Component {{ component.name }} is affected', ['component' => $subject]),
@@ -80,8 +96,11 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testRenderSupportsTernary(): void
     {
-        $subject = new class {
-            public function isCritical(): bool { return true; }
+        $subject = new class () {
+            public function isCritical(): bool
+            {
+                return true;
+            }
         };
         self::assertSame(
             'high',
@@ -91,7 +110,10 @@ final class RuleExpressionProviderTest extends TestCase
 
     public function testRenderSubstitutesMultiplePlaceholders(): void
     {
-        $subject = new class { public string $name = 'A'; public string $encryption = 'none'; };
+        $subject = new class () {
+            public string $name = 'A';
+            public string $encryption = 'none';
+        };
         self::assertSame(
             'A has encryption none',
             $this->provider->render('{{ component.name }} has encryption {{ component.encryption }}', ['component' => $subject]),
