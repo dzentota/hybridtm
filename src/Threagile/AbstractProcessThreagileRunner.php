@@ -68,6 +68,7 @@ abstract class AbstractProcessThreagileRunner implements ThreagileRunnerInterfac
         $stdout = '';
         $stderr = '';
         $deadline = microtime(true) + $timeoutSeconds;
+        $exitCode = -1;
 
         while (true) {
             $stdout .= stream_get_contents($pipes[1]);
@@ -75,6 +76,12 @@ abstract class AbstractProcessThreagileRunner implements ThreagileRunnerInterfac
 
             $status = proc_get_status($process);
             if (!$status['running']) {
+                // Capture the exit code here, not from proc_close()'s return
+                // value below: once proc_get_status() has already reported
+                // the process as exited, a later proc_close() is not
+                // guaranteed to still return the real exit code — PHP 8.2
+                // returns -1 in that case where PHP 8.4 still returns it.
+                $exitCode = $status['exitcode'];
                 break;
             }
 
@@ -93,7 +100,7 @@ abstract class AbstractProcessThreagileRunner implements ThreagileRunnerInterfac
         $stderr .= stream_get_contents($pipes[2]);
         fclose($pipes[1]);
         fclose($pipes[2]);
-        $exitCode = proc_close($process);
+        proc_close($process);
 
         return [$exitCode, $stdout, $stderr];
     }
