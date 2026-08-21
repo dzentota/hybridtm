@@ -26,11 +26,19 @@ return $model;
 
 ```bash
 php bin/hybridtm analyze --infra=threat-model.php --kb=path/to/kb --format=table
+
+# С митигациями в коде и гейтом Abuser Story coverage:
+php bin/hybridtm analyze \
+    --infra=threat-model.php \
+    --source=src/ \
+    --kb=path/to/kb \
+    --fail-on-uncovered-stories
 ```
 
-Это весь конвейер целиком: DSL → Rule Engine → находки, одной командой,
-без базы данных и сервера. Что класть в `--kb` — см. [Наполнение базы
-знаний](/ru/guide/kb-authoring).
+Это весь конвейер: DSL → Rule Engine → находки (и опционально coverage
+историй), одной командой, без БД и сервера. Что класть в `--kb` — см.
+[Наполнение базы знаний](/ru/guide/kb-authoring); про истории злоупотребления —
+[Abuser Stories](/ru/guide/abuser-stories).
 
 ## Studio (API + редактор-холст)
 
@@ -57,15 +65,17 @@ npm run dev
 Откройте dev-сервер Studio, войдите под только что созданным аккаунтом
 и перетащите компонент из палитры на холст. **Запустить анализ**
 вызывает тот же Rule Engine, что и CLI — находки появляются вместе с
-трассировкой правила (**Почему это сработало?**), объясняющей, какие
-именно условия совпали.
+трассировкой правила (**Почему это сработало?**). Вкладка **Stories** —
+для Abuser Stories, линковки actor/assets/threats и badges coverage из
+`storyCoverage`.
 
 ### Основной цикл
 
 1. Создайте проект, затем версию модели внутри него (через холст, либо
    `POST /api/model_versions` с каноническим JSON в `data`).
 2. `POST /model-versions/{id}/analyze` — синхронный быстрый анализ без
-   сохранения результата. Это путь «проверка по мере редактирования».
+   сохранения результата. Это путь «проверка по мере редактирования»
+   (в ответе может быть `storyCoverage`, если в модели есть abuse cases).
 3. `POST /model-versions/{id}/analyze/deep` — асинхронный анализ на
    основе Threagile; опрашивайте или подпишитесь на `GET
    /deep-analysis-results/{id}(/events)`.

@@ -37,6 +37,16 @@ export function ComponentNode({ id, data, selected, parentId }: NodeProps<Studio
   const setFocusSubject = useModelStore((s) => s.setFocusSubject)
   const duplicateNode = useModelStore((s) => s.duplicateNode)
   const removeNode = useModelStore((s) => s.removeNode)
+  const selectedStoryId = useModelStore((s) => s.selectedStoryId)
+  const abuseCases = useModelStore((s) => s.abuseCases)
+  const storyHighlighted = Boolean(
+    selectedStoryId &&
+      abuseCases.some(
+        (c) =>
+          c.title === selectedStoryId &&
+          ((c.assetIds ?? []).includes(id) || c.actorId === id),
+      ),
+  )
 
   const highlight =
     overlayMode === 'exposure'
@@ -45,14 +55,23 @@ export function ComponentNode({ id, data, selected, parentId }: NodeProps<Studio
         : null
       : overlayHighlight(overlayMode, d)
 
+  const borderColor = selected
+    ? 'var(--accent)'
+    : storyHighlighted
+      ? 'var(--accent)'
+      : highlight
+        ? highlight.color
+        : 'var(--border)'
+
   return (
     <div
       className="rounded-[10px] border bg-(--surface-0) shadow-[var(--shadow-node)] px-3 py-2 w-[220px] h-[76px] flex flex-col justify-between"
       style={{
-        borderColor: selected ? 'var(--accent)' : highlight ? highlight.color : 'var(--border)',
-        borderWidth: selected || highlight ? 2 : 1,
+        borderColor,
+        borderWidth: selected || storyHighlighted || highlight ? 2 : 1,
+        boxShadow: storyHighlighted ? '0 0 0 2px color-mix(in srgb, var(--accent) 35%, transparent)' : undefined,
       }}
-      title={highlight?.label}
+      title={storyHighlighted ? `Linked to abuser story ${selectedStoryId}` : highlight?.label}
     >
       {/* Floating action bar, only while selected — keeps the node face
          itself down to icon + name + severity so the diagram reads as an

@@ -101,6 +101,21 @@ public function findByEmail(string $email): ?array { ... }
 
 **Use `MitigationStatus::InProgress`** for controls not yet fully deployed, and `MitigationStatus::Accepted` for accepted risks.
 
+Pass `--source=` to `hybridtm analyze` so `component.hasMitigationFor('CWE-…')` in KB `unless` clauses can suppress findings when a matching `#[Mitigation]` with status `Mitigated` is found on that asset.
+
+### `#[AbuserStory(string $id)]` — Class or method level (repeatable)
+
+Links code to an Abuser Story (`AbuseCase`) declared in the threat model. Place it on the same method/class as the `#[Mitigation]` that covers the story's required CWEs so story coverage can verify acceptance criteria.
+
+```php
+use HybridTM\Attributes\AbuserStory;
+use HybridTM\Attributes\Mitigation;
+
+#[AbuserStory('brute-force-login')]
+#[Mitigation(cwe: 'CWE-307', description: 'Account lockout after N failures')]
+public function authenticate(...): ?string { ... }
+```
+
 ### `#[ProcessesData(array $dataAssets)]` — Class or method level (repeatable)
 
 Declares that a component processes specific data assets.
@@ -124,6 +139,7 @@ class UserController { ... }
 | Method that hashes passwords                  | `#[Mitigation]` with CWE-916 (insufficient hash)                        |
 | Method with input validation                  | `#[Mitigation]` with CWE-20 (improper input validation)                 |
 | Method with rate limiting                     | `#[Mitigation]` with CWE-307 (brute force) or CWE-400 (resource exhaustion) |
+| Method that mitigates an Abuser Story         | `#[AbuserStory('story-id')]` next to the `#[Mitigation]`                    |
 | Method that handles file uploads              | `#[Mitigation]` with CWE-434 (unrestricted upload)                      |
 | Method that makes HTTP calls to external APIs | `#[DataFlow]` to the external entity                                     |
 | Method that publishes to a message queue      | `#[DataFlow]` to the queue asset                                         |

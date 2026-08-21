@@ -94,8 +94,36 @@ export interface CanonicalModel {
   sharedRuntimes?: unknown[]
   riskTracking?: unknown[]
   questions?: unknown[]
-  abuseCases?: unknown[]
+  abuseCases?: CanonicalAbuserStory[]
   securityRequirements?: unknown[]
+}
+
+export type AbuserStoryStatus = 'open' | 'in-progress' | 'mitigated' | 'accepted'
+
+export interface CanonicalAbuserStory {
+  title: string
+  text: string
+  asA?: string
+  iWant?: string
+  soThat?: string
+  actorId?: string | null
+  assetIds?: string[]
+  dataFlowIds?: string[]
+  dataAssetIds?: string[]
+  threatIds?: string[]
+  requiredCwes?: string[]
+  status?: AbuserStoryStatus
+}
+
+export type StoryCoverageStatus = 'covered' | 'partial' | 'uncovered' | 'accepted'
+
+export interface StoryCoverage {
+  storyId: string
+  status: StoryCoverageStatus
+  requiredCwes: string[]
+  coveredCwes: string[]
+  missingCwes: string[]
+  issues: string[]
 }
 
 // ---- KB bundle (GET /kb/bundle) ----
@@ -209,4 +237,5 @@ export interface AnalysisResult {
   findings: Finding[]
   validation: { issues: unknown[]; hasErrors: boolean; counts: Record<string, number> }
   summary: Record<string, number>
+  storyCoverage?: StoryCoverage[]
 }

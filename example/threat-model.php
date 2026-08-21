@@ -20,6 +20,7 @@ declare(strict_types=1);
 
 require_once __DIR__ . '/../vendor/autoload.php';
 
+use HybridTM\DSL\AbuseCase;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
@@ -231,11 +232,26 @@ $messageQueue->owner            = 'Platform Team';
 $messageQueue->dataAssetsStored = ['order-data', 'notification-payload'];
 $model->addTechnicalAsset($messageQueue);
 
+// -- Threat actors --
+
+$externalAttacker = new TechnicalAsset('external-attacker', 'External Anonymous Attacker');
+$externalAttacker->type = AssetType::ExternalEntity;
+$externalAttacker->technology = Technology::Browser;
+$externalAttacker->internet = true;
+$externalAttacker->traits = ['threat_actor'];
+$model->addTechnicalAsset($externalAttacker);
+
+$maliciousInsider = new TechnicalAsset('malicious-insider', 'Malicious Insider');
+$maliciousInsider->type = AssetType::ExternalEntity;
+$maliciousInsider->technology = Technology::ClientSystem;
+$maliciousInsider->traits = ['threat_actor'];
+$model->addTechnicalAsset($maliciousInsider);
+
 // ── Trust Boundaries ──────────────────────────────────────────────────────────
 
 $internet = new TrustBoundary('internet', 'Public Internet', TrustBoundaryType::NetworkDedicatedHoster);
 $internet->description = 'Untrusted external zone: end users and third-party payment providers';
-$internet->addAssets('browser', 'payment-provider');
+$internet->addAssets('browser', 'payment-provider', 'external-attacker');
 $model->addTrustBoundary($internet);
 
 $dmz = new TrustBoundary('dmz', 'DMZ (Load Balancer + WAF)', TrustBoundaryType::NetworkCloudSecurityGroup);
@@ -252,6 +268,28 @@ $dataLayer = new TrustBoundary('data-layer', 'Data Layer', TrustBoundaryType::Ne
 $dataLayer->description = 'Isolated data tier; accessible only from internal-vpc security group';
 $dataLayer->addAssets('main-db', 'redis-cache', 'message-queue');
 $model->addTrustBoundary($dataLayer);
+
+// ── Abuser Stories ────────────────────────────────────────────────────────────
+
+$bruteForce = new AbuseCase('brute-force-login', 'Guess passwords at the login endpoint');
+$bruteForce->asA = 'anonymous attacker';
+$bruteForce->iWant = 'brute-force user credentials';
+$bruteForce->soThat = 'take over customer accounts';
+$bruteForce->actorId = 'external-attacker';
+$bruteForce->assetIds = ['auth-service', 'web-app'];
+$bruteForce->dataAssetIds = ['user-credentials'];
+$bruteForce->requiredCwes = ['CWE-307'];
+$model->addAbuseCase($bruteForce);
+
+$insiderExfil = new AbuseCase('insider-pii-exfil', 'Exfiltrate customer PII from the primary database');
+$insiderExfil->asA = 'malicious insider with DB access';
+$insiderExfil->iWant = 'export customer PII';
+$insiderExfil->soThat = 'sell or leak personal data';
+$insiderExfil->actorId = 'malicious-insider';
+$insiderExfil->assetIds = ['main-db'];
+$insiderExfil->dataAssetIds = ['customer-pii'];
+$insiderExfil->requiredCwes = ['CWE-311'];
+$model->addAbuseCase($insiderExfil);
 
 return $model;
 

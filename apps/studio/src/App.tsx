@@ -26,6 +26,7 @@ import { FlowCanvas } from './canvas/FlowCanvas'
 import { ComponentPalette } from './palette/ComponentPalette'
 import { Inspector } from './inspector/Inspector'
 import { FindingsPanel } from './findings/FindingsPanel'
+import { StoriesPanel } from './stories/StoriesPanel'
 import { LoginScreen } from './auth/LoginScreen'
 import { Toolbar } from './toolbar/Toolbar'
 import { CommandPalette } from './command/CommandPalette'
@@ -40,6 +41,7 @@ const EMPTY_CANONICAL_MODEL: CanonicalModel = {
   components: [],
   trustBoundaries: [],
   dataFlows: [],
+  abuseCases: [],
 }
 
 function useUndoRedoHotkeys() {
@@ -213,8 +215,10 @@ function Studio() {
       void queryClient.invalidateQueries({ queryKey: ['model-versions'] })
       return analyze(modelVersion.id)
     },
-    onSuccess: (result) => applyFindings(result.findings),
+    onSuccess: (result) => applyFindings(result.findings, result.storyCoverage ?? []),
   })
+
+  const [rightTab, setRightTab] = useState<'findings' | 'stories'>('findings')
 
   const createProjectMutation = useMutation({
     mutationFn: (vars: { slug: string; title: string }) => createProject(vars.slug, vars.title),
@@ -309,15 +313,49 @@ function Studio() {
           <div style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }} className="min-h-0 overflow-hidden">
             <Inspector kb={kb} />
           </div>
-          <div className="min-h-0 overflow-hidden">
-            <FindingsPanel
-              kb={kb}
-              onRunAnalysis={() => runAnalysis.mutate()}
-              isAnalyzing={runAnalysis.isPending}
-              analysisError={
-                runAnalysis.isError ? (runAnalysis.error instanceof Error ? runAnalysis.error.message : String(runAnalysis.error)) : null
-              }
-            />
+          <div className="min-h-0 overflow-hidden flex flex-col">
+            <div className="flex shrink-0" style={{ borderBottom: '1px solid var(--border)', borderLeft: '1px solid var(--border)' }}>
+              <button
+                type="button"
+                className="flex-1 text-xs py-2 font-medium"
+                style={{
+                  color: rightTab === 'findings' ? 'var(--accent)' : 'var(--text-secondary)',
+                  borderBottom: rightTab === 'findings' ? '2px solid var(--accent)' : '2px solid transparent',
+                }}
+                onClick={() => setRightTab('findings')}
+              >
+                Findings
+              </button>
+              <button
+                type="button"
+                className="flex-1 text-xs py-2 font-medium"
+                style={{
+                  color: rightTab === 'stories' ? 'var(--accent)' : 'var(--text-secondary)',
+                  borderBottom: rightTab === 'stories' ? '2px solid var(--accent)' : '2px solid transparent',
+                }}
+                onClick={() => setRightTab('stories')}
+              >
+                Stories
+              </button>
+            </div>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              {rightTab === 'findings' ? (
+                <FindingsPanel
+                  kb={kb}
+                  onRunAnalysis={() => runAnalysis.mutate()}
+                  isAnalyzing={runAnalysis.isPending}
+                  analysisError={
+                    runAnalysis.isError
+                      ? runAnalysis.error instanceof Error
+                        ? runAnalysis.error.message
+                        : String(runAnalysis.error)
+                      : null
+                  }
+                />
+              ) : (
+                <StoriesPanel kb={kb} />
+              )}
+            </div>
           </div>
         </div>
       )}

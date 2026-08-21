@@ -104,6 +104,25 @@ Records a security control or accepted risk.
 public function login(...) { ... }
 ```
 
+Pass `--source=` to `analyze` so `component.hasMitigationFor('CWE-…')` uses these discoveries.
+
+---
+
+### `#[AbuserStory(...)]`
+
+**Target:** class, method, or function (repeatable)  
+Links the annotated code to an Abuser Story id (`AbuseCase` in the DSL / `abuseCases` in canonical JSON). Place next to `#[Mitigation]` so story coverage can prove required CWEs are mitigated for that story.
+
+| Parameter | Type     | Default      | Description        |
+|-----------|----------|--------------|--------------------|
+| `id`      | `string` | _(required)_ | AbuseCase / story id |
+
+```php
+#[AbuserStory('brute-force-login')]
+#[Mitigation(cwe: 'CWE-307', description: 'Account lockout')]
+public function authenticate(...): ?string { ... }
+```
+
 ---
 
 ### `#[ProcessesData(array $dataAssets)]`
@@ -388,7 +407,10 @@ php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=tabl
 php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=json
 php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=sarif > results.sarif
 php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --fail-on=critical  # exit 1 if any Critical finding
+php bin/hybridtm analyze --infra=threat-model.php --source=src/ --kb=apps/api/kb --fail-on-uncovered-stories
 ```
+
+`--source` scans for `#[Mitigation]` / `#[AbuserStory]` so `hasMitigationFor` and Abuser Story coverage work. `--fail-on-uncovered-stories` exits non-zero when any story is `uncovered` or `partial`. `AnalysisResult::$storyCoverage` lists per-story status.
 
 `--kb` is repeatable; later paths override earlier ones (KB layering:
 `kb-core` → `kb-aws` → an org's own overrides). Omit it entirely to

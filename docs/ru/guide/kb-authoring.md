@@ -101,7 +101,9 @@ spec:
 `ComponentSubject` — `id`, `name`, `encryption`, `internet`,
 `redundant`, `multiTenant`, `customDevelopedParts`, `outOfScope`,
 `props`, `hasTrait(...)`, `hasAllTraits(...)`,
-`storesConfidentialityAtLeast(...)`, `hasMitigationFor(...)`. Правила
+`storesConfidentialityAtLeast(...)`, `hasMitigationFor(...)` (true, когда
+`hybridtm analyze --source=…` нашёл `#[Mitigation]` со статусом `Mitigated`
+для этого CWE на активе). Правила
 уровня flow дополнительно получают `flow` с `source`/`target` (каждый
 — `ComponentSubject`), `protocol` (`.value`, `.isEncrypted()`), `vpn`,
 `ipFiltered`, `readonly`, `crossesTrustBoundary()`,

@@ -41,14 +41,15 @@ $model = new ThreatModel('My App');
 $web   = new TechnicalAsset('web-app', 'Web Application');
 $pii   = new DataAsset('customer-pii', 'Customer PII');
 $dmz   = new TrustBoundary('dmz', 'DMZ', TrustBoundaryType::NetworkCloudSecurityGroup);
+$story = new AbuseCase('brute-force-login', 'Guess passwords at login');
 ```
 
 Recognized: `new ThreatModel(...)`, `new TechnicalAsset(...)`, `new DataAsset(...)`,
-`new TrustBoundary(...)`, assigned to a plain variable (`$foo = new ...`). Constructor arguments
+`new TrustBoundary(...)`, `new AbuseCase(...)`, assigned to a plain variable (`$foo = new ...`). Constructor arguments
 must themselves be recognizable values (§3) — most commonly string literals for `id`/`name`, and
 for `TrustBoundary`'s third argument, a `TrustBoundaryType::Case` enum reference.
 
-**Not recognized** — constructing any other class, or constructing one of the four above with a
+**Not recognized** — constructing any other class, or constructing one of the above with a
 computed class name:
 
 ```php
@@ -137,6 +138,7 @@ Recognized with any number of string-literal arguments.
 $model->addTechnicalAsset($web);
 $model->addDataAsset($pii);
 $model->addTrustBoundary($dmz);
+$model->addAbuseCase($story);
 ```
 
 Recognized when the argument is a plain variable referring to something already tracked (built by
@@ -146,6 +148,9 @@ nothing captures a name for the reader to track it under:
 ```php
 $model->addTechnicalAsset(new TechnicalAsset('web-app'));   // construct it in its own statement first
 ```
+
+`AbuseCase` scalar properties (`asA`, `iWant`, `soThat`, `actorId`, array fields, `status` via
+`AbuseCaseStatus::…`) are assigned like any other entity property (§2).
 
 ### 7. The file's shell
 
@@ -168,10 +173,9 @@ Not "not yet recognized" — genuinely a different, separately-scoped concern:
   **`TechnologyList`** (`$web->technologies->add(Technology::ReverseProxy)`) — both are method
   calls on a nested object, one level beyond what's recognized. Round-tripping these needs its own
   grammar extension, not a stretch of the current one.
-- **Every T-1.1 governance entity** — `Question`, `AbuseCase`, `SecurityRequirement`,
-  `SharedRuntime`, `IndividualRiskCategory`, `RiskTracking`. `PhpDslWriter` doesn't emit them for
-  exactly this reason: emitting a construct the reader can't parse back would make the round trip
-  fail silently instead of loudly.
+- **Every remaining T-1.1 governance entity** — `Question`, `SecurityRequirement`,
+  `SharedRuntime`, `IndividualRiskCategory`, `RiskTracking`. (`AbuseCase` / Abuser Stories
+  *are* in the recognizable subset and round-trip via `PhpDslWriter` / `PhpDslReader`.)
 
 ## What happens when a file isn't fully recognized
 

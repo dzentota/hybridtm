@@ -98,7 +98,9 @@ exposes only `ComponentSubject`'s public surface — `id`, `name`,
 `encryption`, `internet`, `redundant`, `multiTenant`,
 `customDevelopedParts`, `outOfScope`, `props`, `hasTrait(...)`,
 `hasAllTraits(...)`, `storesConfidentialityAtLeast(...)`,
-`hasMitigationFor(...)`. Flow-scope rules additionally get `flow`
+`hasMitigationFor(...)` — true when `hybridtm analyze --source=…` found a
+`#[Mitigation]` with status `Mitigated` for that CWE on the asset.
+Flow-scope rules additionally get `flow`
 exposing `source`/`target` (each a `ComponentSubject`), `protocol`
 (`.value`, `.isEncrypted()`), `vpn`, `ipFiltered`, `readonly`,
 `crossesTrustBoundary()`, `carriesDataAtLeast(...)`. Nothing else is

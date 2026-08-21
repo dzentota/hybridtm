@@ -1,0 +1,955 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hybridtm.dev/schema/canonical-model.v1.json",
+  "title": "HybridTM Canonical Threat Model",
+  "description": "Canonical JSON representation of a HybridTM threat model. This is the contract between the Studio frontend, the API and the core library, and the storage format for model versions. Enum values are kept identical to the PHP enums in HybridTM\\Enums (verified by tests/Schema/SchemaEnumConsistencyTest.php) and to the Threagile 1.x vocabulary.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "model",
+    "components"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "Bumped only on breaking changes; migrations live in ModelJsonCodec."
+    },
+    "kbVersion": {
+      "type": "string",
+      "description": "Knowledge-base versions used, e.g. 'kb-core@1.4.0+kb-aws@1.1.0'. Pins findings to a reproducible KB.",
+      "examples": [
+        "kb-core@1.4.0"
+      ]
+    },
+    "model": {
+      "$ref": "#/$defs/modelMeta"
+    },
+    "dataAssets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dataAsset"
+      },
+      "default": []
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/component"
+      }
+    },
+    "trustBoundaries": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/trustBoundary"
+      },
+      "default": []
+    },
+    "dataFlows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/dataFlow"
+      },
+      "default": []
+    },
+    "sharedRuntimes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/sharedRuntime"
+      },
+      "default": []
+    },
+    "riskTracking": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/riskDecision"
+      },
+      "default": []
+    },
+    "questions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/question"
+      },
+      "default": []
+    },
+    "abuseCases": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/abuserStory"
+      },
+      "default": []
+    },
+    "securityRequirements": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/titledText"
+      },
+      "default": []
+    }
+  },
+  "$defs": {
+    "slug": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9-]{0,62}$",
+      "minLength": 2,
+      "maxLength": 63,
+      "description": "Stable identifier. Immutable once created (ADR-11): risk decisions and #[DataFlow] targets reference it."
+    },
+    "propertyBag": {
+      "type": "object",
+      "description": "Component properties declared by the KB property schema. Not emitted into Threagile YAML.",
+      "additionalProperties": {
+        "type": [
+          "string",
+          "number",
+          "boolean",
+          "null",
+          "array"
+        ]
+      },
+      "default": {}
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true,
+      "default": []
+    },
+    "modelMeta": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "author": {
+          "type": "string",
+          "default": ""
+        },
+        "date": {
+          "type": "string",
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "businessCriticality": {
+          "enum": [
+            "archive",
+            "operational",
+            "important",
+            "critical",
+            "mission-critical"
+          ],
+          "default": "important"
+        },
+        "managementSummaryComment": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "dataAsset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "usage": {
+          "enum": [
+            "business",
+            "devops"
+          ],
+          "default": "business"
+        },
+        "origin": {
+          "enum": [
+            "unknown",
+            "file-import",
+            "ui-input",
+            "device-access",
+            "service-call",
+            "transferred-from-partner",
+            "in-house"
+          ],
+          "default": "unknown"
+        },
+        "owner": {
+          "type": "string",
+          "default": ""
+        },
+        "quantity": {
+          "enum": [
+            "very-few",
+            "few",
+            "many",
+            "very-many"
+          ],
+          "default": "many"
+        },
+        "confidentiality": {
+          "enum": [
+            "public",
+            "internal",
+            "restricted",
+            "confidential",
+            "strictly-confidential"
+          ],
+          "default": "internal"
+        },
+        "integrity": {
+          "enum": [
+            "archive",
+            "operational",
+            "important",
+            "critical",
+            "mission-critical"
+          ],
+          "default": "operational"
+        },
+        "availability": {
+          "enum": [
+            "archive",
+            "operational",
+            "important",
+            "critical",
+            "mission-critical"
+          ],
+          "default": "operational"
+        },
+        "justificationCiaRating": {
+          "type": "string",
+          "default": ""
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      }
+    },
+    "component": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "description": "A node on the canvas. `kbComponent` links it to the knowledge base; without it the component still analyses, just with fewer rules.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "kbComponent": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9/-]{1,80}$",
+          "description": "Knowledge-base component id, e.g. 'web-server-nginx'.",
+          "examples": [
+            "web-server-nginx",
+            "db-postgresql",
+            "abstract/reverse-proxy"
+          ]
+        },
+        "kbVersion": {
+          "type": "string",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "kbConfidence": {
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "default": "high",
+          "description": "How the KB component was determined when importing hand-written DSL (marker / tag / heuristic / fallback)."
+        },
+        "properties": {
+          "$ref": "#/$defs/propertyBag"
+        },
+        "overrides": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Manual overrides of values the KB expansion would otherwise set.",
+          "properties": {
+            "type": {
+              "enum": [
+                "external-entity",
+                "process",
+                "datastore"
+              ]
+            },
+            "technology": {
+              "enum": [
+                "unknown-technology",
+                "client-system",
+                "browser",
+                "desktop",
+                "mobile-app",
+                "devops-client",
+                "web-server",
+                "web-application",
+                "application-server",
+                "web-service-rest",
+                "web-service-soap",
+                "database",
+                "file-server",
+                "local-file-system",
+                "erp",
+                "cms",
+                "search-index",
+                "search-engine",
+                "service-registry",
+                "reverse-proxy",
+                "load-balancer",
+                "waf",
+                "ids",
+                "ips",
+                "build-pipeline",
+                "sourcecode-repository",
+                "artifact-registry",
+                "code-inspection-platform",
+                "monitoring",
+                "ldap-server",
+                "identity-provider",
+                "identity-store-ldap",
+                "identity-store-database",
+                "container-platform",
+                "batch-processing",
+                "event-listener",
+                "message-queue",
+                "stream-processing",
+                "service-mesh",
+                "data-lake",
+                "report-engine",
+                "ai",
+                "mail-server",
+                "vault",
+                "hsm",
+                "scheduler",
+                "mainframe",
+                "block-storage",
+                "gateway",
+                "iot-device",
+                "function",
+                "tool",
+                "cli",
+                "library",
+                "task",
+                "ejb",
+                "big-data-platform"
+              ]
+            },
+            "technologies": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "uniqueItems": true
+            },
+            "machine": {
+              "enum": [
+                "physical",
+                "virtual",
+                "container",
+                "serverless"
+              ]
+            },
+            "size": {
+              "enum": [
+                "system",
+                "service",
+                "application",
+                "component"
+              ]
+            },
+            "encryption": {
+              "enum": [
+                "none",
+                "transparent",
+                "data-with-symmetric-shared-key",
+                "data-with-asymmetric-shared-key",
+                "data-with-enduser-individual-key"
+              ]
+            },
+            "confidentiality": {
+              "enum": [
+                "public",
+                "internal",
+                "restricted",
+                "confidential",
+                "strictly-confidential"
+              ]
+            },
+            "integrity": {
+              "enum": [
+                "archive",
+                "operational",
+                "important",
+                "critical",
+                "mission-critical"
+              ]
+            },
+            "availability": {
+              "enum": [
+                "archive",
+                "operational",
+                "important",
+                "critical",
+                "mission-critical"
+              ]
+            },
+            "usage": {
+              "enum": [
+                "business",
+                "devops"
+              ]
+            },
+            "internet": {
+              "type": "boolean"
+            },
+            "multiTenant": {
+              "type": "boolean"
+            },
+            "redundant": {
+              "type": "boolean"
+            },
+            "customDevelopedParts": {
+              "type": "boolean"
+            },
+            "usedAsClientByHuman": {
+              "type": "boolean"
+            },
+            "outOfScope": {
+              "type": "boolean"
+            },
+            "justificationOutOfScope": {
+              "type": "string"
+            },
+            "justificationCiaRating": {
+              "type": "string"
+            },
+            "owner": {
+              "type": "string"
+            }
+          }
+        },
+        "traits": {
+          "type": "array",
+          "description": "Declared or derived trait names the rule engine matches on (ADR-04). Added post-hoc (T-4.1) — the DSL's traits[] (T-1.3) postdates this schema's initial authoring.",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataAssetsProcessed": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataAssetsStored": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataFormatsAccepted": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        },
+        "codeRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "Link to the #[AssetId] used in application source.",
+          "properties": {
+            "assetId": {
+              "$ref": "#/$defs/slug"
+            }
+          },
+          "required": [
+            "assetId"
+          ]
+        }
+      }
+    },
+    "trustBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name",
+        "type"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "type": {
+          "enum": [
+            "internet",
+            "network-on-prem",
+            "network-dedicated-hoster",
+            "network-virtual-lan",
+            "network-cloud-provider",
+            "network-cloud-security-group",
+            "network-policy-namespace-isolation",
+            "execution-environment"
+          ]
+        },
+        "contains": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "nested": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      }
+    },
+    "dataFlow": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "sourceId",
+        "targetId"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "sourceId": {
+          "$ref": "#/$defs/slug"
+        },
+        "targetId": {
+          "$ref": "#/$defs/slug"
+        },
+        "sourcePort": {
+          "type": "string",
+          "description": "Outbound port id declared by the source component in the KB."
+        },
+        "targetPort": {
+          "type": "string",
+          "description": "Inbound port id declared by the target component in the KB."
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "protocol": {
+          "enum": [
+            "unknown-protocol",
+            "http",
+            "https",
+            "ws",
+            "wss",
+            "reverse-proxy-web-protocol",
+            "reverse-proxy-web-protocol-encrypted",
+            "mqtt",
+            "jdbc",
+            "jdbc-encrypted",
+            "odbc",
+            "odbc-encrypted",
+            "sql-access-protocol",
+            "sql-access-protocol-encrypted",
+            "nosql-access-protocol",
+            "nosql-access-protocol-encrypted",
+            "binary",
+            "binary-encrypted",
+            "text",
+            "text-encrypted",
+            "ssh",
+            "ssh-tunnel",
+            "smtp",
+            "smtp-encrypted",
+            "pop3",
+            "pop3-encrypted",
+            "imap",
+            "imap-encrypted",
+            "ftp",
+            "ftps",
+            "sftp",
+            "scp",
+            "ldap",
+            "ldaps",
+            "jms",
+            "nfs",
+            "smb",
+            "smb-encrypted",
+            "local-file-access",
+            "nrpe",
+            "xmpp",
+            "iiop",
+            "iiop-encrypted",
+            "jrmp",
+            "jrmp-encrypted",
+            "in-process-library-call",
+            "container-spawning"
+          ],
+          "default": "https"
+        },
+        "authentication": {
+          "enum": [
+            "none",
+            "credentials",
+            "session-id",
+            "token",
+            "client-certificate",
+            "two-factor",
+            "externalized-via-gateway"
+          ],
+          "default": "none"
+        },
+        "authorization": {
+          "enum": [
+            "none",
+            "technical-user",
+            "enduser-identity-propagation"
+          ],
+          "default": "none"
+        },
+        "usage": {
+          "enum": [
+            "business",
+            "devops"
+          ],
+          "default": "business"
+        },
+        "vpn": {
+          "type": "boolean",
+          "default": false
+        },
+        "ipFiltered": {
+          "type": "boolean",
+          "default": false
+        },
+        "readonly": {
+          "type": "boolean",
+          "default": false
+        },
+        "dataSent": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataReceived": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "properties": {
+          "$ref": "#/$defs/propertyBag"
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      }
+    },
+    "sharedRuntime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "name"
+      ],
+      "description": "Assets sharing one runtime. Required by the mixed-targets-on-shared-runtime rule.",
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "description": {
+          "type": "string",
+          "default": ""
+        },
+        "runsOn": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "tags": {
+          "$ref": "#/$defs/tags"
+        }
+      }
+    },
+    "riskDecision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "findingStableId",
+        "status",
+        "justification"
+      ],
+      "description": "A decision taken on a finding. Serialised back into threat-model.php so git stays the source of truth.",
+      "properties": {
+        "findingStableId": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{32}$"
+        },
+        "status": {
+          "enum": [
+            "open",
+            "accepted",
+            "mitigated",
+            "false-positive",
+            "deferred"
+          ]
+        },
+        "justification": {
+          "type": "string",
+          "minLength": 20,
+          "description": "Required. A decision without a reason is not a decision."
+        },
+        "ticket": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "default": null
+        },
+        "expiresAt": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "format": "date",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+        },
+        "decidedBy": {
+          "type": "string"
+        },
+        "decidedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "accepted",
+                  "deferred"
+                ]
+              }
+            },
+            "required": [
+              "status"
+            ]
+          },
+          "then": {
+            "required": [
+              "expiresAt"
+            ],
+            "properties": {
+              "expiresAt": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "question": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "text"
+      ],
+      "properties": {
+        "id": {
+          "$ref": "#/$defs/slug"
+        },
+        "text": {
+          "type": "string",
+          "minLength": 1
+        },
+        "answer": {
+          "type": "string",
+          "default": ""
+        }
+      }
+    },
+    "titledText": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "text"
+      ],
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "text": {
+          "type": "string"
+        }
+      }
+    },
+    "abuserStory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "text"
+      ],
+      "description": "Abuser / misuser story (Threagile abuse_cases). title is the stable id (slug); text is free-form description. Optional agile narrative and architecture/threat links.",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/slug"
+        },
+        "text": {
+          "type": "string",
+          "default": ""
+        },
+        "asA": {
+          "type": "string",
+          "default": "",
+          "description": "Actor role in the story (As a …)"
+        },
+        "iWant": {
+          "type": "string",
+          "default": "",
+          "description": "Malicious goal (I want to …)"
+        },
+        "soThat": {
+          "type": "string",
+          "default": "",
+          "description": "Impact (so that …)"
+        },
+        "actorId": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "TechnicalAsset id with threat_actor trait"
+        },
+        "assetIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataFlowIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataAssetIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "threatIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "KB threat IDs (THREAT-*)"
+        },
+        "requiredCwes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^CWE-[0-9]+$"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "status": {
+          "enum": [
+            "open",
+            "in-progress",
+            "mitigated",
+            "accepted"
+          ],
+          "default": "open"
+        }
+      }
+    }
+  }
+}

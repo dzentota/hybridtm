@@ -15,6 +15,7 @@ use HybridTM\DSL\SharedRuntime;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AbuseCaseStatus;
 use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
@@ -83,10 +84,7 @@ final class ModelJsonCodec
             'sharedRuntimes' => array_values(array_map($this->encodeSharedRuntime(...), $model->getSharedRuntimes())),
             'riskTracking' => array_values(array_map($this->encodeRiskTracking(...), $model->getRiskTracking())),
             'questions' => array_values(array_map($this->encodeQuestion(...), $model->getQuestions())),
-            'abuseCases' => array_values(array_map(
-                static fn (AbuseCase $c): array => ['title' => $c->id, 'text' => $c->description],
-                $model->getAbuseCases(),
-            )),
+            'abuseCases' => array_values(array_map($this->encodeAbuseCase(...), $model->getAbuseCases())),
             'securityRequirements' => array_values(array_map(
                 static fn (SecurityRequirement $r): array => ['title' => $r->id, 'text' => $r->description],
                 $model->getSecurityRequirements(),
@@ -136,8 +134,7 @@ final class ModelJsonCodec
             $model->addQuestion(new Question((string) $raw['id'], (string) $raw['text'], $answer !== '' ? $answer : null));
         }
         foreach ((array) ($data['abuseCases'] ?? []) as $raw) {
-            $raw = (array) $raw;
-            $model->addAbuseCase(new AbuseCase((string) $raw['title'], (string) ($raw['text'] ?? '')));
+            $model->addAbuseCase($this->decodeAbuseCase((array) $raw));
         }
         foreach ((array) ($data['securityRequirements'] ?? []) as $raw) {
             $raw = (array) $raw;
@@ -145,6 +142,44 @@ final class ModelJsonCodec
         }
 
         return $model;
+    }
+
+    /** @return array<string, mixed> */
+    private function encodeAbuseCase(AbuseCase $case): array
+    {
+        return array_filter([
+            'title' => $case->id,
+            'text' => $case->description,
+            'asA' => $case->asA,
+            'iWant' => $case->iWant,
+            'soThat' => $case->soThat,
+            'actorId' => $case->actorId,
+            'assetIds' => $case->assetIds,
+            'dataFlowIds' => $case->dataFlowIds,
+            'dataAssetIds' => $case->dataAssetIds,
+            'threatIds' => $case->threatIds,
+            'requiredCwes' => $case->requiredCwes,
+            'status' => $case->status->value,
+        ], static fn ($v): bool => $v !== null && $v !== '' && $v !== []);
+    }
+
+    /** @param array<string, mixed> $raw */
+    private function decodeAbuseCase(array $raw): AbuseCase
+    {
+        $case = new AbuseCase((string) $raw['title'], (string) ($raw['text'] ?? ''));
+        $case->asA = (string) ($raw['asA'] ?? '');
+        $case->iWant = (string) ($raw['iWant'] ?? '');
+        $case->soThat = (string) ($raw['soThat'] ?? '');
+        $actorId = $raw['actorId'] ?? null;
+        $case->actorId = ($actorId !== null && $actorId !== '') ? (string) $actorId : null;
+        $case->assetIds = array_values(array_map(static fn ($v): string => (string) $v, (array) ($raw['assetIds'] ?? [])));
+        $case->dataFlowIds = array_values(array_map(static fn ($v): string => (string) $v, (array) ($raw['dataFlowIds'] ?? [])));
+        $case->dataAssetIds = array_values(array_map(static fn ($v): string => (string) $v, (array) ($raw['dataAssetIds'] ?? [])));
+        $case->threatIds = array_values(array_map(static fn ($v): string => (string) $v, (array) ($raw['threatIds'] ?? [])));
+        $case->requiredCwes = array_values(array_map(static fn ($v): string => (string) $v, (array) ($raw['requiredCwes'] ?? [])));
+        $case->status = AbuseCaseStatus::tryFrom((string) ($raw['status'] ?? '')) ?? AbuseCaseStatus::Open;
+
+        return $case;
     }
 
     /** @return array<string, mixed> */

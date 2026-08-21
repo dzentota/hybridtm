@@ -76,7 +76,7 @@
     "abuseCases": {
       "type": "array",
       "items": {
-        "$ref": "#/$defs/titledText"
+        "$ref": "#/$defs/abuserStory"
       },
       "default": []
     },
@@ -859,6 +859,95 @@
         },
         "text": {
           "type": "string"
+        }
+      }
+    },
+    "abuserStory": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "title",
+        "text"
+      ],
+      "description": "Abuser / misuser story (Threagile abuse_cases). title is the stable id (slug); text is free-form description. Optional agile narrative and architecture/threat links.",
+      "properties": {
+        "title": {
+          "$ref": "#/$defs/slug"
+        },
+        "text": {
+          "type": "string",
+          "default": ""
+        },
+        "asA": {
+          "type": "string",
+          "default": "",
+          "description": "Actor role in the story (As a …)"
+        },
+        "iWant": {
+          "type": "string",
+          "default": "",
+          "description": "Malicious goal (I want to …)"
+        },
+        "soThat": {
+          "type": "string",
+          "default": "",
+          "description": "Impact (so that …)"
+        },
+        "actorId": {
+          "type": ["string", "null"],
+          "default": null,
+          "description": "TechnicalAsset id with threat_actor trait"
+        },
+        "assetIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataFlowIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "dataAssetIds": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/slug"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "threatIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true,
+          "default": [],
+          "description": "KB threat IDs (THREAT-*)"
+        },
+        "requiredCwes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^CWE-[0-9]+$"
+          },
+          "uniqueItems": true,
+          "default": []
+        },
+        "status": {
+          "enum": [
+            "open",
+            "in-progress",
+            "mitigated",
+            "accepted"
+          ],
+          "default": "open"
         }
       }
     }

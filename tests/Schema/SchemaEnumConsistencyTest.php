@@ -37,6 +37,7 @@ final class SchemaEnumConsistencyTest extends TestCase
             'dataFlow.properties.authentication' => \HybridTM\Enums\Authentication::class,
             'dataFlow.properties.authorization' => \HybridTM\Enums\Authorization::class,
             'riskDecision.properties.status' => \HybridTM\Enums\DecisionStatus::class,
+            'abuserStory.properties.status' => \HybridTM\Enums\AbuseCaseStatus::class,
         ];
 
         foreach ($map as $path => $enum) {

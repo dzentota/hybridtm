@@ -20,7 +20,7 @@ export function FindingsPanel({
   analysisError: string | null
 }) {
   const { t } = useTranslation()
-  const { findings, select, focusSubjectId, setFocusSubject, nodes } = useModelStore()
+  const { findings, select, focusSubjectId, setFocusSubject, nodes, storyCoverage } = useModelStore()
   const [minSeverity, setMinSeverity] = useState<(typeof severityOrder)[number]>('low')
 
   const focusName = focusSubjectId ? nodes.find((n) => n.id === focusSubjectId)?.data.name : undefined
@@ -72,6 +72,13 @@ export function FindingsPanel({
             <button type="button" className="font-medium shrink-0" style={{ color: 'var(--accent)' }} onClick={() => setFocusSubject(null)}>
               Clear
             </button>
+          </div>
+        )}
+        {storyCoverage.some((c) => c.status === 'uncovered' || c.status === 'partial') && (
+          <div className="text-xs px-2 py-1 rounded" style={{ background: 'var(--surface-2)', color: 'var(--severity-critical)' }}>
+            {storyCoverage.filter((c) => c.status === 'uncovered' || c.status === 'partial').length} Abuser Stor
+            {storyCoverage.filter((c) => c.status === 'uncovered' || c.status === 'partial').length === 1 ? 'y' : 'ies'} still uncovered — check the
+            Stories tab.
           </div>
         )}
         <select

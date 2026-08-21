@@ -35,7 +35,7 @@ changed.
 
 | Capability | Plain `hybridtm` | Studio |
 |---|---|---|
-| Run analysis | `hybridtm analyze` | Same Rule Engine, via API or canvas |
+| Run analysis | `hybridtm analyze` (optional `--source`, `--fail-on-uncovered-stories`) | Same Rule Engine, via API or canvas; `storyCoverage` when abuse cases exist |
 | Compile to Threagile | `hybridtm compile` | Same codec, via `export/threagile` |
 | Persistence | You manage the file | `ModelVersion` history, optimistic locking |
 | Multi-user | — | Multi-tenancy, 5-role project RBAC |

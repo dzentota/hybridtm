@@ -11,14 +11,26 @@ talking to the Symfony API in `apps/api/`.
 - TanStack Query — server state (KB bundle, analysis runs)
 - Tailwind CSS 4 — design tokens and layout
 
-## Scope of this pass
+## What you get
 
-This is the core MVP loop, not the full 22-task E7 spec: canvas
-(component/boundary nodes, data-flow edges), component palette, property
-inspector, and the findings panel with rule-trace ("why did this fire?").
-Deliberately not yet built: undo/redo, i18n, full accessibility pass, ELK
-auto-layout, Monaco split-view, PNG/SVG export, command palette, overlay
-modes, diff view, template gallery.
+Core loop for architecture threat modeling plus **Abuser Stories**:
+
+- Canvas (component / boundary nodes, data-flow edges)
+- Component palette and property inspector
+- Findings panel with rule-trace ("why did this fire?")
+- **Stories** tab — CRUD Abuser Stories, link actors / assets / flows / KB
+  threats / CWEs, coverage badges from analyze `storyCoverage`, canvas
+  highlight for the selected story
+
+Also present in-tree (beyond the original MVP notes): undo/redo, i18n,
+ELK layout, PHP sync panel, command palette, overlays, diff, templates —
+see the app itself for the current surface area.
+
+Code-level story verification (`#[AbuserStory]` + `#[Mitigation]`) is
+enforced in CI via `hybridtm analyze --source=… --fail-on-uncovered-stories`.
+Studio shows coverage when the analyze API returns `storyCoverage`.
+
+Docs: [Abuser Stories guide](../../docs/en/guide/abuser-stories.md).
 
 ## Running
 

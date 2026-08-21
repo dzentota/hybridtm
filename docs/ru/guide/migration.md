@@ -37,7 +37,7 @@ curl -X POST http://127.0.0.1:8000/threat-model-projects/{id}/import/php \
 
 | Возможность | Чистый `hybridtm` | Studio |
 |---|---|---|
-| Запуск анализа | `hybridtm analyze` | Тот же Rule Engine, через API или холст |
+| Запуск анализа | `hybridtm analyze` (опционально `--source`, `--fail-on-uncovered-stories`) | Тот же Rule Engine, через API или холст; `storyCoverage` при наличии abuse cases |
 | Компиляция в Threagile | `hybridtm compile` | Тот же кодек, через `export/threagile` |
 | Персистентность | Управляете файлом сами | История `ModelVersion`, оптимистичная блокировка |
 | Многопользовательский режим | — | Мультитенантность, RBAC на уровне проекта (5 ролей) |

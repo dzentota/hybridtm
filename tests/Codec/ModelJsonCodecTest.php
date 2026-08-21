@@ -313,7 +313,7 @@ final class ModelJsonCodecTest extends TestCase
 
     public function testAbuseCaseIdDoublesAsTitle(): void
     {
-        // Documented lossy mapping: the canonical schema's abuseCases use
+        // Documented mapping: the canonical schema's abuseCases use
         // {title, text}, our AbuseCase uses {id, description} — id <-> title.
         $model = new ThreatModel('App');
         $model->addAbuseCase(new AbuseCase('steal-data', 'Attacker exfiltrates PII'));
@@ -323,6 +323,36 @@ final class ModelJsonCodecTest extends TestCase
             new AbuseCase('steal-data', 'Attacker exfiltrates PII'),
             $result->getAbuseCases()['steal-data'],
         );
+    }
+
+    public function testAbuseCaseRoundTripsStructuredFields(): void
+    {
+        $model = new ThreatModel('App');
+        $case = new AbuseCase('brute-force-login', 'Guess passwords at login');
+        $case->asA = 'anonymous attacker';
+        $case->iWant = 'brute-force credentials';
+        $case->soThat = 'take over accounts';
+        $case->actorId = 'external-attacker';
+        $case->assetIds = ['web-app'];
+        $case->dataFlowIds = ['browser-to-web-app'];
+        $case->dataAssetIds = ['credentials'];
+        $case->threatIds = ['THREAT-BRUTE-FORCE'];
+        $case->requiredCwes = ['CWE-307'];
+        $case->status = \HybridTM\Enums\AbuseCaseStatus::InProgress;
+        $model->addAbuseCase($case);
+
+        $result = $this->roundTrip($model);
+        $got = $result->getAbuseCases()['brute-force-login'];
+        self::assertSame('anonymous attacker', $got->asA);
+        self::assertSame('brute-force credentials', $got->iWant);
+        self::assertSame('take over accounts', $got->soThat);
+        self::assertSame('external-attacker', $got->actorId);
+        self::assertSame(['web-app'], $got->assetIds);
+        self::assertSame(['browser-to-web-app'], $got->dataFlowIds);
+        self::assertSame(['credentials'], $got->dataAssetIds);
+        self::assertSame(['THREAT-BRUTE-FORCE'], $got->threatIds);
+        self::assertSame(['CWE-307'], $got->requiredCwes);
+        self::assertSame(\HybridTM\Enums\AbuseCaseStatus::InProgress, $got->status);
     }
 
     public function testSecurityRequirementRoundTrips(): void

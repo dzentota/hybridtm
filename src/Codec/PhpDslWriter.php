@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace HybridTM\Codec;
 
+use HybridTM\DSL\AbuseCase;
 use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AbuseCaseStatus;
 
 /**
  * Generates a `threat-model.php` file from a `ThreatModel` (T-4.2),
@@ -24,16 +26,12 @@ use HybridTM\DSL\TrustBoundary;
  * read back by `PhpDslReader` reproduces the same bytes again
  * (`write(read(write(m))) === write(m)`, T-4.4).
  *
- * Only emits what ADR-08's "recognizable subset" defines, since that's
- * exactly what `PhpDslReader` can parse back: `ThreatModel`, `DataAsset`,
- * `TechnicalAsset`, `TrustBoundary`, scalar/enum property assignments,
- * literal-array property assignments, `->communicatesTo(...)`, and the
- * `add*()` calls. `PropertyBag` (`->properties`), the multi-value
- * `TechnologyList` (`->technologies`), and every T-1.1 governance entity
- * (`Question`, `AbuseCase`, `SecurityRequirement`, `SharedRuntime`,
- * `IndividualRiskCategory`, `RiskTracking`) are all outside that subset —
- * PHP-DSL round-tripping for those is a distinct, separately-scoped
- * follow-up, not a bug in this class.
+ * Only emits what ADR-08's "recognizable subset" defines, plus Abuser Stories
+ * (`AbuseCase`) so Studio↔PHP round-trips can carry story metadata. Still
+ * outside the PhpDslReader subset for other T-1.1 governance entities
+ * (`Question`, `SecurityRequirement`, `SharedRuntime`,
+ * `IndividualRiskCategory`, `RiskTracking`) — PHP-DSL round-tripping for
+ * those remains a separately-scoped follow-up.
  *
  * Pass `$comments` straight from a prior `DslReadResult::$comments` to
  * preserve a hand-written comment above an entity's construction line
@@ -56,6 +54,9 @@ final class PhpDslWriter
         $lines[] = '<?php';
         $lines[] = 'declare(strict_types=1);';
         $lines[] = '';
+        if ($model->getAbuseCases() !== []) {
+            $lines[] = 'use HybridTM\\DSL\\AbuseCase;';
+        }
         $lines[] = 'use HybridTM\\DSL\\DataAsset;';
         $lines[] = 'use HybridTM\\DSL\\TechnicalAsset;';
         $lines[] = 'use HybridTM\\DSL\\ThreatModel;';
@@ -94,6 +95,10 @@ final class PhpDslWriter
 
         foreach ($model->getTrustBoundaries() as $id => $boundary) {
             $lines = [...$lines, ...$this->writeTrustBoundary($boundary, $names->for($id)), ''];
+        }
+
+        foreach ($model->getAbuseCases() as $id => $case) {
+            $lines = [...$lines, ...$this->writeAbuseCase($case, $names->for($id)), ''];
         }
 
         $lines[] = 'return $model;';
@@ -269,6 +274,46 @@ final class PhpDslWriter
         return $lines;
     }
 
+    /** @return list<string> */
+    private function writeAbuseCase(AbuseCase $case, string $var): array
+    {
+        $lines = $this->commentLinesFor("AbuseCase:{$case->id}");
+        $lines[] = "\${$var} = new AbuseCase('{$case->id}', '" . $this->esc($case->description) . "');";
+        if ($case->asA !== '') {
+            $lines[] = "\${$var}->asA = '" . $this->esc($case->asA) . "';";
+        }
+        if ($case->iWant !== '') {
+            $lines[] = "\${$var}->iWant = '" . $this->esc($case->iWant) . "';";
+        }
+        if ($case->soThat !== '') {
+            $lines[] = "\${$var}->soThat = '" . $this->esc($case->soThat) . "';";
+        }
+        if ($case->actorId !== null && $case->actorId !== '') {
+            $lines[] = "\${$var}->actorId = '" . $this->esc($case->actorId) . "';";
+        }
+        if ($case->assetIds !== []) {
+            $lines[] = "\${$var}->assetIds = " . $this->literalArray(array_values($case->assetIds)) . ';';
+        }
+        if ($case->dataFlowIds !== []) {
+            $lines[] = "\${$var}->dataFlowIds = " . $this->literalArray(array_values($case->dataFlowIds)) . ';';
+        }
+        if ($case->dataAssetIds !== []) {
+            $lines[] = "\${$var}->dataAssetIds = " . $this->literalArray(array_values($case->dataAssetIds)) . ';';
+        }
+        if ($case->threatIds !== []) {
+            $lines[] = "\${$var}->threatIds = " . $this->literalArray(array_values($case->threatIds)) . ';';
+        }
+        if ($case->requiredCwes !== []) {
+            $lines[] = "\${$var}->requiredCwes = " . $this->literalArray(array_values($case->requiredCwes)) . ';';
+        }
+        if ($case->status !== AbuseCaseStatus::Open) {
+            $lines[] = "\${$var}->status = AbuseCaseStatus::{$case->status->name};";
+        }
+        $lines[] = "\$model->addAbuseCase(\${$var});";
+
+        return $lines;
+    }
+
     /** @param list<string> $items */
     private function literalArray(array $items): string
     {
@@ -312,6 +357,14 @@ final class PhpDslWriter
         }
         if ($model->getTrustBoundaries() !== []) {
             $enums[] = 'TrustBoundaryType';
+        }
+        if ($model->getAbuseCases() !== []) {
+            foreach ($model->getAbuseCases() as $case) {
+                if ($case->status !== AbuseCaseStatus::Open) {
+                    $enums[] = 'AbuseCaseStatus';
+                    break;
+                }
+            }
         }
 
         $enums = array_unique($enums);

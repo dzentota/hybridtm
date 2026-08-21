@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace HybridTM\Codec;
 
+use HybridTM\DSL\AbuseCase;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
+use HybridTM\Enums\AbuseCaseStatus;
 use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
@@ -46,6 +48,7 @@ final class DslVisitor
 {
     private const ENUM_CLASSES = [
         'AssetType' => AssetType::class,
+        'AbuseCaseStatus' => AbuseCaseStatus::class,
         'Authentication' => Authentication::class,
         'Authorization' => Authorization::class,
         'Availability' => Availability::class,
@@ -63,9 +66,9 @@ final class DslVisitor
         'TrustBoundaryType' => TrustBoundaryType::class,
     ];
 
-    private const CONSTRUCTIBLE_CLASSES = ['ThreatModel', 'TechnicalAsset', 'DataAsset', 'TrustBoundary'];
+    private const CONSTRUCTIBLE_CLASSES = ['ThreatModel', 'TechnicalAsset', 'DataAsset', 'TrustBoundary', 'AbuseCase'];
 
-    private const WHITELISTED_METHODS = ['communicatesTo', 'addAssets', 'addTechnicalAsset', 'addDataAsset', 'addTrustBoundary'];
+    private const WHITELISTED_METHODS = ['communicatesTo', 'addAssets', 'addTechnicalAsset', 'addDataAsset', 'addTrustBoundary', 'addAbuseCase'];
 
     /** @var array<string, object> variable name => tracked DSL object */
     private array $vars = [];
@@ -250,6 +253,7 @@ final class DslVisitor
                 'ThreatModel' => new ThreatModel((string) ($args['title'] ?? $args[0] ?? '')),
                 'TechnicalAsset' => new TechnicalAsset((string) ($args['id'] ?? $args[0] ?? ''), (string) ($args['name'] ?? $args[1] ?? '')),
                 'DataAsset' => new DataAsset((string) ($args['id'] ?? $args[0] ?? ''), (string) ($args['name'] ?? $args[1] ?? '')),
+                'AbuseCase' => new AbuseCase((string) ($args['id'] ?? $args[0] ?? ''), (string) ($args['description'] ?? $args[1] ?? '')),
                 'TrustBoundary' => new TrustBoundary(
                     (string) ($args['id'] ?? $args[0] ?? ''),
                     (string) ($args['name'] ?? $args[1] ?? ''),
@@ -298,7 +302,7 @@ final class DslVisitor
         // addTechnicalAsset/addDataAsset/addTrustBoundary take a tracked
         // object *variable*, not a literal — resolveArgs (which only
         // understands literals/enum-cases/arrays) must not run for them.
-        if (in_array($method, ['addTechnicalAsset', 'addDataAsset', 'addTrustBoundary'], true)) {
+        if (in_array($method, ['addTechnicalAsset', 'addDataAsset', 'addTrustBoundary', 'addAbuseCase'], true)) {
             $arg = $call->args[0]->value ?? null;
             $resolved = $arg instanceof Expr\Variable && is_string($arg->name) ? ($this->vars[$arg->name] ?? null) : null;
             if ($resolved === null) {
@@ -314,6 +318,7 @@ final class DslVisitor
                     $method === 'addTechnicalAsset' && $resolved instanceof TechnicalAsset => $target->addTechnicalAsset($resolved),
                     $method === 'addDataAsset' && $resolved instanceof DataAsset => $target->addDataAsset($resolved),
                     $method === 'addTrustBoundary' && $resolved instanceof TrustBoundary => $target->addTrustBoundary($resolved),
+                    $method === 'addAbuseCase' && $resolved instanceof AbuseCase => $target->addAbuseCase($resolved),
                     default => throw new \InvalidArgumentException("->{$method}() argument is not a " . $method),
                 };
             } catch (\Throwable $e) {

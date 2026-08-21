@@ -286,6 +286,7 @@ For every class that **initiates** requests to other services:
 1. Add `#[AssetId('asset-id')]` at the class level — the ID must match the DSL.
 2. Add `#[DataFlow(...)]` to every method that makes an external call.
 3. Optionally add `#[Mitigation(...)]` for documented security controls.
+4. Optionally add `#[AbuserStory('…')]` next to mitigations that close an Abuser Story (see [Abuser Stories](/en/guide/abuser-stories)).
 
 ```php
 <?php

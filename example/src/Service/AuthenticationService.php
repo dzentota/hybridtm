@@ -2,6 +2,7 @@
 declare(strict_types=1);
 namespace App\Service;
 
+use HybridTM\Attributes\AbuserStory;
 use HybridTM\Attributes\AssetId;
 use HybridTM\Attributes\DataFlow;
 use HybridTM\Attributes\Mitigation;
@@ -44,6 +45,7 @@ class AuthenticationService
         description: 'Bcrypt comparison is constant-time; failed attempts incremented in Redis with TTL-based lockout',
         status: MitigationStatus::Mitigated,
     )]
+    #[AbuserStory('brute-force-login')]
     #[Mitigation(
         cwe: 'CWE-326',
         description: 'JWT signed with RS256 (2048-bit key); keys rotated every 90 days via AWS KMS',
