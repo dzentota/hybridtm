@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SESSION-TIMEOUT-EXCESSIVE
+  version: 1.0.0
+spec:
+  title: 'Identity provider sessions do not expire in a reasonable time'
+  summary: 'Authenticated sessions stay valid for an excessive period, so a stolen session token or an unattended logged-in device remains usable by an attacker far longer than necessary.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [613]
+  countermeasures:
+      - CM-ENFORCE-SESSION-TIMEOUT

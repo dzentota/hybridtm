@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: eks/control-plane-logging-disabled
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Kubernetes control plane has no audit logging enabled.'
+  when:
+    all:
+      - "component.hasTrait('container_orchestrator_control_plane')"
+      - "component.props.bool('control_plane_logging_enabled') == false"
+  then:
+    - raise: THREAT-EKS-CONTROL-PLANE-LOGGING-DISABLED
+      evidence: "{{ component.name }} has no control plane audit logging."
+      require: [CM-ENABLE-CONTROL-PLANE-LOGGING]
+    - suggest_fix:
+        set: { control_plane_logging_enabled: true }
+        label: 'Enable control plane audit logging'

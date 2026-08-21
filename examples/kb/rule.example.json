@@ -1,0 +1,35 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Rule",
+  "metadata": {
+    "id": "storage/unencrypted-at-rest",
+    "version": "1.0.0",
+    "priority": 100
+  },
+  "spec": {
+    "scope": "component",
+    "description": "Datastore holding confidential data without encryption at rest.",
+    "when": {
+      "all": [
+        "component.hasTrait('datastore')",
+        "component.props.bool('encryption_at_rest') == false",
+        "component.encryption == 'none'"
+      ]
+    },
+    "unless": {
+      "any": [
+        "component.hasMitigationFor('CWE-311')",
+        "component.hasTrait('no_storage_at_rest')"
+      ]
+    },
+    "then": [
+      {
+        "raise": "THREAT-DATA-AT-REST-UNENCRYPTED",
+        "likelihood": "likely",
+        "impact": "medium",
+        "evidence": "{{ component.name }} stores confidential data with encryption disabled.",
+        "require": ["CM-ENCRYPT-AT-REST", "CM-KEY-MANAGEMENT-KMS"]
+      }
+    ]
+  }
+}

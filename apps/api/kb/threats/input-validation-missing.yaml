@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-INPUT-VALIDATION-MISSING
+  version: 1.0.0
+spec:
+  title: 'Application does not validate untrusted input'
+  summary: 'Request input reaches business logic or a downstream system without validation or sanitization, the root cause behind injection, XSS, and deserialization attacks.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [20]
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-INPUT-VALIDATION

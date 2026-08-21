@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNSEAL-KEYS-NOT-SPLIT
+  version: 1.0.0
+spec:
+  title: 'Secrets store can be unsealed by a single operator'
+  summary: 'The master key that unseals the secrets store is not split via Shamir''s Secret Sharing (or an equivalent m-of-n scheme), so a single compromised or coerced operator can unseal the vault and read every secret in it.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: very-high
+  standards:
+      cwe: [250]
+      pci_dss_4: ['3.6.1']
+  countermeasures:
+      - CM-SPLIT-UNSEAL-KEYS

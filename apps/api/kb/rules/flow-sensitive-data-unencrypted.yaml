@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/sensitive-data-unencrypted
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: flow
+  description: 'A link known to carry confidential-or-higher data is unencrypted, regardless of whether it crosses a trust boundary.'
+  when:
+    all:
+      - "!flow.protocol.isEncrypted()"
+      - "flow.carriesDataAtLeast('confidential')"
+  then:
+    - raise: THREAT-SENSITIVE-DATA-UNENCRYPTED-FLOW
+      evidence: "The link from {{ flow.source.name }} to {{ flow.target.name }} carries confidential-or-higher data over {{ flow.protocol.value }}."
+      require: [CM-ENFORCE-TLS]

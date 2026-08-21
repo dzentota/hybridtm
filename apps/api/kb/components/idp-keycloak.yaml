@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: idp-keycloak
+  name: Keycloak
+  version: 1.0.0
+  vendor: Red Hat
+  categories: [identity]
+  icon: simple-icons:keycloak
+  color: '#4D4D4D'
+  maturity: stable
+spec:
+  extends: abstract/idp
+  mapping:
+    type: process
+    technologies: [identity-provider]
+  traits: [processing_end_user_requests]
+  properties: []
+  rules: []

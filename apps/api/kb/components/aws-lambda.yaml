@@ -1,0 +1,31 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-lambda
+  name: AWS Lambda
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [application, cloud]
+  icon: simple-icons:awslambda
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/aws-compute
+  mapping:
+    type: process
+    technologies: [function]
+  traits: [serverless_function]
+  properties:
+    - id: vpc_isolated
+      label: 'Runs inside a restricted VPC'
+      type: boolean
+      default: false
+      group: 'Network'
+    - id: function_url_auth_configured
+      label: 'Function URL requires IAM authentication'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - aws/serverless-no-vpc-isolation
+    - aws/lambda-function-url-unauthenticated

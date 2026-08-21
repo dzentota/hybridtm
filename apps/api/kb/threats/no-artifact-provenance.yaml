@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-ARTIFACT-PROVENANCE
+  version: 1.0.0
+spec:
+  title: 'Build pipeline does not attest artifact provenance'
+  summary: 'Build outputs carry no verifiable record of what source, what pipeline, and what steps produced them (e.g. SLSA provenance), so a consumer downstream has no way to confirm an artifact came from the expected build rather than a tampered or unauthorized one.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [345]
+  countermeasures:
+      - CM-GENERATE-ARTIFACT-PROVENANCE

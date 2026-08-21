@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CSRF
+  version: 1.0.0
+spec:
+  title: 'State-changing requests are not protected against cross-site request forgery'
+  summary: "A form or API endpoint that changes state accepts requests without verifying a per-session CSRF token, so a malicious page can trigger actions using the victim's authenticated session."
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [352]
+      capec: [62]
+      owasp_asvs: ['V4.2.2']
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-CSRF-TOKENS

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: kms/key-rotation-disabled
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Key management service does not rotate keys automatically.'
+  when:
+    all:
+      - "component.hasTrait('encryption_key_manager')"
+      - "component.props.bool('key_rotation_enabled') == false"
+  then:
+    - raise: THREAT-KMS-KEY-ROTATION-DISABLED
+      evidence: "{{ component.name }} does not rotate keys automatically."
+      require: [CM-ENABLE-KEY-ROTATION]
+    - suggest_fix:
+        set: { key_rotation_enabled: true }
+        label: 'Enable automatic key rotation'

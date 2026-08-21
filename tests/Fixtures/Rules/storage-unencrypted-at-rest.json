@@ -1,0 +1,80 @@
+{
+    "ruleId": "storage/unencrypted-at-rest",
+    "expectedThreatId": "THREAT-DATA-AT-REST-UNENCRYPTED",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "db",
+                "name": "db",
+                "properties": {
+                    "encryption_at_rest": false
+                },
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "db",
+                "name": "db",
+                "properties": {
+                    "encryption_at_rest": true
+                },
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

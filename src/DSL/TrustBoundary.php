@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\TrustBoundaryType;
@@ -13,13 +15,18 @@ class TrustBoundary
     public array $trustBoundariesNested = [];
     /** @var string[] */
     public array $tags = [];
+    /** KB component properties (§3.2) — never serialized to Threagile YAML. */
+    public PropertyBag $properties;
 
     public function __construct(
         public readonly string $id,
         public string $name = '',
         public TrustBoundaryType $type = TrustBoundaryType::NetworkOnPrem,
     ) {
-        if ($this->name === '') $this->name = $this->id;
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
+        $this->properties = new PropertyBag();
     }
 
     public function addAssets(string ...$assetIds): static

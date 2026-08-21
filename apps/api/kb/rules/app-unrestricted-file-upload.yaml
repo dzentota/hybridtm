@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/unrestricted-file-upload
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Application does not validate uploaded file content.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('upload_type_validated') == false"
+  then:
+    - raise: THREAT-UNRESTRICTED-FILE-UPLOAD
+      evidence: "{{ component.name }} does not validate uploaded file content."
+      require: [CM-VALIDATE-UPLOAD-TYPE]
+    - suggest_fix:
+        set: { upload_type_validated: true }
+        label: 'Validate uploaded file content'

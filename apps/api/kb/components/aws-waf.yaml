@@ -1,0 +1,26 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-waf
+  name: AWS WAF
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [web, edge, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/reverse-proxy
+  mapping:
+    type: process
+    technologies: [waf]
+  traits: [waf]
+  properties:
+    - id: waf_mode
+      label: 'WAF mode'
+      type: enum
+      values: [off, log, block]
+      default: log
+      group: 'Hardening'
+  rules:
+    - web/waf-not-blocking

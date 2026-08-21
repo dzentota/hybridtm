@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENFORCE-OBJECT-LEVEL-AUTHORIZATION
+  version: 1.0.0
+spec:
+  title: 'Check ownership/authorization on every object access'
+  description: 'On every endpoint that accepts an object identifier, verify the authenticated caller is authorized for that specific object (not just authenticated in general) before returning or modifying it, ideally via a shared authorization layer rather than ad hoc per-endpoint checks.'
+  cost: low
+  effort: medium
+  effectiveness: high
+  category: preventive

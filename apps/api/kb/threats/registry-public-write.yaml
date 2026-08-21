@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-REGISTRY-PUBLIC-WRITE
+  version: 1.0.0
+spec:
+  title: 'Artifact registry allows unauthenticated writes'
+  summary: 'Anyone can push a new image or package version without authenticating, so an attacker can publish a malicious artifact under a trusted name and have it pulled by every consumer of the registry.'
+  stride: [tampering, spoofing]
+  base:
+    likelihood: unlikely
+    impact: very-high
+  standards:
+      cwe: [284, 306]
+  countermeasures:
+      - CM-RESTRICT-REGISTRY-WRITE

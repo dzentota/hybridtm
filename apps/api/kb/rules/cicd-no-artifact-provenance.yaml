@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cicd/no-artifact-provenance
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'CI/CD pipeline does not generate verifiable build provenance for its artifacts.'
+  when:
+    all:
+      - "component.hasTrait('cicd_pipeline')"
+      - "component.props.bool('artifact_provenance_generated') == false"
+  then:
+    - raise: THREAT-NO-ARTIFACT-PROVENANCE
+      evidence: "{{ component.name }} does not generate build provenance."
+      require: [CM-GENERATE-ARTIFACT-PROVENANCE]
+    - suggest_fix:
+        set: { artifact_provenance_generated: true }
+        label: 'Generate build provenance'

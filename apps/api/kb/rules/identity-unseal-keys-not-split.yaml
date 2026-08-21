@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: identity/unseal-keys-not-split
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Shamir-sealed secrets store can be unsealed by a single operator.'
+  when:
+    all:
+      - "component.hasTrait('vault_sealed')"
+      - "component.props.bool('unseal_keys_split') == false"
+  then:
+    - raise: THREAT-UNSEAL-KEYS-NOT-SPLIT
+      evidence: "{{ component.name }}'s unseal key is not split across multiple operators."
+      require: [CM-SPLIT-UNSEAL-KEYS]
+    - suggest_fix:
+        set: { unseal_keys_split: true }
+        label: 'Split the unseal key (Shamir)'

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-LAMBDA-FUNCTION-URL-UNAUTHENTICATED
+  version: 1.0.0
+spec:
+  title: 'Lambda function URL has no authentication'
+  summary: 'The function''s direct HTTPS endpoint is configured with auth type NONE, so anyone who discovers the URL can invoke the function directly, bypassing any authentication or authorization the rest of the architecture assumes is in front of it.'
+  stride: [spoofing]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [306]
+  countermeasures:
+      - CM-REQUIRE-FUNCTION-URL-AUTH

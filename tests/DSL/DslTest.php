@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\DSL;
 
 use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\DataAsset;
+use HybridTM\DSL\PropertyBag;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
@@ -114,6 +117,16 @@ final class DslTest extends TestCase
         self::assertFalse($ta->multiTenant);
         self::assertFalse($ta->redundant);
         self::assertFalse($ta->customDevelopedParts);
+        self::assertCount(0, $ta->technologies);
+    }
+
+    public function testTechnicalAssetTechnologiesIsIndependentPerInstance(): void
+    {
+        $a = new TechnicalAsset('a');
+        $b = new TechnicalAsset('b');
+        $a->technologies->add(\HybridTM\Enums\Technology::ReverseProxy);
+
+        self::assertCount(0, $b->technologies, 'technology lists must not be shared between instances');
     }
 
     public function testTechnicalAssetCommunicatesTo(): void
@@ -238,5 +251,66 @@ final class DslTest extends TestCase
         $tb->addAssets('svc-a');
 
         self::assertCount(2, $tb->technicalAssetsInside);
+    }
+
+    // ── properties bag (§3.2) ───────────────────────────────────────────────────
+
+    public function testEachEntityGetsItsOwnPropertyBag(): void
+    {
+        $ta1 = new TechnicalAsset('a');
+        $ta2 = new TechnicalAsset('b');
+        $ta1->properties->set('internet_facing', true);
+
+        self::assertInstanceOf(PropertyBag::class, $ta1->properties);
+        self::assertFalse($ta2->properties->has('internet_facing'), 'bags must not be shared between instances');
+    }
+
+    public function testCommunicationLinkHasPropertyBag(): void
+    {
+        $link = new CommunicationLink('a-to-b', 'b');
+        $link->properties->set('mtls', true);
+        self::assertTrue($link->properties->get('mtls'));
+    }
+
+    public function testDataAssetHasPropertyBag(): void
+    {
+        $da = new DataAsset('d');
+        $da->properties->set('pii', true);
+        self::assertTrue($da->properties->get('pii'));
+    }
+
+    public function testTrustBoundaryHasPropertyBag(): void
+    {
+        $tb = new TrustBoundary('net');
+        $tb->properties->set('managed', true);
+        self::assertTrue($tb->properties->get('managed'));
+    }
+
+    // ── traits (§3.3) ────────────────────────────────────────────────────────────
+
+    public function testTechnicalAssetHasTraitDefaultsEmpty(): void
+    {
+        $ta = new TechnicalAsset('svc');
+        self::assertSame([], $ta->traits);
+        self::assertFalse($ta->hasTrait('datastore'));
+    }
+
+    public function testHasTraitOrSemantics(): void
+    {
+        $ta = new TechnicalAsset('db');
+        $ta->traits = ['datastore', 'sql_engine'];
+
+        self::assertTrue($ta->hasTrait('datastore'));
+        self::assertTrue($ta->hasTrait('cache', 'datastore'), 'true if any of the given traits matches');
+        self::assertFalse($ta->hasTrait('cache', 'queue'));
+    }
+
+    public function testHasAllTraitsAndSemantics(): void
+    {
+        $ta = new TechnicalAsset('db');
+        $ta->traits = ['datastore', 'sql_engine'];
+
+        self::assertTrue($ta->hasAllTraits('datastore', 'sql_engine'));
+        self::assertFalse($ta->hasAllTraits('datastore', 'nosql_engine'));
     }
 }

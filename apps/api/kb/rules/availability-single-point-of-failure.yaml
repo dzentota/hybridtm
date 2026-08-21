@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: availability/single-point-of-failure
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Non-redundant component has more than two dependents.'
+  when:
+    all:
+      - "component.hasTrait('single_point_of_failure')"
+  then:
+    - raise: THREAT-SINGLE-POINT-OF-FAILURE
+      evidence: "{{ component.name }} has no redundancy but more than two dependents."
+      require: [CM-ADD-REDUNDANCY]

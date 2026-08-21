@@ -1,0 +1,22 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/cache
+  name: Abstract Cache
+  version: 1.0.0
+  categories: [storage, data]
+  maturity: stable
+  icon: mdi:memory
+  color: '#14b8a6'
+  abstract: true
+spec:
+  extends: abstract/datastore
+  mapping:
+    type: datastore
+    defaults:
+      confidentiality: internal
+      integrity: operational
+      availability: operational
+  traits: [cache_store]
+  properties: []
+  rules: []

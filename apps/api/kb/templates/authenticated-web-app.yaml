@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Template
+metadata:
+  id: authenticated-web-app
+  name: Web app with SSO + secrets
+spec:
+  description: 'Classic web app plus a Keycloak identity provider and a Vault-backed secrets store.'
+  graph:
+    components:
+      - { id: browser, type: client-browser-spa, x: 0, y: 120 }
+      - { id: nginx, type: web-server-nginx, x: 260, y: 120 }
+      - { id: app, type: app-server-symfony, x: 520, y: 120 }
+      - { id: db, type: db-postgresql, x: 780, y: 40 }
+      - { id: idp, type: idp-keycloak, x: 520, y: 0 }
+      - { id: vault, type: secrets-vault, x: 780, y: 200 }
+    boundaries:
+      - { id: internal, type: network-cloud-security-group, name: Internal, contains: [app, db, idp, vault] }
+    flows:
+      - { source: browser, target: nginx, protocol: https }
+      - { source: nginx, target: app, protocol: http }
+      - { source: app, target: db, protocol: jdbc-encrypted }
+      - { source: app, target: idp, protocol: https }
+      - { source: app, target: vault, protocol: https }

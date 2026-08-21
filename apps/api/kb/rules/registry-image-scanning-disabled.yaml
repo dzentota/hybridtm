@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: registry/image-scanning-disabled
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Artifact registry does not scan images/packages for known vulnerabilities.'
+  when:
+    all:
+      - "component.hasTrait('artifact_registry')"
+      - "component.props.bool('image_scanning_enabled') == false"
+  then:
+    - raise: THREAT-VULNERABLE-DEPENDENCIES
+      evidence: "{{ component.name }} does not scan stored artifacts for known vulnerabilities."
+      require: [CM-DEPENDENCY-SCANNING]
+    - suggest_fix:
+        set: { image_scanning_enabled: true }
+        label: 'Enable image/package vulnerability scanning'

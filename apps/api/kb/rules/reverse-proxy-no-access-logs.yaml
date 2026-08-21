@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: reverse-proxy/no-access-logs
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Reverse proxy/load balancer does not log access.'
+  when:
+    all:
+      - "component.hasTrait('traffic_forwarding')"
+      - "component.props.bool('access_logs_enabled') == false"
+  then:
+    - raise: THREAT-REVERSE-PROXY-NO-ACCESS-LOGS
+      evidence: "{{ component.name }} does not log access."
+      require: [CM-ENABLE-ACCESS-LOGS]
+    - suggest_fix:
+        set: { access_logs_enabled: true }
+        label: 'Enable access logging'

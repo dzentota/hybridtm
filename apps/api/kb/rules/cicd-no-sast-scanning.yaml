@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cicd/no-sast-scanning
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'CI/CD pipeline has no static application security testing.'
+  when:
+    all:
+      - "component.hasTrait('cicd_pipeline')"
+      - "component.props.bool('sast_scanning_enabled') == false"
+  then:
+    - raise: THREAT-NO-SAST-SCANNING
+      evidence: "{{ component.name }} has no static application security testing."
+      require: [CM-ENABLE-SAST-SCANNING]
+    - suggest_fix:
+        set: { sast_scanning_enabled: true }
+        label: 'Add SAST scanning to the pipeline'

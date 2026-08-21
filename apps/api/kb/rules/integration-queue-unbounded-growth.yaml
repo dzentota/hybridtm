@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: integration/queue-unbounded-growth
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'Message queue has no bound on queue length or memory use.'
+  when:
+    all:
+      - "component.hasTrait('message_broker')"
+      - "component.props.bool('max_queue_length_enforced') == false"
+  then:
+    - raise: THREAT-QUEUE-UNBOUNDED-GROWTH
+      evidence: "{{ component.name }} has no bound on queue length/memory."
+      require: [CM-LIMIT-QUEUE-SIZE]
+    - suggest_fix:
+        set: { max_queue_length_enforced: true }
+        label: 'Bound the queue length'

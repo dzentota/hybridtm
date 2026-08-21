@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-VERIFY-WEBHOOK-SIGNATURE
+  version: 1.0.0
+spec:
+  title: 'Verify a signature on every incoming webhook payload'
+  description: 'Verify the sender''s HMAC/signature header against the raw request body using a shared secret before trusting the payload, and reject requests where it is missing or invalid.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

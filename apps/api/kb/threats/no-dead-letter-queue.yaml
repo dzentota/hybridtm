@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-DEAD-LETTER-QUEUE
+  version: 1.0.0
+spec:
+  title: 'Message queue has no dead-letter queue configured'
+  summary: 'Messages that repeatedly fail processing are neither quarantined nor alerted on, so poison messages can loop indefinitely (denial of service on the consumer) or silently vanish (data loss) with no operational visibility.'
+  stride: [denial-of-service]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [730]
+  countermeasures:
+      - CM-CONFIGURE-DEAD-LETTER-QUEUE

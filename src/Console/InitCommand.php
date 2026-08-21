@@ -4,6 +4,11 @@ declare(strict_types=1);
 
 namespace HybridTM\Console;
 
+use HybridTM\Codec\PhpDslWriter;
+use HybridTM\DSL\DataAsset;
+use HybridTM\DSL\TechnicalAsset;
+use HybridTM\DSL\ThreatModel;
+use HybridTM\DSL\TrustBoundary;
 use HybridTM\Enums\AssetType;
 use HybridTM\Enums\Authentication;
 use HybridTM\Enums\Authorization;
@@ -22,13 +27,13 @@ use HybridTM\Enums\TrustBoundaryType;
 use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Question\ConfirmationQuestion;
 use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Console\Helper\QuestionHelper;
 
 #[AsCommand(
     name:        'init',
@@ -37,9 +42,9 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 final class InitCommand extends Command
 {
     // ── Collected state ───────────────────────────────────────────────────────
-    private string $modelTitle       = '';
+    private string $modelTitle = '';
     private string $modelDescription = '';
-    private string $modelAuthor      = '';
+    private string $modelAuthor = '';
     private string $modelCriticality = 'important';
 
     /** @var array<int, array<string, mixed>> */
@@ -59,17 +64,19 @@ final class InitCommand extends Command
     private InputInterface $input;
 
     // ── Colour palette ────────────────────────────────────────────────────────
-    private const C_BRAND   = 'bright-cyan';
-    private const C_ACCENT  = 'bright-magenta';
+    private const C_BRAND = 'bright-cyan';
+    private const C_ACCENT = 'bright-magenta';
     private const C_SUCCESS = 'bright-green';
-    private const C_WARN    = 'bright-yellow';
-    private const C_DIM     = 'gray';
-    private const C_WHITE   = 'bright-white';
+    private const C_WARN = 'bright-yellow';
+    private const C_DIM = 'gray';
+    private const C_WHITE = 'bright-white';
 
     protected function configure(): void
     {
         $this->addOption(
-            'out', 'o', InputOption::VALUE_REQUIRED,
+            'out',
+            'o',
+            InputOption::VALUE_REQUIRED,
             'Output path for the generated threat-model.php',
             'threat-model.php',
         );
@@ -77,9 +84,13 @@ final class InitCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $this->output         = $output;
-        $this->input          = $input;
-        $this->questionHelper = $this->getHelper('question');
+        $this->output = $output;
+        $this->input = $input;
+        $questionHelper = $this->getHelper('question');
+        if (!$questionHelper instanceof QuestionHelper) {
+            throw new \RuntimeException('Expected the "question" helper to be a QuestionHelper instance.');
+        }
+        $this->questionHelper = $questionHelper;
 
         $this->registerStyles($output);
         $this->printLogo();
@@ -89,9 +100,9 @@ final class InitCommand extends Command
         $this->printPhaseHeader(1, 'Project Metadata');
         $this->askProjectMetadata();
         $this->printSummaryBox('Project', [
-            'Title'        => $this->modelTitle,
-            'Author'       => $this->modelAuthor,
-            'Criticality'  => $this->modelCriticality,
+            'Title' => $this->modelTitle,
+            'Author' => $this->modelAuthor,
+            'Criticality' => $this->modelCriticality,
         ]);
 
         // ── Phase 2: Data assets ──────────────────────────────────────────
@@ -134,14 +145,14 @@ final class InitCommand extends Command
     {
         $logo = <<<'ASCII'
 
-        <brand>  ██╗  ██╗██╗   ██╗██████╗ ██████╗ ██╗██████╗ ████████╗███╗   ███╗</>
-        <brand>  ██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗██║██╔══██╗╚══██╔══╝████╗ ████║</>
-        <brand>  ███████║ ╚████╔╝ ██████╔╝██████╔╝██║██║  ██║   ██║   ██╔████╔██║</>
-        <brand>  ██╔══██║  ╚██╔╝  ██╔══██╗██╔══██╗██║██║  ██║   ██║   ██║╚██╔╝██║</>
-        <brand>  ██║  ██║   ██║   ██████╔╝██║  ██║██║██████╔╝   ██║   ██║ ╚═╝ ██║</>
-        <brand>  ╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝    ╚═╝   ╚═╝     ╚═╝</>
+                    <brand>  ██╗  ██╗██╗   ██╗██████╗ ██████╗ ██╗██████╗ ████████╗███╗   ███╗</>
+                    <brand>  ██║  ██║╚██╗ ██╔╝██╔══██╗██╔══██╗██║██╔══██╗╚══██╔══╝████╗ ████║</>
+                    <brand>  ███████║ ╚████╔╝ ██████╔╝██████╔╝██║██║  ██║   ██║   ██╔████╔██║</>
+                    <brand>  ██╔══██║  ╚██╔╝  ██╔══██╗██╔══██╗██║██║  ██║   ██║   ██║╚██╔╝██║</>
+                    <brand>  ██║  ██║   ██║   ██████╔╝██║  ██║██║██████╔╝   ██║   ██║ ╚═╝ ██║</>
+                    <brand>  ╚═╝  ╚═╝   ╚═╝   ╚═════╝ ╚═╝  ╚═╝╚═╝╚═════╝    ╚═╝   ╚═╝     ╚═╝</>
 
-ASCII;
+            ASCII;
         $this->output->writeln($logo);
     }
 
@@ -152,9 +163,9 @@ ASCII;
 
         $this->output->writeln('');
         $this->output->writeln("        <accent>╭{$border}╮</>");
-        $this->output->writeln("        <accent>│</>  <white>  ⚡ Threat Model Wizard</white>" . str_repeat(' ', 43) . "<accent>│</>");
-        $this->output->writeln("        <accent>│</>  <dim>  Build your threat-model.php interactively</dim>" . str_repeat(' ', 23) . "<accent>│</>");
-        $this->output->writeln("        <accent>│</>  <dim>  Powered by HybridTM — PHP Threat Modeling Framework</dim>" . str_repeat(' ', 12) . "<accent>│</>");
+        $this->output->writeln('        <accent>│</>  <white>  ⚡ Threat Model Wizard</white>' . str_repeat(' ', 43) . '<accent>│</>');
+        $this->output->writeln('        <accent>│</>  <dim>  Build your threat-model.php interactively</dim>' . str_repeat(' ', 23) . '<accent>│</>');
+        $this->output->writeln('        <accent>│</>  <dim>  Powered by HybridTM — PHP Threat Modeling Framework</dim>' . str_repeat(' ', 12) . '<accent>│</>');
         $this->output->writeln("        <accent>╰{$border}╯</>");
         $this->output->writeln('');
     }
@@ -164,11 +175,11 @@ ASCII;
         $this->br();
         $width = 64;
         $inner = "  ◆  Phase {$phase}: {$title}  ";
-        $pad   = max(0, $width - mb_strlen($inner));
-        $line  = str_repeat('─', $width);
+        $pad = max(0, $width - mb_strlen($inner));
+        $line = str_repeat('─', $width);
 
         $this->output->writeln("  <accent>┌{$line}┐</>");
-        $this->output->writeln("  <accent>│</><white>{$inner}</>" . str_repeat(' ', $pad) . "<accent>│</>");
+        $this->output->writeln("  <accent>│</><white>{$inner}</>" . str_repeat(' ', $pad) . '<accent>│</>');
         $this->output->writeln("  <accent>└{$line}┘</>");
         $this->br();
     }
@@ -179,41 +190,47 @@ ASCII;
         $this->br();
     }
 
+    /**
+     * @param array<string, string> $rows
+     */
     private function printSummaryBox(string $title, array $rows): void
     {
         $this->br();
-        $maxKey = max(array_map('mb_strlen', array_keys($rows)));
-        $maxVal = max(array_map('mb_strlen', array_values($rows)));
-        $inner  = $maxKey + $maxVal + 7;
-        $width  = max($inner, mb_strlen($title) + 4);
-        $line   = str_repeat('─', $width);
+        $maxKey = max([0, ...array_map('mb_strlen', array_keys($rows))]);
+        $maxVal = max([0, ...array_map('mb_strlen', array_values($rows))]);
+        $inner = $maxKey + $maxVal + 7;
+        $width = max($inner, mb_strlen($title) + 4);
+        $line = str_repeat('─', $width);
 
         $this->output->writeln("  <success>┌{$line}┐</>");
         $titlePad = max(0, $width - mb_strlen($title) - 2);
-        $this->output->writeln("  <success>│</> <white> {$title}</>" . str_repeat(' ', $titlePad) . "<success>│</>");
+        $this->output->writeln("  <success>│</> <white> {$title}</>" . str_repeat(' ', $titlePad) . '<success>│</>');
         $this->output->writeln("  <success>├{$line}┤</>");
         foreach ($rows as $key => $value) {
             $kPad = max(0, $maxKey - mb_strlen($key));
             $vPad = max(0, $width - $maxKey - mb_strlen($value) - 6);
-            $this->output->writeln("  <success>│</>  <dim>{$key}</>" . str_repeat(' ', $kPad) . " : <white>{$value}</>" . str_repeat(' ', $vPad) . " <success>│</>");
+            $this->output->writeln("  <success>│</>  <dim>{$key}</>" . str_repeat(' ', $kPad) . " : <white>{$value}</>" . str_repeat(' ', $vPad) . ' <success>│</>');
         }
         $this->output->writeln("  <success>└{$line}┘</>");
     }
 
+    /**
+     * @param array<string, string> $props
+     */
     private function printAssetCard(string $emoji, string $id, array $props): void
     {
         $width = 60;
-        $line  = str_repeat('─', $width);
+        $line = str_repeat('─', $width);
         $title = "  {$emoji}  {$id}";
         $titlePad = max(0, $width - mb_strlen($title));
 
         $this->output->writeln("  <brand>┌{$line}┐</>");
-        $this->output->writeln("  <brand>│</><white>{$title}</>" . str_repeat(' ', $titlePad) . "<brand>│</>");
+        $this->output->writeln("  <brand>│</><white>{$title}</>" . str_repeat(' ', $titlePad) . '<brand>│</>');
         $this->output->writeln("  <brand>├{$line}┤</>");
         foreach ($props as $key => $value) {
             $entry = "  {$key}: {$value}";
             $pad = max(0, $width - mb_strlen($entry));
-            $this->output->writeln("  <brand>│</> <dim>{$entry}</>" . str_repeat(' ', $pad - 1) . "<brand>│</>");
+            $this->output->writeln("  <brand>│</> <dim>{$entry}</>" . str_repeat(' ', $pad - 1) . '<brand>│</>');
         }
         $this->output->writeln("  <brand>└{$line}┘</>");
     }
@@ -221,21 +238,21 @@ ASCII;
     private function printSuccessPanel(string $outPath): void
     {
         $width = 64;
-        $line  = str_repeat('═', $width);
+        $line = str_repeat('═', $width);
 
         $this->output->writeln("  <success>╔{$line}╗</>");
-        $this->output->writeln("  <success>║</>  <white>  ✅  Threat model generated successfully!</white>" . str_repeat(' ', 19) . "<success>║</>");
-        $this->output->writeln("  <success>╟" . str_repeat('─', $width) . "╢</>");
+        $this->output->writeln('  <success>║</>  <white>  ✅  Threat model generated successfully!</white>' . str_repeat(' ', 19) . '<success>║</>');
+        $this->output->writeln('  <success>╟' . str_repeat('─', $width) . '╢</>');
 
         $fileLine = "     📄  {$outPath}";
         $filePad = max(0, $width - mb_strlen($fileLine));
-        $this->output->writeln("  <success>║</><brand>{$fileLine}</>" . str_repeat(' ', $filePad) . "<success>║</>");
+        $this->output->writeln("  <success>║</><brand>{$fileLine}</>" . str_repeat(' ', $filePad) . '<success>║</>');
 
-        $this->output->writeln("  <success>║</>" . str_repeat(' ', $width) . "<success>║</>");
+        $this->output->writeln('  <success>║</>' . str_repeat(' ', $width) . '<success>║</>');
 
         $nextLine = '     Next steps:';
         $nextPad = max(0, $width - mb_strlen($nextLine));
-        $this->output->writeln("  <success>║</><white>{$nextLine}</>" . str_repeat(' ', $nextPad) . "<success>║</>");
+        $this->output->writeln("  <success>║</><white>{$nextLine}</>" . str_repeat(' ', $nextPad) . '<success>║</>');
 
         $steps = [
             '  1. Review and customise the generated file',
@@ -244,10 +261,10 @@ ASCII;
         ];
         foreach ($steps as $step) {
             $pad = max(0, $width - mb_strlen("     {$step}"));
-            $this->output->writeln("  <success>║</>  <dim>   {$step}</>" . str_repeat(' ', $pad) . "<success>║</>");
+            $this->output->writeln("  <success>║</>  <dim>   {$step}</>" . str_repeat(' ', $pad) . '<success>║</>');
         }
 
-        $this->output->writeln("  <success>║</>" . str_repeat(' ', $width) . "<success>║</>");
+        $this->output->writeln('  <success>║</>' . str_repeat(' ', $width) . '<success>║</>');
         $this->output->writeln("  <success>╚{$line}╝</>");
         $this->br();
     }
@@ -258,9 +275,9 @@ ASCII;
 
     private function askProjectMetadata(): void
     {
-        $this->modelTitle       = $this->askText('Project title', 'My Application');
+        $this->modelTitle = $this->askText('Project title', 'My Application');
         $this->modelDescription = $this->askText('Description', 'Threat model for ' . $this->modelTitle);
-        $this->modelAuthor      = $this->askText('Author / team name', 'Security Team');
+        $this->modelAuthor = $this->askText('Author / team name', 'Security Team');
         $this->modelCriticality = $this->askEnum('Business criticality', BusinessCriticality::class);
     }
 
@@ -273,26 +290,29 @@ ASCII;
             $this->dataAssets[] = $asset;
 
             $this->printAssetCard('📦', $asset['id'], [
-                'Name'            => $asset['name'],
+                'Name' => $asset['name'],
                 'Confidentiality' => $asset['confidentiality'],
-                'Integrity'       => $asset['integrity'],
-                'Availability'    => $asset['availability'],
+                'Integrity' => $asset['integrity'],
+                'Availability' => $asset['availability'],
             ]);
         } while ($this->askConfirm('Add another data asset?'));
     }
 
+    /**
+     * @return array{id: string, name: string, desc: string, confidentiality: string, integrity: string, availability: string, origin: string, quantity: string}
+     */
     private function askOneDataAsset(): array
     {
-        $id   = $this->askSlug('Data asset ID (kebab-case)', 'customer-pii');
+        $id = $this->askSlug('Data asset ID (kebab-case)', 'customer-pii');
         $name = $this->askText('Human-readable name', $this->humanize($id));
         $desc = $this->askText('Description', '');
 
-        $this->output->writeln("  <accent>  ── CIA Rating ──</>");
+        $this->output->writeln('  <accent>  ── CIA Rating ──</>');
         $confidentiality = $this->askEnum('Confidentiality', Confidentiality::class);
-        $integrity       = $this->askEnum('Integrity', Integrity::class);
-        $availability    = $this->askEnum('Availability', Availability::class);
-        $origin          = $this->askEnum('Data origin', DataOrigin::class);
-        $quantity         = $this->askEnum('Quantity', Quantity::class);
+        $integrity = $this->askEnum('Integrity', Integrity::class);
+        $availability = $this->askEnum('Availability', Availability::class);
+        $origin = $this->askEnum('Data origin', DataOrigin::class);
+        $quantity = $this->askEnum('Quantity', Quantity::class);
 
         return compact('id', 'name', 'desc', 'confidentiality', 'integrity', 'availability', 'origin', 'quantity');
     }
@@ -306,46 +326,60 @@ ASCII;
             $this->technicalAssets[] = $asset;
 
             $this->printAssetCard('🖥️', $asset['id'], [
-                'Name'       => $asset['name'],
-                'Type'       => $asset['type'],
+                'Name' => $asset['name'],
+                'Type' => $asset['type'],
                 'Technology' => $asset['technology'],
-                'Machine'    => $asset['machine'],
-                'Internet'   => $asset['internet'] ? 'yes' : 'no',
+                'Machine' => $asset['machine'],
+                'Internet' => $asset['internet'] ? 'yes' : 'no',
             ]);
         } while ($this->askConfirm('Add another technical asset?'));
     }
 
+    /**
+     * @return array{id: string, name: string, desc: string, type: string, technology: string, machine: string, size: string, internet: bool, encryption: string, confidentiality: string, integrity: string, availability: string, processedData: list<string>, storedData: list<string>}
+     */
     private function askOneTechnicalAsset(): array
     {
-        $id   = $this->askSlug('Technical asset ID (kebab-case)', 'web-app');
+        $id = $this->askSlug('Technical asset ID (kebab-case)', 'web-app');
         $name = $this->askText('Human-readable name', $this->humanize($id));
         $desc = $this->askText('Description', '');
 
-        $type       = $this->askEnum('Asset type', AssetType::class);
+        $type = $this->askEnum('Asset type', AssetType::class);
         $technology = $this->askEnum('Technology', Technology::class);
-        $machine    = $this->askEnum('Machine type', Machine::class);
-        $size       = $this->askEnum('Size', Size::class);
-        $internet   = $this->askConfirm('Exposed to the internet?', false);
+        $machine = $this->askEnum('Machine type', Machine::class);
+        $size = $this->askEnum('Size', Size::class);
+        $internet = $this->askConfirm('Exposed to the internet?', false);
         $encryption = $this->askEnum('Encryption at rest', Encryption::class);
 
-        $this->output->writeln("  <accent>  ── CIA Rating ──</>");
+        $this->output->writeln('  <accent>  ── CIA Rating ──</>');
         $confidentiality = $this->askEnum('Confidentiality', Confidentiality::class);
-        $integrity       = $this->askEnum('Integrity', Integrity::class);
-        $availability    = $this->askEnum('Availability', Availability::class);
+        $integrity = $this->askEnum('Integrity', Integrity::class);
+        $availability = $this->askEnum('Availability', Availability::class);
 
         // Link data assets
         $processedData = [];
-        $storedData    = [];
+        $storedData = [];
         if ($this->dataAssets !== [] && $this->askConfirm('Link data assets to this component?')) {
             $ids = array_column($this->dataAssets, 'id');
             $processedData = $this->askMultiSelect('Data assets processed', $ids);
-            $storedData    = $this->askMultiSelect('Data assets stored', $ids);
+            $storedData = $this->askMultiSelect('Data assets stored', $ids);
         }
 
         return compact(
-            'id', 'name', 'desc', 'type', 'technology', 'machine', 'size',
-            'internet', 'encryption', 'confidentiality', 'integrity', 'availability',
-            'processedData', 'storedData',
+            'id',
+            'name',
+            'desc',
+            'type',
+            'technology',
+            'machine',
+            'size',
+            'internet',
+            'encryption',
+            'confidentiality',
+            'integrity',
+            'availability',
+            'processedData',
+            'storedData',
         );
     }
 
@@ -358,16 +392,19 @@ ASCII;
             $this->trustBoundaries[] = $boundary;
 
             $this->printAssetCard('🛡️', $boundary['id'], [
-                'Name'   => $boundary['name'],
-                'Type'   => $boundary['type'],
+                'Name' => $boundary['name'],
+                'Type' => $boundary['type'],
                 'Assets' => implode(', ', $boundary['assets']),
             ]);
         } while ($this->askConfirm('Add another trust boundary?'));
     }
 
+    /**
+     * @return array{id: string, name: string, desc: string, type: string, assets: list<string>}
+     */
     private function askOneTrustBoundary(): array
     {
-        $id   = $this->askSlug('Trust boundary ID', 'internal-vpc');
+        $id = $this->askSlug('Trust boundary ID', 'internal-vpc');
         $name = $this->askText('Human-readable name', $this->humanize($id));
         $desc = $this->askText('Description', '');
         $type = $this->askEnum('Boundary type', TrustBoundaryType::class);
@@ -392,13 +429,16 @@ ASCII;
             $this->communicationLinks[] = $link;
 
             $this->printAssetCard('🔗', "{$link['source']} → {$link['target']}", [
-                'Protocol'       => $link['protocol'],
+                'Protocol' => $link['protocol'],
                 'Authentication' => $link['authentication'],
-                'Authorization'  => $link['authorization'],
+                'Authorization' => $link['authorization'],
             ]);
         } while ($this->askConfirm('Add another communication link?'));
     }
 
+    /**
+     * @return array{source: string, target: string, protocol: string, authentication: string, authorization: string, desc: string, sentData: list<string>, receivedData: list<string>}
+     */
     private function askOneCommunicationLink(): array
     {
         $assetIds = array_column($this->technicalAssets, 'id');
@@ -407,16 +447,16 @@ ASCII;
         $remaining = array_values(array_diff($assetIds, [$source]));
         $target = $this->askChoice('Target asset', $remaining);
 
-        $protocol       = $this->askEnum('Protocol', Protocol::class);
+        $protocol = $this->askEnum('Protocol', Protocol::class);
         $authentication = $this->askEnum('Authentication', Authentication::class);
-        $authorization  = $this->askEnum('Authorization', Authorization::class);
-        $desc           = $this->askText('Description', '');
+        $authorization = $this->askEnum('Authorization', Authorization::class);
+        $desc = $this->askText('Description', '');
 
-        $sentData     = [];
+        $sentData = [];
         $receivedData = [];
         if ($this->dataAssets !== [] && $this->askConfirm('Attach data assets to this link?')) {
             $ids = array_column($this->dataAssets, 'id');
-            $sentData     = $this->askMultiSelect('Data sent', $ids);
+            $sentData = $this->askMultiSelect('Data sent', $ids);
             $receivedData = $this->askMultiSelect('Data received', $ids);
         }
 
@@ -452,8 +492,8 @@ ASCII;
      */
     private function askEnum(string $label, string $enumClass): string
     {
-        $cases  = $enumClass::cases();
-        $values = array_map(fn($c) => $c->value, $cases);
+        $cases = $enumClass::cases();
+        $values = array_map(fn ($c) => $c->value, $cases);
 
         $q = new ChoiceQuestion(
             $this->promptLabel($label, $values[0] ?? ''),
@@ -465,12 +505,19 @@ ASCII;
         return (string) $this->questionHelper->ask($this->input, $this->output, $q);
     }
 
+    /**
+     * @param list<string> $options
+     */
     private function askChoice(string $label, array $options): string
     {
         $q = new ChoiceQuestion($this->promptLabel($label), $options, 0);
         return (string) $this->questionHelper->ask($this->input, $this->output, $q);
     }
 
+    /**
+     * @param list<string> $options
+     * @return list<string>
+     */
     private function askMultiSelect(string $label, array $options): array
     {
         if ($options === []) {
@@ -481,7 +528,13 @@ ASCII;
             $options,
         );
         $q->setMultiselect(true);
-        return (array) $this->questionHelper->ask($this->input, $this->output, $q);
+        $answer = $this->questionHelper->ask($this->input, $this->output, $q);
+
+        $selected = [];
+        foreach ((array) $answer as $value) {
+            $selected[] = (string) $value;
+        }
+        return $selected;
     }
 
     private function askConfirm(string $label, bool $default = true): bool
@@ -504,140 +557,102 @@ ASCII;
     //  PHP Code Generator
     // ══════════════════════════════════════════════════════════════════════════
 
+    /**
+     * Builds a real ThreatModel from the wizard's collected answers, then
+     * delegates code generation to PhpDslWriter (T-4.2) — the same
+     * deterministic writer used by `hybridtm export`, rather than the ad-hoc
+     * string-building this method used to do itself. A header comment (with
+     * the wizard's own description and a generation timestamp — wall-clock
+     * input that PhpDslWriter's own output deliberately never depends on)
+     * is prepended separately, so PhpDslWriter's determinism contract stays
+     * intact for every other caller.
+     */
     private function generatePhp(): string
     {
-        $lines = [];
-        $lines[] = '<?php';
-        $lines[] = '/**';
-        $lines[] = " * HybridTM — {$this->modelTitle}";
-        $lines[] = ' *';
-        $lines[] = " * {$this->modelDescription}";
-        $lines[] = ' *';
-        $lines[] = ' * Generated by: php bin/hybridtm init';
-        $lines[] = ' * Date: ' . date('Y-m-d');
-        $lines[] = ' */';
-        $lines[] = 'declare(strict_types=1);';
-        $lines[] = '';
-        $lines[] = "require_once __DIR__ . '/vendor/autoload.php';";
-        $lines[] = '';
+        $model = $this->buildModel();
+        $body = (new PhpDslWriter())->write($model);
+        // PhpDslWriter's output starts with "<?php\ndeclare(strict_types=1);\n";
+        // splice the header comment in right after those two lines.
+        [$prologue, $rest] = explode("\n\n", $body, 2);
 
-        // Collect used enums
-        $usedEnums = $this->collectUsedEnums();
-        $lines[] = 'use HybridTM\\DSL\\DataAsset;';
-        $lines[] = 'use HybridTM\\DSL\\TechnicalAsset;';
-        $lines[] = 'use HybridTM\\DSL\\ThreatModel;';
-        $lines[] = 'use HybridTM\\DSL\\TrustBoundary;';
-        foreach ($usedEnums as $enum) {
-            $lines[] = "use HybridTM\\Enums\\{$enum};";
+        return $prologue . "\n"
+            . "/**\n"
+            . " * HybridTM — {$this->modelTitle}\n"
+            . " *\n"
+            . " * {$this->modelDescription}\n"
+            . " *\n"
+            . " * Generated by: php bin/hybridtm init\n"
+            . ' * Date: ' . date('Y-m-d') . "\n"
+            . " */\n\n"
+            . $rest;
+    }
+
+    private function buildModel(): ThreatModel
+    {
+        $model = new ThreatModel($this->modelTitle);
+        $model->description = $this->modelDescription;
+        $model->author = $this->modelAuthor;
+        // Matches the wizard's historical output: the generated file is
+        // stamped with its creation date. This wall-clock read belongs
+        // here, at the CLI orchestration layer — not inside PhpDslWriter,
+        // which must stay deterministic for every other caller.
+        $model->date = date('Y-m-d');
+        $model->businessCriticality = BusinessCriticality::from($this->modelCriticality);
+
+        foreach ($this->dataAssets as $da) {
+            $asset = new DataAsset($da['id'], $da['name']);
+            $asset->description = $da['desc'];
+            $asset->confidentiality = Confidentiality::from($da['confidentiality']);
+            $asset->integrity = Integrity::from($da['integrity']);
+            $asset->availability = Availability::from($da['availability']);
+            $asset->origin = DataOrigin::from($da['origin']);
+            $asset->quantity = Quantity::from($da['quantity']);
+            $model->addDataAsset($asset);
         }
-        $lines[] = '';
 
-        // ── Model metadata ────────────────────────────────────────────────
-        $lines[] = '// ── Model metadata ' . str_repeat('─', 58);
-        $lines[] = '';
-        $title = $this->esc($this->modelTitle);
-        $lines[] = "\$model = new ThreatModel('{$title}');";
-        $lines[] = "\$model->description         = '{$this->esc($this->modelDescription)}';";
-        $lines[] = "\$model->author              = '{$this->esc($this->modelAuthor)}';";
-        $lines[] = "\$model->date                = '" . date('Y-m-d') . "';";
-        $crit = $this->enumCase(BusinessCriticality::class, $this->modelCriticality);
-        $lines[] = "\$model->businessCriticality = BusinessCriticality::{$crit};";
-        $lines[] = '';
+        foreach ($this->technicalAssets as $ta) {
+            $asset = new TechnicalAsset($ta['id'], $ta['name']);
+            $asset->description = $ta['desc'];
+            $asset->type = AssetType::from($ta['type']);
+            $asset->technology = Technology::from($ta['technology']);
+            $asset->machine = Machine::from($ta['machine']);
+            $asset->size = Size::from($ta['size']);
+            $asset->internet = $ta['internet'];
+            $asset->encryption = Encryption::from($ta['encryption']);
+            $asset->confidentiality = Confidentiality::from($ta['confidentiality']);
+            $asset->integrity = Integrity::from($ta['integrity']);
+            $asset->availability = Availability::from($ta['availability']);
+            $asset->dataAssetsProcessed = $ta['processedData'];
+            $asset->dataAssetsStored = $ta['storedData'];
+            $model->addTechnicalAsset($asset);
+        }
 
-        // ── Data assets ───────────────────────────────────────────────────
-        if ($this->dataAssets !== []) {
-            $lines[] = '// ── Data Assets ' . str_repeat('─', 61);
-            $lines[] = '';
-            foreach ($this->dataAssets as $da) {
-                $var = $this->varName($da['id']);
-                $lines[] = "\${$var} = new DataAsset('{$da['id']}', '{$this->esc($da['name'])}');";
-                if ($da['desc'] !== '') {
-                    $lines[] = "\${$var}->description     = '{$this->esc($da['desc'])}';";
-                }
-                $lines[] = "\${$var}->confidentiality = Confidentiality::{$this->enumCase(Confidentiality::class, $da['confidentiality'])};";
-                $lines[] = "\${$var}->integrity       = Integrity::{$this->enumCase(Integrity::class, $da['integrity'])};";
-                $lines[] = "\${$var}->availability    = Availability::{$this->enumCase(Availability::class, $da['availability'])};";
-                $lines[] = "\${$var}->origin          = DataOrigin::{$this->enumCase(DataOrigin::class, $da['origin'])};";
-                $lines[] = "\${$var}->quantity        = Quantity::{$this->enumCase(Quantity::class, $da['quantity'])};";
-                $lines[] = "\$model->addDataAsset(\${$var});";
-                $lines[] = '';
+        foreach ($this->communicationLinks as $cl) {
+            $source = $model->getTechnicalAsset($cl['source']);
+            if ($source === null) {
+                throw new \RuntimeException("Unknown source technical asset: {$cl['source']}");
             }
+            $link = $source->communicatesTo(
+                targetId: $cl['target'],
+                protocol: Protocol::from($cl['protocol']),
+                authentication: Authentication::from($cl['authentication']),
+                authorization: Authorization::from($cl['authorization']),
+                description: $cl['desc'],
+            );
+            $link->dataSent = $cl['sentData'];
+            $link->dataReceived = $cl['receivedData'];
         }
 
-        // ── Technical assets ──────────────────────────────────────────────
-        if ($this->technicalAssets !== []) {
-            $lines[] = '// ── Technical Assets ' . str_repeat('─', 56);
-            $lines[] = '';
-            foreach ($this->technicalAssets as $ta) {
-                $var = $this->varName($ta['id']);
-                $lines[] = "\${$var} = new TechnicalAsset('{$ta['id']}', '{$this->esc($ta['name'])}');";
-                if ($ta['desc'] !== '') {
-                    $lines[] = "\${$var}->description          = '{$this->esc($ta['desc'])}';";
-                }
-                $lines[] = "\${$var}->type                 = AssetType::{$this->enumCase(AssetType::class, $ta['type'])};";
-                $lines[] = "\${$var}->technology           = Technology::{$this->enumCase(Technology::class, $ta['technology'])};";
-                $lines[] = "\${$var}->machine              = Machine::{$this->enumCase(Machine::class, $ta['machine'])};";
-                $lines[] = "\${$var}->size                 = Size::{$this->enumCase(Size::class, $ta['size'])};";
-                $lines[] = "\${$var}->internet             = " . ($ta['internet'] ? 'true' : 'false') . ';';
-                $lines[] = "\${$var}->encryption           = Encryption::{$this->enumCase(Encryption::class, $ta['encryption'])};";
-                $lines[] = "\${$var}->confidentiality      = Confidentiality::{$this->enumCase(Confidentiality::class, $ta['confidentiality'])};";
-                $lines[] = "\${$var}->integrity            = Integrity::{$this->enumCase(Integrity::class, $ta['integrity'])};";
-                $lines[] = "\${$var}->availability         = Availability::{$this->enumCase(Availability::class, $ta['availability'])};";
-                if ($ta['processedData'] !== []) {
-                    $arr = "['" . implode("', '", $ta['processedData']) . "']";
-                    $lines[] = "\${$var}->dataAssetsProcessed = {$arr};";
-                }
-                if ($ta['storedData'] !== []) {
-                    $arr = "['" . implode("', '", $ta['storedData']) . "']";
-                    $lines[] = "\${$var}->dataAssetsStored    = {$arr};";
-                }
-                $lines[] = "\$model->addTechnicalAsset(\${$var});";
-                $lines[] = '';
+        foreach ($this->trustBoundaries as $tb) {
+            $boundary = new TrustBoundary($tb['id'], $tb['name'], TrustBoundaryType::from($tb['type']));
+            $boundary->description = $tb['desc'];
+            if ($tb['assets'] !== []) {
+                $boundary->addAssets(...$tb['assets']);
             }
+            $model->addTrustBoundary($boundary);
         }
 
-        // ── Communication links ───────────────────────────────────────────
-        if ($this->communicationLinks !== []) {
-            $lines[] = '// ── Communication Links ' . str_repeat('─', 53);
-            $lines[] = '';
-            foreach ($this->communicationLinks as $cl) {
-                $srcVar = $this->varName($cl['source']);
-                $lines[] = "\${$srcVar}->communicatesTo(";
-                $lines[] = "    targetId: '{$cl['target']}',";
-                $lines[] = "    protocol: Protocol::{$this->enumCase(Protocol::class, $cl['protocol'])},";
-                $lines[] = "    authentication: Authentication::{$this->enumCase(Authentication::class, $cl['authentication'])},";
-                $lines[] = "    authorization: Authorization::{$this->enumCase(Authorization::class, $cl['authorization'])},";
-                if ($cl['desc'] !== '') {
-                    $lines[] = "    description: '{$this->esc($cl['desc'])}',";
-                }
-                $lines[] = ');';
-                $lines[] = '';
-            }
-        }
-
-        // ── Trust boundaries ──────────────────────────────────────────────
-        if ($this->trustBoundaries !== []) {
-            $lines[] = '// ── Trust Boundaries ' . str_repeat('─', 56);
-            $lines[] = '';
-            foreach ($this->trustBoundaries as $tb) {
-                $var = $this->varName($tb['id']);
-                $lines[] = "\${$var} = new TrustBoundary('{$tb['id']}', '{$this->esc($tb['name'])}', TrustBoundaryType::{$this->enumCase(TrustBoundaryType::class, $tb['type'])});";
-                if ($tb['desc'] !== '') {
-                    $lines[] = "\${$var}->description = '{$this->esc($tb['desc'])}';";
-                }
-                if ($tb['assets'] !== []) {
-                    $assetList = "'" . implode("', '", $tb['assets']) . "'";
-                    $lines[] = "\${$var}->addAssets({$assetList});";
-                }
-                $lines[] = "\$model->addTrustBoundary(\${$var});";
-                $lines[] = '';
-            }
-        }
-
-        $lines[] = 'return $model;';
-        $lines[] = '';
-
-        return implode("\n", $lines);
+        return $model;
     }
 
     // ══════════════════════════════════════════════════════════════════════════
@@ -647,12 +662,12 @@ ASCII;
     private function registerStyles(OutputInterface $output): void
     {
         $formatter = $output->getFormatter();
-        $formatter->setStyle('brand',   new OutputFormatterStyle(self::C_BRAND));
-        $formatter->setStyle('accent',  new OutputFormatterStyle(self::C_ACCENT));
+        $formatter->setStyle('brand', new OutputFormatterStyle(self::C_BRAND));
+        $formatter->setStyle('accent', new OutputFormatterStyle(self::C_ACCENT));
         $formatter->setStyle('success', new OutputFormatterStyle(self::C_SUCCESS));
-        $formatter->setStyle('warn',    new OutputFormatterStyle(self::C_WARN));
-        $formatter->setStyle('dim',     new OutputFormatterStyle(self::C_DIM));
-        $formatter->setStyle('white',   new OutputFormatterStyle(self::C_WHITE));
+        $formatter->setStyle('warn', new OutputFormatterStyle(self::C_WARN));
+        $formatter->setStyle('dim', new OutputFormatterStyle(self::C_DIM));
+        $formatter->setStyle('white', new OutputFormatterStyle(self::C_WHITE));
     }
 
     private function br(): void
@@ -660,57 +675,8 @@ ASCII;
         $this->output->writeln('');
     }
 
-    private function esc(string $value): string
-    {
-        return str_replace("'", "\\'", $value);
-    }
-
-    private function varName(string $kebab): string
-    {
-        return lcfirst(str_replace(' ', '', ucwords(str_replace('-', ' ', $kebab))));
-    }
-
     private function humanize(string $kebab): string
     {
         return ucwords(str_replace('-', ' ', $kebab));
-    }
-
-    /** Returns the PHP case name for an enum value string. */
-    private function enumCase(string $enumClass, string $value): string
-    {
-        foreach ($enumClass::cases() as $case) {
-            if ($case->value === $value) {
-                return $case->name;
-            }
-        }
-        return $enumClass::cases()[0]->name;
-    }
-
-    /** @return string[] Enum short class names that are referenced. */
-    private function collectUsedEnums(): array
-    {
-        $enums = ['AssetType', 'Availability', 'BusinessCriticality', 'Confidentiality', 'Integrity'];
-
-        if ($this->dataAssets !== []) {
-            $enums[] = 'DataOrigin';
-            $enums[] = 'Quantity';
-        }
-        if ($this->technicalAssets !== []) {
-            $enums[] = 'Encryption';
-            $enums[] = 'Machine';
-            $enums[] = 'Size';
-            $enums[] = 'Technology';
-        }
-        if ($this->communicationLinks !== []) {
-            $enums[] = 'Authentication';
-            $enums[] = 'Authorization';
-            $enums[] = 'Protocol';
-        }
-        if ($this->trustBoundaries !== []) {
-            $enums[] = 'TrustBoundaryType';
-        }
-
-        sort($enums);
-        return array_unique($enums);
     }
 }

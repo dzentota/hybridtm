@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SENSITIVE-DATA-IN-LOGS
+  version: 1.0.0
+spec:
+  title: 'Sensitive data can end up in logs or build output'
+  summary: 'The component has no mechanism to scrub secrets, credentials, or personal data before writing to logs or CI output, so anyone with log access can recover them long after the original request.'
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [532]
+  countermeasures:
+      - CM-SCRUB-SENSITIVE-DATA

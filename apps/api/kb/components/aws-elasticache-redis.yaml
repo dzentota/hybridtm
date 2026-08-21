@@ -1,0 +1,24 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-elasticache-redis
+  name: AWS ElastiCache (Redis)
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [data, datastore, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/cache
+  mapping:
+    type: datastore
+    technologies: [database]
+  properties:
+    - id: dangerous_commands_restricted
+      label: 'Destructive/admin commands disabled or renamed'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - cache/dangerous-commands-enabled

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-REQUEST-SIZE-LIMIT
+  version: 1.0.0
+spec:
+  title: 'Application enforces no maximum request size'
+  summary: 'The application accepts request bodies of unbounded size, so a single oversized request can exhaust memory, disk (for uploads), or processing time, denying service to other users.'
+  stride: [denial-of-service]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [400]
+  countermeasures:
+      - CM-ENFORCE-REQUEST-SIZE-LIMIT

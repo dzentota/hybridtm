@@ -1,0 +1,35 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: api-gateway-generic
+  name: API Gateway
+  version: 1.0.0
+  categories: [web, edge]
+  icon: material-symbols:api
+  maturity: stable
+spec:
+  extends: abstract/reverse-proxy
+  mapping:
+    type: process
+    technologies: [reverse-proxy]
+  traits: [api_gateway]
+  properties:
+    - id: rate_limiting_enabled
+      label: 'Rate limiting enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: request_validation_enabled
+      label: 'Validates requests against a schema'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: credentials_in_header_only
+      label: 'Requires API keys/tokens in a header, not the URL'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - api/rate-limiting-missing
+    - api/no-request-validation
+    - api/key-in-url

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-WAF-NOT-BLOCKING
+  version: 1.0.0
+spec:
+  title: 'WAF deployed in log-only (non-blocking) mode'
+  summary: 'A web application firewall is deployed but configured to log suspicious requests rather than block them, so it detects attacks without stopping any of them.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [693]
+  countermeasures:
+      - CM-WAF-BLOCK-MODE

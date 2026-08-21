@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: traffic_forwarding
+spec:
+  label: 'Forwards traffic'
+  description: 'Sits between a client and an upstream service, forwarding requests.'
+  category: network
+  derived: false

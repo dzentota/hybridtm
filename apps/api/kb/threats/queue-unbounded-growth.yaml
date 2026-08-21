@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-QUEUE-UNBOUNDED-GROWTH
+  version: 1.0.0
+spec:
+  title: 'Message queue has no bound on queue size'
+  summary: 'The queue has no maximum length or memory limit configured, so a slow consumer or a burst of producers can grow it until the broker runs out of memory or disk, taking down every consumer sharing that broker.'
+  stride: [denial-of-service]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [770]
+  countermeasures:
+      - CM-LIMIT-QUEUE-SIZE

@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: model/no-trust-boundaries
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: model
+  description: 'A non-trivial model declares zero trust boundaries.'
+  when:
+    all:
+      - "model.trustBoundaryCount == 0"
+      - "model.technicalAssetCount > 3"
+  then:
+    - raise: THREAT-NO-TRUST-BOUNDARIES-MODELED
+      evidence: "\"{{ model.title }}\" has {{ model.technicalAssetCount }} components and no trust boundaries."
+      require: [CM-DEFINE-TRUST-BOUNDARIES]

@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-HTTP-TRACE-ENABLED
+  version: 1.0.0
+spec:
+  title: 'Web server accepts the HTTP TRACE method'
+  summary: 'The server responds to TRACE requests by echoing them back, which combined with a cross-site scripting bug lets an attacker read HttpOnly cookies via the classic Cross-Site Tracing technique.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [16]
+      pci_dss_4: ['2.2.1']
+  countermeasures:
+      - CM-DISABLE-TRACE-METHOD

@@ -1,0 +1,150 @@
+/* Design tokens (T-7.2). Severity never relies on color alone (WCAG 1.4.1,
+   §8.4 of the plan) — each severity also carries a distinct icon glyph and
+   fill pattern, applied via the data-severity attribute on badges/nodes. */
+
+:root {
+  --surface-0: #ffffff;
+  --surface-1: #f8fafc;
+  --surface-2: #eef2f6;
+  --border: #d8dee6;
+  --text-primary: #0f172a;
+  --text-secondary: #55606f;
+  --accent: #2563eb;
+  --accent-contrast: #ffffff;
+
+  --severity-critical: #b91c1c;
+  --severity-high: #ea580c;
+  --severity-elevated: #ca8a04;
+  --severity-medium: #0891b2;
+  --severity-low: #64748b;
+
+  --shadow-node: 0 1px 2px rgba(15, 23, 42, 0.08), 0 1px 1px rgba(15, 23, 42, 0.04);
+  --radius-node: 10px;
+}
+
+:root[data-theme='dark'] {
+  --surface-0: #0f1420;
+  --surface-1: #161d2b;
+  --surface-2: #1e2738;
+  --border: #2c3648;
+  --text-primary: #e8edf5;
+  --text-secondary: #9aa7ba;
+  --accent: #5b8def;
+  --accent-contrast: #0b1220;
+
+  --severity-critical: #f87171;
+  --severity-high: #fb923c;
+  --severity-elevated: #facc15;
+  --severity-medium: #22d3ee;
+  --severity-low: #94a3b8;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --surface-0: #0f1420;
+    --surface-1: #161d2b;
+    --surface-2: #1e2738;
+    --border: #2c3648;
+    --text-primary: #e8edf5;
+    --text-secondary: #9aa7ba;
+    --accent: #5b8def;
+    --accent-contrast: #0b1220;
+
+    --severity-critical: #f87171;
+    --severity-high: #fb923c;
+    --severity-elevated: #facc15;
+    --severity-medium: #22d3ee;
+    --severity-low: #94a3b8;
+  }
+}
+
+body {
+  background: var(--surface-1);
+  color: var(--text-primary);
+}
+
+/* Generic hover affordance for every clickable control (T-7.x UX pass) —
+   many buttons across the app set their resting background via an inline
+   `style`, which always beats a `hover:bg-…` Tailwind class no matter how
+   specific it is (inline style outranks any selector, pseudo-classes
+   included), so those buttons had zero visible hover feedback. `filter`
+   is never set inline anywhere in this codebase, so this rule has nothing
+   to lose that fight against — it reaches every button/role="button"
+   uniformly regardless of how its background happens to be set. */
+button:not(:disabled):hover,
+[role='button']:hover {
+  filter: brightness(0.95);
+  cursor: pointer;
+}
+:root[data-theme='dark'] button:not(:disabled):hover,
+:root[data-theme='dark'] [role='button']:hover {
+  filter: brightness(1.25);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) button:not(:disabled):hover,
+  :root:not([data-theme='light']) [role='button']:hover {
+    filter: brightness(1.25);
+  }
+}
+
+/* Severity badge: color + glyph + pattern together, never color alone. */
+.severity-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3em;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 0.1em 0.5em;
+  border-radius: 999px;
+  color: var(--accent-contrast);
+}
+.severity-badge[data-severity='critical'] { background: var(--severity-critical); }
+.severity-badge[data-severity='high'] { background: var(--severity-high); }
+.severity-badge[data-severity='elevated'] { background: var(--severity-elevated); color: #1c1400; }
+.severity-badge[data-severity='medium'] { background: var(--severity-medium); }
+.severity-badge[data-severity='low'] { background: var(--severity-low); }
+
+/* Connection handles: default xyflow dots are 6px and easy to miss — make
+   them big enough to see as an obvious "drag to connect" target, and grow
+   further on hover so the affordance is discoverable before the first drag. */
+.hybridtm-handle {
+  width: 12px !important;
+  height: 12px !important;
+  background: var(--surface-0) !important;
+  border: 2px solid var(--accent) !important;
+  transition: transform 0.1s ease, background 0.1s ease;
+}
+.hybridtm-handle:hover {
+  transform: scale(1.6);
+  background: var(--accent) !important;
+}
+
+/* A trust-boundary box being a *node* (not, say, an SVG background layer)
+   means it always paints — and hit-tests — above every edge, since xyflow
+   renders its entire edges pane below its entire nodes pane regardless of
+   any per-node zIndex. Setting `pointer-events: none` on just our own
+   rendered div (see BoundaryNode.tsx) wasn't enough: xyflow wraps every
+   node in its own `.react-flow__node-<type>` container, one level above
+   what our component controls, and *that* wrapper — not our div — is what
+   was still catching the click. Targeting the wrapper class directly here
+   lets clicks fall all the way through to whatever is actually there (a
+   contained component, a data-flow edge, or empty canvas). The boundary
+   itself stays selectable/resizable: BoundaryNode's label and NodeResizer's
+   handles both set their own `pointerEvents: 'all'`, which — since
+   pointer-events:none only removes an element from being a *target*, it
+   doesn't stop a descendant that opts back in — makes them clickable
+   islands inside this otherwise click-through wrapper.
+   `!important` is required, not decorative: xyflow itself sets
+   `pointer-events: all` as an INLINE style on this exact wrapper (confirmed
+   by inspecting the rendered `style=""` attribute), and a plain class rule
+   can never beat an inline style regardless of selector specificity — only
+   `!important` in a stylesheet outranks a non-important inline value. */
+.react-flow__node-boundary {
+  pointer-events: none !important;
+}
+
+.severity-badge[data-severity='critical']::before { content: '⬢'; }
+.severity-badge[data-severity='high']::before { content: '⬤'; }
+.severity-badge[data-severity='elevated']::before { content: '◐'; }
+.severity-badge[data-severity='medium']::before { content: '◯'; }
+.severity-badge[data-severity='low']::before { content: '─'; }

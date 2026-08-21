@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-ANOMALOUS-LOGIN-DETECTION
+  version: 1.0.0
+spec:
+  title: 'Identity provider has no anomalous-login detection'
+  summary: 'Logins are accepted with no check for impossible travel, new device, or unusual location/time, so credential theft via phishing or a leaked password often goes unnoticed until further damage is done.'
+  stride: [spoofing]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [307]
+      pci_dss_4: ['10.4.1']
+  countermeasures:
+      - CM-DETECT-ANOMALOUS-LOGINS

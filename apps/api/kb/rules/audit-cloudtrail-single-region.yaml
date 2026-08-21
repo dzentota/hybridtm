@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: audit/cloudtrail-single-region
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Audit trail only covers a single region.'
+  when:
+    all:
+      - "component.hasTrait('audit_trail')"
+      - "component.props.bool('multi_region_enabled') == false"
+  then:
+    - raise: THREAT-CLOUDTRAIL-SINGLE-REGION
+      evidence: "{{ component.name }} does not cover all regions."
+      require: [CM-ENABLE-MULTI-REGION-TRAIL]
+    - suggest_fix:
+        set: { multi_region_enabled: true }
+        label: 'Enable multi-region coverage'

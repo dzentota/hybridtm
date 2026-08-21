@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATA-AT-REST-UNENCRYPTED
+  version: 1.0.0
+spec:
+  title: Unencrypted data at rest
+  summary: A datastore holds confidential data without disk- or DBMS-level encryption.
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+    cwe: [311, 312]
+    pci_dss_4: ['3.5.1']
+  countermeasures: [CM-ENCRYPT-AT-REST]

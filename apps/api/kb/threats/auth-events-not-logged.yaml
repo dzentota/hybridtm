@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-AUTH-EVENTS-NOT-LOGGED
+  version: 1.0.0
+spec:
+  title: 'Identity provider does not log authentication events'
+  summary: 'Successful and failed login attempts are not logged, so there is no record to review after a suspected account compromise, and no data source for detecting brute-force or credential-stuffing patterns after the fact.'
+  stride: [repudiation]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [778]
+      pci_dss_4: ['10.2.1']
+  countermeasures:
+      - CM-LOG-AUTH-EVENTS

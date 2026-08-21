@@ -1,0 +1,80 @@
+{
+    "ruleId": "app/input-validation-missing",
+    "expectedThreatId": "THREAT-INPUT-VALIDATION-MISSING",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "app",
+                "name": "app",
+                "properties": {
+                    "input_validation": false
+                },
+                "traits": [
+                    "app_runtime"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "app",
+                "name": "app",
+                "properties": {
+                    "input_validation": true
+                },
+                "traits": [
+                    "app_runtime"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

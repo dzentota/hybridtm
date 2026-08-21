@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-INPUT-VALIDATION
+  version: 1.0.0
+spec:
+  title: 'Validate and sanitize all untrusted input'
+  description: 'Validate input at the trust boundary using an allow-list schema, and use parameterized queries/output encoding for anything that reaches a downstream interpreter.'
+  cost: medium
+  effort: medium
+  effectiveness: high
+  category: preventive

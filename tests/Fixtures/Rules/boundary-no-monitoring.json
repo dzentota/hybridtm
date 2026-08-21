@@ -1,0 +1,110 @@
+{
+    "ruleId": "boundary/no-monitoring",
+    "expectedThreatId": "THREAT-BOUNDARY-NO-MONITORING",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "svc",
+                "name": "svc",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "svc"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "svc",
+                "name": "svc",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "collector",
+                "name": "collector",
+                "properties": [],
+                "traits": [
+                    "observability_collector"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "svc",
+                    "collector"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

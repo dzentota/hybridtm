@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: directory_service
+spec:
+  label: 'Directory service'
+  description: 'Stores identities and groups for lookup via LDAP or a similar protocol.'
+  category: identity
+  derived: false

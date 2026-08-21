@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-desktop
+  name: Desktop application
+  version: 1.0.0
+  categories: [client]
+  icon: mdi:monitor
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [desktop]
+  properties: []
+  rules: []

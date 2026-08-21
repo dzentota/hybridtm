@@ -1,0 +1,134 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/app-runtime
+  name: Abstract Application Runtime
+  version: 1.0.0
+  categories: [application]
+  maturity: stable
+  icon: mdi:application-braces-outline
+  color: '#6366f1'
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [web-application]
+    machine: container
+    customDevelopedParts: true
+  traits: [app_runtime, processing_end_user_requests]
+  properties:
+    - id: input_validation
+      label: 'Validates and sanitizes untrusted input'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: debug_mode
+      label: 'Debug/verbose error mode enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: csrf_protection_enabled
+      label: 'CSRF protection enabled'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: session_cookie_secure
+      label: 'Session cookie is Secure + HttpOnly'
+      type: boolean
+      default: true
+      group: 'Cryptography'
+    - id: dependency_audit_enabled
+      label: 'Dependencies are scanned for known vulnerabilities'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+    - id: requires_authentication
+      label: 'Requires authentication before processing requests'
+      type: boolean
+      default: true
+      group: 'Access control'
+    - id: rate_limiting_enabled
+      label: 'Rate limits requests per client'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: cors_restricted
+      label: 'CORS restricted to an explicit origin allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: request_size_limit_enforced
+      label: 'Maximum request size enforced'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: ssrf_protection_enabled
+      label: 'Outbound requests validated against an allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: safe_deserialization_enabled
+      label: 'Untrusted input deserialized with a data-only format'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: session_regenerated_on_login
+      label: 'Session ID regenerated on login'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: upload_type_validated
+      label: 'Uploaded file content is validated, not just its extension'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: redirect_validation_enabled
+      label: 'Redirect targets validated against an allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: xxe_protection_enabled
+      label: 'XML parser has external entity resolution disabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: object_level_authorization_enforced
+      label: 'Object access checked against caller authorization'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: mass_assignment_protected
+      label: 'Request binding uses an explicit field allow-list'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: session_cookie_samesite
+      label: 'Session cookie has SameSite=Lax or Strict'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: secrets_externalized
+      label: 'Credentials are externalized, not hardcoded in source'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - app/input-validation-missing
+    - app/debug-mode-enabled
+    - app/csrf-protection-disabled
+    - web/session-cookie-insecure
+    - app/dependency-audit-disabled
+    - app/missing-authentication
+    - app/rate-limiting-missing
+    - app/cors-wildcard-origin
+    - app/no-request-size-limit
+    - app/ssrf-missing-protection
+    - app/insecure-deserialization
+    - app/session-fixation
+    - app/unrestricted-file-upload
+    - app/open-redirect
+    - app/xxe
+    - app/idor
+    - app/mass-assignment
+    - app/cookie-samesite-missing
+    - app/hardcoded-secrets

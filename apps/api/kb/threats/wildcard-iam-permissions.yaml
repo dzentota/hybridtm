@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-WILDCARD-IAM-PERMISSIONS
+  version: 1.0.0
+spec:
+  title: 'IAM policy uses a wildcard action or resource'
+  summary: 'The execution role''s policy grants `Action: "*"` or `Resource: "*"` (or an overly broad service-level wildcard) instead of enumerating exactly what is needed, so a future unrelated permission added to the account can be silently usable by this resource too.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [269]
+      pci_dss_4: ['7.2.2']
+  countermeasures:
+      - CM-AVOID-WILDCARD-IAM

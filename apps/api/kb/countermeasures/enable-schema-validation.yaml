@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENABLE-SCHEMA-VALIDATION
+  version: 1.0.0
+spec:
+  title: 'Enable document/schema validation on collections'
+  description: 'Define and enforce a JSON schema (or the database''s equivalent validation rules) on each collection so malformed or unexpectedly-shaped documents are rejected at write time.'
+  cost: low
+  effort: medium
+  effectiveness: medium
+  category: preventive

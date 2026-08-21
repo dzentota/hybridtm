@@ -1,0 +1,42 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/client
+  name: Abstract Client
+  version: 1.0.0
+  categories: [client]
+  maturity: stable
+  icon: mdi:devices
+  color: '#8b5cf6'
+  abstract: true
+spec:
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+    machine: physical
+    customDevelopedParts: false
+    defaults:
+      confidentiality: internal
+  traits: [client_device, processing_end_user_requests]
+  # certificate_pinning_enabled/jailbreak_root_detection_enabled/
+  # app_attestation_enabled used to live here and inherited onto every
+  # client type via `extends`, including Browser (SPA) and Desktop — a
+  # laptop browser can neither pin a certificate the way a native app does,
+  # detect a jailbroken/rooted OS, nor attest itself to the backend, so
+  # those toggles (and the "why is this here" confusion they caused) only
+  # belong on client-mobile-app now, the one client type they're actually
+  # about.
+  properties:
+    - id: auto_update_enabled
+      label: 'Receives automatic security updates'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: local_secret_storage_secure
+      label: 'Stores secrets in platform keychain/keystore'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - client/no-auto-update
+    - client/insecure-local-secret-storage

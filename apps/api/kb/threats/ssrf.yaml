@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SSRF
+  version: 1.0.0
+spec:
+  title: 'Application has no protection against server-side request forgery'
+  summary: 'The application makes outbound HTTP requests to URLs influenced by user input with no allow-list or metadata-endpoint blocking, so an attacker can make the server fetch internal-only URLs (cloud metadata services, internal admin panels) on their behalf.'
+  stride: [elevation-of-privilege, information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [918]
+      capec: [664]
+      owasp_asvs: ['V12.6.1']
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-PREVENT-SSRF

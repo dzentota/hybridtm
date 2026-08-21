@@ -1,0 +1,61 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/cicd-pipeline
+  name: Abstract CI/CD Pipeline
+  version: 1.0.0
+  categories: [cicd]
+  maturity: stable
+  icon: mdi:infinity
+  color: '#f97316'
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [build-pipeline]
+    machine: container
+  traits: [cicd_pipeline]
+  properties:
+    - id: secrets_in_logs_prevented
+      label: 'Build logs are scrubbed of secrets'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: third_party_actions_pinned
+      label: 'Third-party steps pinned to an immutable digest'
+      type: boolean
+      default: false
+      group: 'Supply chain'
+    - id: required_review_enabled
+      label: 'Deploys require a reviewed approval'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: sast_scanning_enabled
+      label: 'Runs static application security testing'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: secret_scanning_enabled
+      label: 'Scans commits/history for secrets'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: runner_permissions_scoped
+      label: 'Job token permissions scoped to the minimum needed'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: artifact_provenance_generated
+      label: 'Generates verifiable build provenance'
+      type: boolean
+      default: false
+      group: 'Supply chain'
+  rules:
+    - cicd/secrets-in-build-logs
+    - cicd/unpinned-dependencies
+    - cicd/no-required-review
+    - cicd/no-sast-scanning
+    - cicd/no-secret-scanning
+    - cicd/excessive-runner-permissions
+    - cicd/no-artifact-provenance

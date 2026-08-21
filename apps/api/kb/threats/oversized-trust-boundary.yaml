@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-OVERSIZED-TRUST-BOUNDARY
+  version: 1.0.0
+spec:
+  title: 'Trust boundary contains an unusually large number of components'
+  summary: 'A single trust boundary groups a large number of components, so a single network-level compromise anywhere inside it reaches everything else in the group — the boundary is too coarse to limit blast radius meaningfully.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-LIMIT-BOUNDARY-SIZE

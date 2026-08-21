@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATASTORE-EXCESSIVE-DB-PRIVILEGES
+  version: 1.0.0
+spec:
+  title: 'Application connects to the datastore with an over-privileged account'
+  summary: 'The application-facing database user has broader privileges than its queries need (e.g. superuser/admin, or write access to tables it only reads), so a SQL injection or a leaked connection string grants far more than the specific access the application actually requires.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [250, 269]
+      pci_dss_4: ['7.2.2']
+  countermeasures:
+      - CM-USE-LEAST-PRIVILEGE-DB-ROLE

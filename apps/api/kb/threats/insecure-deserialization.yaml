@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-INSECURE-DESERIALIZATION
+  version: 1.0.0
+spec:
+  title: 'Application deserializes untrusted data with a general-purpose deserializer'
+  summary: 'User-controlled input is deserialized with a format/library capable of reconstructing arbitrary objects (native PHP/Java/Python/.NET serialization) rather than a safe data-only format, so a crafted payload can trigger remote code execution via gadget chains in the object graph.'
+  stride: [tampering, elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: very-high
+  standards:
+      cwe: [502]
+      capec: [586]
+      owasp_asvs: ['V5.5.3']
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-AVOID-INSECURE-DESERIALIZATION

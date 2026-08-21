@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SMTP-OPEN-RELAY
+  version: 1.0.0
+spec:
+  title: 'Mail server is configured as an open relay'
+  summary: 'The SMTP server accepts and forwards mail from senders it does not authenticate or authorize, so it can be used by anyone on the internet to send spam or phishing mail that appears to originate from this domain.'
+  stride: [spoofing]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [16]
+  countermeasures:
+      - CM-DISABLE-OPEN-RELAY

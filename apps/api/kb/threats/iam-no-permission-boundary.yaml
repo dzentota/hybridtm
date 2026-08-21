@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-IAM-NO-PERMISSION-BOUNDARY
+  version: 1.0.0
+spec:
+  title: 'IAM role has no permission boundary'
+  summary: 'The role has no permission boundary set, so if its policy is ever accidentally widened (by a future change, a misconfigured IaC template, or a compromised deployment pipeline) there is no hard ceiling stopping it from reaching sensitive account-wide actions.'
+  stride: [elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [269]
+      pci_dss_4: ['7.2.2']
+  countermeasures:
+      - CM-SET-PERMISSION-BOUNDARY

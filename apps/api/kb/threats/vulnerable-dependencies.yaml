@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-VULNERABLE-DEPENDENCIES
+  version: 1.0.0
+spec:
+  title: 'Third-party dependencies are not scanned for known vulnerabilities'
+  summary: 'The application ships dependencies with no automated check against known-vulnerability databases, so a disclosed CVE in a library can sit unpatched indefinitely.'
+  stride: [tampering]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [1104, 937]
+      pci_dss_4: ['6.3.1', '6.3.2']
+  countermeasures:
+      - CM-DEPENDENCY-SCANNING

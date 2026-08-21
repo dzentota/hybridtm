@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: client/no-app-attestation
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Backend has no way to verify app/device attestation for this client.'
+  when:
+    all:
+      - "component.hasTrait('client_device')"
+      - "component.hasTrait('mobile_client')"
+      - "component.props.bool('app_attestation_enabled') == false"
+  then:
+    - raise: THREAT-NO-APP-ATTESTATION
+      evidence: "{{ component.name }} has no app/device attestation."
+      require: [CM-ENABLE-APP-ATTESTATION]
+    - suggest_fix:
+        set: { app_attestation_enabled: true }
+        label: 'Enable app/device attestation'

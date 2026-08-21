@@ -71,4 +71,33 @@ Lists DataAsset IDs this component handles.
 5. Set `readonly: true` on read-only data flows.
 6. Run `php bin/hybridtm compile` after every change.
 
-## Full reference: .github/copilot-instructions.md
+## Knowledge Base & Rule Engine (component properties, KB authoring)
+
+Beyond attributes, `threat-model.php` assets can carry `traits` (a plain
+string list) and `properties` (a `PropertyBag`) that the Rule Engine's
+KB-driven rules match against:
+
+```php
+$asset->traits = ['datastore', 'sql_engine'];
+$asset->properties->set('encryption_at_rest', false);
+```
+
+If asked to add a new KB component/threat/countermeasure/rule (YAML
+under `apps/api/kb/`, schemas in `schema/kb/*.json`, canonical examples
+in `examples/kb/*.json`): a component's own `rules:` list is
+palette-display metadata only — every component-scope rule in the KB
+evaluates against every asset in the model, filtered solely by that
+rule's own `when` condition. Put a property on the abstract parent all
+trait-sharing components inherit from (not on one concrete leaf), or
+scope the rule's `when` with a trait specific enough that only the
+intended components have it — otherwise an unrelated component sharing
+the same broad trait gets evaluated against a property it never set,
+and an unset property reading as its zero value can spuriously trigger
+the rule. Full detail, the sandboxed expression surface
+(`component.hasTrait(...)`, `component.props.bool(...)`, etc.), and a
+worked rule example: see `SKILL.md`'s **Knowledge Base** and **Rule
+Engine & Analysis** sections.
+
+`php bin/hybridtm analyze --infra=threat-model.php --kb=<dir> --format=table` runs the rule-based analysis directly (separate from `bin/hybridtm compile`'s Threagile-YAML export).
+
+## Full reference: .github/copilot-instructions.md and SKILL.md

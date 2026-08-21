@@ -1,0 +1,29 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: threat-actor-compromised-third-party
+  name: Compromised Third-Party / Supply Chain
+  version: 1.0.0
+  categories: [actor]
+  icon: mdi:handshake-outline
+  maturity: stable
+spec:
+  extends: abstract/threat-actor
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+  traits: []
+  properties:
+    - id: privilege_level
+      label: 'Privilege level this actor holds'
+      type: enum
+      values: [none, user, admin, system]
+      default: user
+      group: 'Actor profile'
+    - id: capability
+      label: 'Sophistication / resources'
+      type: enum
+      values: [script_kiddie, advanced, apt, automated]
+      default: advanced
+      group: 'Actor profile'
+  rules: []

@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: client_device
+spec:
+  label: 'Client device'
+  description: "Runs on end-user-controlled hardware, outside the organization's trust zone."
+  category: exposure
+  derived: false

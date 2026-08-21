@@ -1,0 +1,24 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/nosql-db
+  name: Abstract NoSQL Database
+  version: 1.0.0
+  categories: [storage, data]
+  maturity: stable
+  icon: mdi:database-search-outline
+  color: '#14b8a6'
+  abstract: true
+spec:
+  extends: abstract/datastore
+  mapping:
+    type: datastore
+  traits: [nosql_engine]
+  properties:
+    - id: schema_validation_enabled
+      label: 'Document/schema validation enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - nosql/no-schema-validation

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cicd/no-required-review
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'CI/CD pipeline can deploy without a required reviewed approval.'
+  when:
+    all:
+      - "component.hasTrait('cicd_pipeline')"
+      - "component.props.bool('required_review_enabled') == false"
+  then:
+    - raise: THREAT-NO-REQUIRED-REVIEW
+      evidence: "{{ component.name }} does not require a reviewed approval before deploying."
+      require: [CM-REQUIRE-CODE-REVIEW]
+    - suggest_fix:
+        set: { required_review_enabled: true }
+        label: 'Require a reviewed approval'

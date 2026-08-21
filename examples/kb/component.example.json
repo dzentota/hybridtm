@@ -1,0 +1,63 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Component",
+  "metadata": {
+    "id": "web-server-nginx",
+    "name": "Nginx",
+    "version": "1.4.0",
+    "vendor": "F5 NGINX",
+    "categories": ["web", "edge", "proxy"],
+    "icon": "simple-icons:nginx",
+    "color": "#009639",
+    "docs": "https://nginx.org/en/docs/",
+    "maturity": "stable",
+    "since": "1.0.0"
+  },
+  "spec": {
+    "extends": "abstract/reverse-proxy",
+    "mapping": {
+      "type": "process",
+      "technologies": ["reverse-proxy", "web-server", "load-balancer"],
+      "machine": "container",
+      "size": "component",
+      "customDevelopedParts": false,
+      "defaults": {
+        "confidentiality": "internal",
+        "integrity": "important",
+        "availability": "important",
+        "encryption": "none"
+      }
+    },
+    "traits": [
+      "traffic_forwarding",
+      "tls_terminator",
+      "http_server",
+      "less_protected_type",
+      "processing_end_user_requests"
+    ],
+    "ports": {
+      "inbound": [
+        { "id": "client", "label": "Client traffic", "protocols": ["http", "https", "ws", "wss"], "cardinality": "many" }
+      ],
+      "outbound": [
+        { "id": "upstream", "label": "Upstream", "protocols": ["http", "https"], "cardinality": "many" },
+        { "id": "logs", "label": "Logs", "protocols": ["text"], "cardinality": "one", "optional": true }
+      ]
+    },
+    "properties": [
+      { "id": "internet_facing", "label": "Accepts internet traffic", "type": "boolean", "default": false, "maps_to": "asset.internet", "group": "Network" },
+      { "id": "tls_terminated", "label": "Terminates TLS", "type": "boolean", "default": true, "group": "Cryptography" },
+      { "id": "tls_min_version", "label": "Minimum TLS version", "type": "enum", "values": ["1.0", "1.1", "1.2", "1.3"], "default": "1.2", "show_if": "props.tls_terminated == true", "group": "Cryptography" },
+      { "id": "version", "label": "Nginx version", "type": "string", "pattern": "^\\d+\\.\\d+(\\.\\d+)?$", "placeholder": "1.27.0", "group": "General", "feeds": "vulnerability_lookup" }
+    ],
+    "rules": [
+      "web/tls-version-obsolete",
+      "web/hsts-missing",
+      "nginx/server-tokens-disclosure"
+    ],
+    "risk_patterns": ["RP-INTERNET-FACING-PROXY"],
+    "hardening_guides": [
+      { "title": "CIS Benchmark for NGINX", "url": "https://www.cisecurity.org/benchmark/nginx" }
+    ]
+  }
+}

@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: admin_interface
+spec:
+  label: 'Administrative interface'
+  description: 'Exposes privileged management functionality, not ordinary end-user features.'
+  category: exposure
+  derived: false

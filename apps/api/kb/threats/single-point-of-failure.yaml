@@ -1,0 +1,14 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SINGLE-POINT-OF-FAILURE
+  version: 1.0.0
+spec:
+  title: 'Non-redundant component has more than two dependents'
+  summary: 'A component with no redundancy configured has more than two other components depending on it, so its failure takes down a disproportionate part of the system.'
+  stride: [denial-of-service]
+  base:
+    likelihood: likely
+    impact: high
+  countermeasures:
+      - CM-ADD-REDUNDANCY

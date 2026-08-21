@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: smtp/open-relay
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Mail server relays messages for unauthenticated/unauthorized senders.'
+  when:
+    all:
+      - "component.hasTrait('mail_relay')"
+      - "component.props.bool('open_relay') == true"
+  then:
+    - raise: THREAT-SMTP-OPEN-RELAY
+      evidence: "{{ component.name }} is configured as an open relay."
+      require: [CM-DISABLE-OPEN-RELAY]
+    - suggest_fix:
+        set: { open_relay: false }
+        label: 'Restrict relay to authenticated senders'

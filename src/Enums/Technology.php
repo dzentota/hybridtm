@@ -1,9 +1,12 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Enums;
 
 /** Technology values as accepted by Threagile 1.x (-list-types). */
-enum Technology: string {
+enum Technology: string
+{
     case Unknown = 'unknown-technology';
     case ClientSystem = 'client-system';
     case Browser = 'browser';

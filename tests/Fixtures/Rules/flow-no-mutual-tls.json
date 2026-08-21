@@ -1,0 +1,130 @@
+{
+    "ruleId": "flow/no-mutual-tls",
+    "expectedThreatId": "THREAT-NO-MUTUAL-TLS",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "svca",
+                "name": "svca",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": false
+                }
+            },
+            {
+                "id": "svcb",
+                "name": "svcb",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": false
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "svca",
+                "targetId": "svcb",
+                "protocol": "https",
+                "properties": {
+                    "mutual_tls_enabled": false
+                }
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "svca",
+                "name": "svca",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": false
+                }
+            },
+            {
+                "id": "svcb",
+                "name": "svcb",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": false
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "svca",
+                "targetId": "svcb",
+                "protocol": "https",
+                "properties": {
+                    "mutual_tls_enabled": true
+                }
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

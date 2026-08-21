@@ -1,5 +1,7 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\DSL;
 
 use HybridTM\Enums\AssetType;
@@ -14,6 +16,7 @@ use HybridTM\Enums\Machine;
 use HybridTM\Enums\Protocol;
 use HybridTM\Enums\Size;
 use HybridTM\Enums\Technology;
+use HybridTM\Enums\TechnologyList;
 
 class TechnicalAsset
 {
@@ -25,6 +28,8 @@ class TechnicalAsset
     public string $justificationOutOfScope = '';
     public Size $size = Size::Service;
     public Technology $technology = Technology::WebServiceRest;
+    /** Multi-value technology list (ADR-10). Empty by default — `$technology` alone still fully describes the asset. */
+    public TechnologyList $technologies;
     public bool $internet = false;
     public Machine $machine = Machine::Virtual;
     public Encryption $encryption = Encryption::None;
@@ -46,9 +51,40 @@ class TechnicalAsset
     public array $tags = [];
     /** @var CommunicationLink[] keyed by link id */
     public array $communicationLinks = [];
+    /** KB component properties (§3.2) — never serialized to Threagile YAML. */
+    public PropertyBag $properties;
+    /** @var list<string> declared and derived trait names (§3.3) */
+    public array $traits = [];
 
-    public function __construct(public readonly string $id, public string $name = '') {
-        if ($this->name === '') $this->name = $this->id;
+    public function __construct(public readonly string $id, public string $name = '')
+    {
+        if ($this->name === '') {
+            $this->name = $this->id;
+        }
+        $this->properties = new PropertyBag();
+        $this->technologies = new TechnologyList();
+    }
+
+    /** True if this asset carries any of the given traits (OR semantics). */
+    public function hasTrait(string ...$traits): bool
+    {
+        foreach ($traits as $trait) {
+            if (in_array($trait, $this->traits, true)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** True if this asset carries all of the given traits (AND semantics). */
+    public function hasAllTraits(string ...$traits): bool
+    {
+        foreach ($traits as $trait) {
+            if (!in_array($trait, $this->traits, true)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public function communicatesTo(

@@ -1,0 +1,140 @@
+{
+    "ruleId": "flow/sensitive-data-unencrypted",
+    "expectedThreatId": "THREAT-SENSITIVE-DATA-UNENCRYPTED-FLOW",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "pii",
+                "name": "PII",
+                "confidentiality": "confidential"
+            }
+        ],
+        "components": [
+            {
+                "id": "source",
+                "name": "source",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "source",
+                "targetId": "target",
+                "protocol": "http",
+                "dataSent": [
+                    "pii"
+                ],
+                "dataReceived": []
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [
+            {
+                "id": "pii",
+                "name": "PII",
+                "confidentiality": "confidential"
+            }
+        ],
+        "components": [
+            {
+                "id": "source",
+                "name": "source",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "target",
+                "name": "target",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "f1",
+                "sourceId": "source",
+                "targetId": "target",
+                "protocol": "https",
+                "dataSent": [
+                    "pii"
+                ],
+                "dataReceived": []
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

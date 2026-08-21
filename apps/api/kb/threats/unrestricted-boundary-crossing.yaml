@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNRESTRICTED-BOUNDARY-CROSSING
+  version: 1.0.0
+spec:
+  title: 'Trust boundary crossing has no network-level restriction'
+  summary: 'A link that crosses a trust boundary has neither a VPN/private-network requirement nor IP filtering, so the boundary exists on paper but not on the network — anything that can route to the target can reach it.'
+  stride: [spoofing, elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-RESTRICT-NETWORK-PATH

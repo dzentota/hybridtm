@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-browser-spa
+  name: Browser
+  version: 1.0.0
+  categories: [client]
+  icon: material-symbols:web
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [browser]
+  traits: [browser_client]
+  properties:
+    - id: subresource_integrity_verified
+      label: 'Third-party scripts/styles use Subresource Integrity'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - client/no-subresource-integrity

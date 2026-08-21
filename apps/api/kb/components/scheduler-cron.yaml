@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: scheduler-cron
+  name: Scheduler / Cron
+  version: 1.0.0
+  categories: [application]
+  icon: mdi:clock-outline
+  color: '#6B7280'
+  maturity: stable
+spec:
+  extends: abstract/app-runtime
+  mapping:
+    type: process
+    technologies: [scheduler, batch-processing]
+  traits: [scheduled_task]
+  properties: []
+  rules: []

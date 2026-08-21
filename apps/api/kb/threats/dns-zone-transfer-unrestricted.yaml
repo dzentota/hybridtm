@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DNS-ZONE-TRANSFER-UNRESTRICTED
+  version: 1.0.0
+spec:
+  title: 'DNS zone transfers are not restricted'
+  summary: 'The authoritative DNS server allows zone transfers (AXFR) to any requester, so anyone can dump the entire zone file and enumerate every internal hostname, revealing infrastructure that was never meant to be public.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: low
+  standards:
+      cwe: [200]
+  countermeasures:
+      - CM-RESTRICT-ZONE-TRANSFER

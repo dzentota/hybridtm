@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATASTORE-CONNECTIONS-UNENCRYPTED
+  version: 1.0.0
+spec:
+  title: 'Datastore does not require encrypted client connections'
+  summary: 'The datastore accepts plaintext client connections rather than requiring TLS (e.g. Postgres `require_ssl`/MySQL `require_secure_transport`), so credentials and query results traveling between the application and the datastore are readable to anyone on the network path, independent of whether that path happens to cross a modeled trust boundary.'
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [319]
+      pci_dss_4: ['4.2.1']
+  countermeasures:
+      - CM-ENFORCE-TLS

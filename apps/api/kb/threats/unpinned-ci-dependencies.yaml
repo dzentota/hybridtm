@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNPINNED-CI-DEPENDENCIES
+  version: 1.0.0
+spec:
+  title: 'CI pipeline references third-party steps by mutable tag'
+  summary: 'The pipeline pulls third-party actions or build images by a mutable tag (e.g. a branch name or floating major version) rather than an immutable digest, so a compromised upstream can silently change what runs on every future build.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [1357, 829]
+      pci_dss_4: ['6.3.2']
+  countermeasures:
+      - CM-PIN-CI-DEPENDENCIES

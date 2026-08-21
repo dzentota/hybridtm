@@ -1,0 +1,96 @@
+doctrine:
+    dbal:
+        default_connection: app
+        connections:
+            # Superuser connection — migrations and console commands only.
+            # Never used to serve a request, so it never needs (and must
+            # not have) app.tenant_id set on it.
+            default:
+                url: '%env(resolve:DATABASE_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+            # Request-serving connection (T-9.1): a non-superuser Postgres
+            # role with NOBYPASSRLS, so row-level security policies are
+            # actually enforced rather than silently bypassed the way they
+            # would be for the table-owning superuser role migrations run
+            # as. TenantContextListener sets app.tenant_id on this
+            # connection at the start of every authenticated request.
+            app:
+                url: '%env(resolve:DATABASE_APP_URL)%'
+                profiling_collect_backtrace: '%kernel.debug%'
+
+        # IMPORTANT: You MUST configure your server version,
+        # either here or in the DATABASE_URL env var (see .env file)
+        #server_version: '16'
+    orm:
+        default_entity_manager: app
+        entity_managers:
+            # Used by controllers/repositories via autowired
+            # EntityManagerInterface — every request runs as the
+            # restricted, NOBYPASSRLS role, so a bug can't accidentally
+            # read or write another tenant's rows no matter what query a
+            # future controller writes.
+            app:
+                connection: app
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                auto_mapping: true
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+            # Used only by RunDeepAnalysisHandler (a trusted background
+            # worker, not a request handler): it must look up a
+            # ModelVersion by id *before* it can know which tenant's
+            # session variable to set, which the RLS-restricted "app"
+            # connection can't do — chicken-and-egg. Backed by the same
+            # superuser connection as migrations. Never inject this into
+            # anything that serves a request.
+            admin:
+                connection: default
+                validate_xml_mapping: true
+                naming_strategy: doctrine.orm.naming_strategy.underscore
+                identity_generation_preferences:
+                    Doctrine\DBAL\Platforms\PostgreSQLPlatform: identity
+                auto_mapping: false
+                mappings:
+                    App:
+                        type: attribute
+                        is_bundle: false
+                        dir: '%kernel.project_dir%/src/Entity'
+                        prefix: 'App\Entity'
+                        alias: App
+
+when@test:
+    doctrine:
+        dbal:
+            connections:
+                default:
+                    # "TEST_TOKEN" is typically set by ParaTest
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+                app:
+                    dbname_suffix: '_test%env(default::TEST_TOKEN)%'
+
+when@prod:
+    doctrine:
+        orm:
+            entity_managers:
+                app:
+                    query_cache_driver:
+                        type: pool
+                        pool: doctrine.system_cache_pool
+                    result_cache_driver:
+                        type: pool
+                        pool: doctrine.result_cache_pool
+
+    framework:
+        cache:
+            pools:
+                doctrine.result_cache_pool:
+                    adapter: cache.app
+                doctrine.system_cache_pool:
+                    adapter: cache.system

@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Template
+metadata:
+  id: mobile-backend
+  name: Mobile app backend
+spec:
+  description: 'Mobile client through an API gateway to a Node.js service and its datastores.'
+  graph:
+    components:
+      - { id: mobile, type: client-mobile-app, x: 0, y: 80 }
+      - { id: gateway, type: api-gateway-generic, x: 260, y: 80 }
+      - { id: app, type: app-server-nodejs, x: 520, y: 80 }
+      - { id: db, type: db-mysql, x: 780, y: 0 }
+      - { id: cache, type: cache-redis, x: 780, y: 160 }
+    flows:
+      - { source: mobile, target: gateway, protocol: https }
+      - { source: gateway, target: app, protocol: https }
+      - { source: app, target: db, protocol: sql-access-protocol-encrypted }
+      - { source: app, target: cache, protocol: binary-encrypted }

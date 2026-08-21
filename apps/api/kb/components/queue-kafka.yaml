@@ -1,0 +1,18 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: queue-kafka
+  name: Apache Kafka
+  version: 1.0.0
+  vendor: Apache Software Foundation
+  categories: [integration]
+  icon: simple-icons:apachekafka
+  color: '#231F20'
+  maturity: stable
+spec:
+  extends: abstract/queue
+  mapping:
+    type: process
+    technologies: [message-queue]
+  properties: []
+  rules: []

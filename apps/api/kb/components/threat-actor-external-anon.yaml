@@ -1,0 +1,29 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: threat-actor-external-anon
+  name: External Anonymous Attacker
+  version: 1.0.0
+  categories: [actor]
+  icon: mdi:incognito
+  maturity: stable
+spec:
+  extends: abstract/threat-actor
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+  traits: [unauthenticated_actor]
+  properties:
+    - id: privilege_level
+      label: 'Privilege level this actor holds'
+      type: enum
+      values: [none, user, admin, system]
+      default: none
+      group: 'Actor profile'
+    - id: capability
+      label: 'Sophistication / resources'
+      type: enum
+      values: [script_kiddie, advanced, apt, automated]
+      default: script_kiddie
+      group: 'Actor profile'
+  rules: []

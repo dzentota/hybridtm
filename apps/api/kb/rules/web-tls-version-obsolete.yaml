@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/tls-version-obsolete
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'TLS-terminating component permits obsolete TLS versions.'
+  when:
+    all:
+      - "component.hasTrait('tls_terminator')"
+      - "component.props.bool('tls_terminated') == true"
+      - "component.props.string('tls_min_version') in ['1.0', '1.1']"
+  then:
+    - raise: THREAT-TLS-VERSION-OBSOLETE
+      evidence: "{{ component.name }} permits TLS versions below 1.2."
+      require: [CM-ENFORCE-TLS]
+    - suggest_fix:
+        set: { tls_min_version: '1.2' }
+        label: 'Require TLS 1.2+'

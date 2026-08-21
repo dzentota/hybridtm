@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-ARTIFACTS-NOT-RETAINED
+  version: 1.0.0
+spec:
+  title: 'Registry has no retention policy for published artifacts'
+  summary: 'Old artifact versions can be deleted or overwritten with no retention guarantee, so a version currently deployed in production may no longer be available to pull for an incident rollback or forensic comparison.'
+  stride: [repudiation]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [404]
+  countermeasures:
+      - CM-RETAIN-ARTIFACTS

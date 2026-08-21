@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cicd/unpinned-dependencies
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'CI/CD pipeline references third-party steps by mutable tag instead of an immutable digest.'
+  when:
+    all:
+      - "component.hasTrait('cicd_pipeline')"
+      - "component.props.bool('third_party_actions_pinned') == false"
+  then:
+    - raise: THREAT-UNPINNED-CI-DEPENDENCIES
+      evidence: "{{ component.name }} does not pin third-party actions/images to a digest."
+      require: [CM-PIN-CI-DEPENDENCIES]
+    - suggest_fix:
+        set: { third_party_actions_pinned: true }
+        label: 'Pin third-party steps to a digest'

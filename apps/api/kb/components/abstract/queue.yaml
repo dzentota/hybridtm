@@ -1,0 +1,60 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/queue
+  name: Abstract Message Queue
+  version: 1.0.0
+  categories: [integration]
+  maturity: stable
+  icon: mdi:tray-full
+  color: '#22c55e'
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [message-queue]
+    machine: container
+  traits: [message_broker]
+  properties:
+    - id: encryption_in_transit
+      label: 'Encrypts messages in transit'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: auth_required
+      label: 'Producer/consumer authentication required'
+      type: boolean
+      default: true
+      group: 'Access control'
+    - id: admin_interface_exposed
+      label: 'Admin/management console reachable from outside'
+      type: boolean
+      default: false
+      group: 'Network'
+    - id: dead_letter_queue_configured
+      label: 'Dead-letter queue configured for failed messages'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: max_queue_length_enforced
+      label: 'Queue length/memory is bounded'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: encryption_at_rest
+      label: 'Persisted messages encrypted at rest'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: message_ttl_configured
+      label: 'Messages expire after a bounded time'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - integration/queue-auth-disabled
+    - web/admin-interface-exposed
+    - integration/no-dead-letter-queue
+    - integration/queue-unbounded-growth
+    - integration/queue-unencrypted-at-rest
+    - integration/queue-no-message-ttl

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/open-redirect
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Application does not validate redirect targets against an allow-list.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('redirect_validation_enabled') == false"
+  then:
+    - raise: THREAT-OPEN-REDIRECT
+      evidence: "{{ component.name }} does not validate redirect targets."
+      require: [CM-VALIDATE-REDIRECT-TARGETS]
+    - suggest_fix:
+        set: { redirect_validation_enabled: true }
+        label: 'Validate redirect targets'

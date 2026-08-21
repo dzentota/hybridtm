@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: reverse-proxy/request-smuggling
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Reverse proxy is not hardened against HTTP request smuggling.'
+  when:
+    all:
+      - "component.hasTrait('traffic_forwarding')"
+      - "component.props.bool('request_smuggling_protection_enabled') == false"
+  then:
+    - raise: THREAT-REQUEST-SMUGGLING
+      evidence: "{{ component.name }} is not hardened against request smuggling."
+      require: [CM-PREVENT-REQUEST-SMUGGLING]
+    - suggest_fix:
+        set: { request_smuggling_protection_enabled: true }
+        label: 'Harden against request smuggling'

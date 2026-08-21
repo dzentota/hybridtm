@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-RESTRICT-REGISTRY-WRITE
+  version: 1.0.0
+spec:
+  title: 'Require authentication for registry pushes'
+  description: 'Require an authenticated, authorized identity (service account or signed-in user) for every push, and restrict which identities may publish under each namespace/repository.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: less_protected_type
+spec:
+  label: 'Less-protected component type'
+  description: 'A component type that historically has weaker built-in hardening defaults.'
+  category: exposure
+  derived: false

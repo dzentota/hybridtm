@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-SET-PERMISSION-BOUNDARY
+  version: 1.0.0
+spec:
+  title: 'Attach a permission boundary to the role'
+  description: 'Set an IAM permission boundary capping the maximum permissions the role can ever have, so a future overly-broad policy attachment still cannot exceed the boundary.'
+  cost: low
+  effort: medium
+  effectiveness: medium
+  category: preventive

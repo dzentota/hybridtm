@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-VALIDATE-UPLOAD-TYPE
+  version: 1.0.0
+spec:
+  title: 'Validate uploaded file content, not just its extension'
+  description: 'Check the actual file content (magic bytes / content sniffing) against an allow-list of expected types, store uploads outside the web root or under a random non-executable name, and serve them with a fixed Content-Type and Content-Disposition.'
+  cost: low
+  effort: medium
+  effectiveness: high
+  category: preventive

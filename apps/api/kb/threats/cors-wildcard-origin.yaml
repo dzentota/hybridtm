@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CORS-WILDCARD-ORIGIN
+  version: 1.0.0
+spec:
+  title: 'CORS policy allows any origin'
+  summary: 'Access-Control-Allow-Origin is set to `*` (or reflects the request origin unconditionally), so any website can make authenticated cross-origin requests to this API on behalf of a logged-in user.'
+  stride: [tampering, information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [942]
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-RESTRICT-CORS-ORIGIN

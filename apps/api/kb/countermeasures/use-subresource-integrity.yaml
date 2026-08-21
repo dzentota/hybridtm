@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-USE-SUBRESOURCE-INTEGRITY
+  version: 1.0.0
+spec:
+  title: 'Add Subresource Integrity hashes to third-party assets'
+  description: 'Add an `integrity` attribute (SHA-384 hash) to every `<script>`/`<link>` tag loading from a third-party origin, so the browser refuses to execute content that does not match the expected hash.'
+  cost: low
+  effort: low
+  effectiveness: high
+  category: preventive

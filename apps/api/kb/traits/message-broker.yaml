@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: message_broker
+spec:
+  label: 'Message broker'
+  description: 'Decouples producers and consumers via queues or topics.'
+  category: integration
+  derived: false

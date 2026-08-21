@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/ssrf-missing-protection
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Application has no protection against server-side request forgery.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('ssrf_protection_enabled') == false"
+  then:
+    - raise: THREAT-SSRF
+      evidence: "{{ component.name }} has no SSRF protection on outbound requests."
+      require: [CM-PREVENT-SSRF]
+    - suggest_fix:
+        set: { ssrf_protection_enabled: true }
+        label: 'Add SSRF protection'

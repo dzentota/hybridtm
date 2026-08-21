@@ -1,0 +1,9 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Trait
+metadata:
+  id: api_gateway
+spec:
+  label: 'API gateway'
+  description: 'A reverse proxy specialized for API traffic — expected to carry rate limiting and per-client authentication, unlike a plain edge proxy.'
+  category: network
+  derived: false

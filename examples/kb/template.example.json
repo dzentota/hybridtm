@@ -1,0 +1,34 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Template",
+  "metadata": {
+    "id": "tpl/three-tier-web",
+    "name": "Classic three-tier web application"
+  },
+  "spec": {
+    "description": "Browser -> CDN -> Nginx -> application -> PostgreSQL + Redis",
+    "preview": "templates/three-tier-web.svg",
+    "graph": {
+      "components": [
+        { "id": "browser", "type": "client-browser", "x": 40, "y": 200 },
+        { "id": "cdn", "type": "cdn-cloudflare", "x": 240, "y": 200 },
+        { "id": "proxy", "type": "web-server-nginx", "x": 440, "y": 200, "properties": { "internet_facing": true } },
+        { "id": "app", "type": "app-php-symfony", "x": 660, "y": 200 },
+        { "id": "db", "type": "db-postgresql", "x": 880, "y": 120 },
+        { "id": "cache", "type": "db-redis", "x": 880, "y": 300 }
+      ],
+      "boundaries": [
+        { "id": "internet", "type": "network-cloud-provider", "name": "Internet", "contains": ["browser", "cdn"] },
+        { "id": "dmz", "type": "network-cloud-security-group", "name": "DMZ", "contains": ["proxy"] },
+        { "id": "private", "type": "network-cloud-security-group", "name": "Private network", "contains": ["app", "db", "cache"] }
+      ],
+      "flows": [
+        { "source": "browser", "target": "cdn", "protocol": "https" },
+        { "source": "cdn", "target": "proxy", "protocol": "https" },
+        { "source": "proxy", "target": "app", "protocol": "reverse-proxy-web-protocol-encrypted" },
+        { "source": "app", "target": "db", "protocol": "sql-access-protocol-encrypted" },
+        { "source": "app", "target": "cache", "protocol": "nosql-access-protocol" }
+      ]
+    }
+  }
+}

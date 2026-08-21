@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/backup-unencrypted
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'Datastore backups are not encrypted.'
+  when:
+    all:
+      - "component.hasTrait('datastore')"
+      - "component.props.bool('automated_backups_enabled') == true"
+      - "component.props.bool('backup_encryption_enabled') == false"
+  then:
+    - raise: THREAT-BACKUP-UNENCRYPTED
+      evidence: "{{ component.name }}'s backups are not encrypted."
+      require: [CM-ENCRYPT-BACKUPS]
+    - suggest_fix:
+        set: { backup_encryption_enabled: true }
+        label: 'Encrypt backups'

@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATASTORE-NO-BACKUPS
+  version: 1.0.0
+spec:
+  title: 'Datastore has no automated backups'
+  summary: 'The datastore is not backed up automatically, so ransomware, an operator mistake, or a failed migration can cause permanent data loss with no recovery path.'
+  stride: [denial-of-service]
+  base:
+    likelihood: unlikely
+    impact: very-high
+  standards:
+      cwe: [404]
+  countermeasures:
+      - CM-ENABLE-AUTOMATED-BACKUPS

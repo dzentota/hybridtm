@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-REQUIRED-REVIEW
+  version: 1.0.0
+spec:
+  title: 'Pipeline can deploy without a required human review'
+  summary: 'The CI/CD pipeline is not gated on a required code review or approval, so a single compromised or malicious commit can reach production with no second set of eyes.'
+  stride: [tampering, elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+      cwe: [284]
+  countermeasures:
+      - CM-REQUIRE-CODE-REVIEW

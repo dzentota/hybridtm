@@ -1,0 +1,17 @@
+{
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": ["src"],
+        "excludes": ["Console"]
+    },
+    "mutators": {
+        "@default": true
+    },
+    "logs": {
+        "text": "build/infection.log",
+        "stryker": { "report": "main" }
+    },
+    "minMsi": 75,
+    "minCoveredMsi": 80,
+    "tmpDir": "build/infection"
+}

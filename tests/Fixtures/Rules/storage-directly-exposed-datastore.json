@@ -1,0 +1,133 @@
+{
+    "ruleId": "storage/directly-exposed-datastore",
+    "expectedThreatId": "THREAT-DIRECTLY-EXPOSED-DATASTORE",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "edge",
+                "name": "edge",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business",
+                    "internet": true
+                }
+            },
+            {
+                "id": "directdb",
+                "name": "directdb",
+                "properties": {
+                    "encryption_at_rest": true,
+                    "auth_required": true
+                },
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "edge-to-directdb",
+                "sourceId": "edge",
+                "targetId": "directdb",
+                "protocol": "jdbc-encrypted",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "edge",
+                "name": "edge",
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            },
+            {
+                "id": "directdb",
+                "name": "directdb",
+                "properties": {
+                    "encryption_at_rest": true,
+                    "auth_required": true
+                },
+                "traits": [
+                    "datastore"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [],
+        "dataFlows": [
+            {
+                "id": "edge-to-directdb",
+                "sourceId": "edge",
+                "targetId": "directdb",
+                "protocol": "jdbc-encrypted",
+                "authentication": "none",
+                "authorization": "none",
+                "usage": "business"
+            }
+        ],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

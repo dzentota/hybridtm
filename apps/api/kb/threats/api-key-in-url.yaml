@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-API-KEY-IN-URL
+  version: 1.0.0
+spec:
+  title: 'API accepts credentials in the URL query string'
+  summary: 'The API accepts an API key or token as a query parameter instead of requiring it in a header, so it ends up in server access logs, browser history, proxy logs, and the Referer header of any outbound link — anywhere the URL is recorded, not just where it is transmitted.'
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [598]
+  countermeasures:
+      - CM-USE-HEADER-FOR-CREDENTIALS

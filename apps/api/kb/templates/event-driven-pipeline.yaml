@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Template
+metadata:
+  id: event-driven-pipeline
+  name: Event-driven pipeline
+spec:
+  description: 'Producer service through a message queue to a worker, landing in object storage and search.'
+  graph:
+    components:
+      - { id: producer, type: app-server-nodejs, x: 0, y: 80 }
+      - { id: queue, type: queue-rabbitmq, x: 260, y: 80 }
+      - { id: worker, type: app-server-symfony, x: 520, y: 80 }
+      - { id: storage, type: object-storage-generic, x: 780, y: 0 }
+      - { id: search, type: search-elasticsearch, x: 780, y: 160 }
+    flows:
+      - { source: producer, target: queue, protocol: binary-encrypted }
+      - { source: queue, target: worker, protocol: binary-encrypted }
+      - { source: worker, target: storage, protocol: https }
+      - { source: worker, target: search, protocol: https }

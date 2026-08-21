@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-ENFORCE-REQUEST-SIZE-LIMIT
+  version: 1.0.0
+spec:
+  title: 'Enforce a maximum request/upload size'
+  description: 'Configure a maximum request body size at the web server/framework/gateway layer appropriate to legitimate use, rejecting anything larger before it reaches application code.'
+  cost: low
+  effort: low
+  effectiveness: medium
+  category: preventive

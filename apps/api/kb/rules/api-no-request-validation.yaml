@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: api/no-request-validation
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'API gateway does not validate requests against a schema.'
+  when:
+    all:
+      - "component.hasTrait('api_gateway')"
+      - "component.props.bool('request_validation_enabled') == false"
+  then:
+    - raise: THREAT-API-NO-REQUEST-VALIDATION
+      evidence: "{{ component.name }} does not validate requests against a schema."
+      require: [CM-ENABLE-REQUEST-VALIDATION]
+    - suggest_fix:
+        set: { request_validation_enabled: true }
+        label: 'Enable request validation'

@@ -1,0 +1,67 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/datastore
+  name: Abstract Datastore
+  version: 1.0.0
+  categories: [storage]
+  maturity: stable
+  icon: mdi:database-outline
+  color: '#14b8a6'
+  abstract: true
+spec:
+  mapping:
+    type: datastore
+    technologies: [database]
+    machine: container
+    defaults:
+      confidentiality: confidential
+      integrity: critical
+      availability: important
+      encryption: none
+  traits: [datastore]
+  properties:
+    - id: encryption_at_rest
+      label: 'Encryption at rest enabled'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: auth_required
+      label: 'Client authentication required'
+      type: boolean
+      default: true
+      group: 'Access control'
+    - id: public_network_access
+      label: 'Reachable from a public network'
+      type: boolean
+      default: false
+      group: 'Network'
+    - id: automated_backups_enabled
+      label: 'Automated backups enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: backup_encryption_enabled
+      label: 'Backups are encrypted'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+      show_if: 'props.automated_backups_enabled == true'
+    - id: client_connections_encrypted
+      label: 'Requires encrypted client connections'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: least_privilege_db_role_used
+      label: 'Application connects with a scoped, least-privilege role'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - storage/unencrypted-at-rest
+    - storage/datastore-auth-disabled
+    - storage/datastore-public-access
+    - storage/datastore-no-backups
+    - storage/backup-unencrypted
+    - storage/datastore-connections-unencrypted
+    - storage/excessive-db-privileges

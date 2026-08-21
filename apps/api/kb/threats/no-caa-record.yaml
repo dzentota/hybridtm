@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-CAA-RECORD
+  version: 1.0.0
+spec:
+  title: 'DNS zone has no CAA record'
+  summary: 'Without a CAA record restricting which certificate authorities may issue certificates for this domain, any publicly trusted CA can be tricked (via domain validation weaknesses or CA error) into issuing a certificate for it.'
+  stride: [spoofing]
+  base:
+    likelihood: unlikely
+    impact: low
+  standards:
+      cwe: [295]
+  countermeasures:
+      - CM-CONFIGURE-CAA-RECORD

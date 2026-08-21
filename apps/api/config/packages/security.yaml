@@ -1,0 +1,56 @@
+security:
+    # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
+    password_hashers:
+        Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: 'auto'
+
+    # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
+    providers:
+        app_user_provider:
+            id: App\Repository\UserRepository
+
+    firewalls:
+        dev:
+            # Ensure dev tools and static assets are always allowed
+            pattern: ^/(_profiler|_wdt|assets|build)/
+            security: false
+
+        # Interactive login: POST {"email":..., "password":...} to
+        # /login_check, get back a short-lived JWT. Stateless, since every
+        # subsequent request re-authenticates via that JWT (or an ApiToken)
+        # rather than a session cookie.
+        login:
+            pattern: ^/login
+            stateless: true
+            provider: app_user_provider
+            json_login:
+                check_path: /login_check
+                username_path: email
+                password_path: password
+                success_handler: lexik_jwt_authentication.handler.authentication_success
+                failure_handler: lexik_jwt_authentication.handler.authentication_failure
+
+        # Everything else: a JWT or a long-lived ApiToken, both handled by
+        # one authenticator (see its docblock for why they can't be two
+        # separate authenticators on the same firewall).
+        api:
+            pattern: ^/
+            stateless: true
+            provider: app_user_provider
+            custom_authenticators:
+                - App\Security\BearerTokenAuthenticator
+
+    # Note: Only the *first* matching rule is applied
+    access_control:
+        - { path: ^/login, roles: PUBLIC_ACCESS }
+        - { path: ^/, roles: ROLE_USER }
+
+when@test:
+    security:
+        password_hashers:
+            # Password hashers are resource-intensive by design to ensure security.
+            # In tests, it's safe to reduce their cost to improve performance.
+            Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
+                algorithm: auto
+                cost: 4 # Lowest possible value for bcrypt
+                time_cost: 3 # Lowest possible value for argon
+                memory_cost: 10 # Lowest possible value for argon

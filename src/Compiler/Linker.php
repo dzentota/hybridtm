@@ -1,10 +1,11 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Compiler;
 
 use HybridTM\DSL\CommunicationLink;
 use HybridTM\DSL\ThreatModel;
-use RuntimeException;
 
 final class Linker
 {
@@ -18,9 +19,9 @@ final class Linker
             $target = $model->getTechnicalAsset($flow->targetAssetId);
 
             if ($target === null) {
-                throw new RuntimeException(
+                throw new \RuntimeException(
                     "[DataFlow@{$flow->context}] Unknown target asset '{$flow->targetAssetId}'. " .
-                    "Add it to your threat model DSL file."
+                    'Add it to your threat model DSL file.',
                 );
             }
 
@@ -29,7 +30,7 @@ final class Linker
                     "DataFlow to '{$flow->targetAssetId}' will be recorded on the target asset only.";
                 foreach ($flow->dataSent as $dataId) {
                     if ($model->getDataAsset($dataId) === null) {
-                        throw new RuntimeException("[DataFlow@{$flow->context}] Unknown DataAsset '{$dataId}' in dataSent.");
+                        throw new \RuntimeException("[DataFlow@{$flow->context}] Unknown DataAsset '{$dataId}' in dataSent.");
                     }
                     if (!in_array($dataId, $target->dataAssetsProcessed, true)) {
                         $target->dataAssetsProcessed[] = $dataId;
@@ -40,7 +41,7 @@ final class Linker
 
             foreach ([...$flow->dataSent, ...$flow->dataReceived] as $dataId) {
                 if ($model->getDataAsset($dataId) === null) {
-                    throw new RuntimeException("[DataFlow@{$flow->context}] Unknown DataAsset '{$dataId}'. Add it to the threat model DSL.");
+                    throw new \RuntimeException("[DataFlow@{$flow->context}] Unknown DataAsset '{$dataId}'. Add it to the threat model DSL.");
                 }
             }
 
@@ -55,12 +56,20 @@ final class Linker
 
             $link = $source->communicationLinks[$linkId];
             foreach ($flow->dataSent as $id) {
-                if (!in_array($id, $link->dataSent, true)) $link->dataSent[] = $id;
-                if (!in_array($id, $source->dataAssetsProcessed, true)) $source->dataAssetsProcessed[] = $id;
+                if (!in_array($id, $link->dataSent, true)) {
+                    $link->dataSent[] = $id;
+                }
+                if (!in_array($id, $source->dataAssetsProcessed, true)) {
+                    $source->dataAssetsProcessed[] = $id;
+                }
             }
             foreach ($flow->dataReceived as $id) {
-                if (!in_array($id, $link->dataReceived, true)) $link->dataReceived[] = $id;
-                if (!in_array($id, $source->dataAssetsProcessed, true)) $source->dataAssetsProcessed[] = $id;
+                if (!in_array($id, $link->dataReceived, true)) {
+                    $link->dataReceived[] = $id;
+                }
+                if (!in_array($id, $source->dataAssetsProcessed, true)) {
+                    $source->dataAssetsProcessed[] = $id;
+                }
             }
         }
 

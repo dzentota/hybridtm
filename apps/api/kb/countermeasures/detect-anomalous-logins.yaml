@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-DETECT-ANOMALOUS-LOGINS
+  version: 1.0.0
+spec:
+  title: 'Detect and alert on anomalous logins'
+  description: 'Enable risk-based/adaptive authentication (impossible travel, new device, unusual time) in the identity provider and alert or step up authentication when triggered.'
+  cost: medium
+  effort: medium
+  effectiveness: medium
+  category: detective

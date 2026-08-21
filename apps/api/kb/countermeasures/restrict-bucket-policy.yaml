@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-RESTRICT-BUCKET-POLICY
+  version: 1.0.0
+spec:
+  title: 'Scope the bucket policy to specific principals'
+  description: 'Replace broad principal grants in the bucket policy with the specific IAM roles/accounts that need access, and run the provider''s access-analyzer tooling against the bucket to catch unintended external access.'
+  cost: low
+  effort: medium
+  effectiveness: high
+  category: preventive

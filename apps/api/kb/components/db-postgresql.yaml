@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: db-postgresql
+  name: PostgreSQL
+  version: 1.0.0
+  vendor: PostgreSQL Global Development Group
+  categories: [data, datastore]
+  icon: simple-icons:postgresql
+  color: '#4169E1'
+  docs: https://www.postgresql.org/docs/
+  maturity: stable
+spec:
+  extends: abstract/relational-db
+  mapping:
+    type: datastore
+    technologies: [database]
+  ports:
+    inbound:
+      - { id: client, label: 'SQL clients', protocols: [jdbc, jdbc-encrypted, odbc, odbc-encrypted], cardinality: many }
+  properties:
+    - { id: version, label: 'PostgreSQL version', type: string, pattern: '^\d+\.\d+$', group: 'General' }
+  rules: []

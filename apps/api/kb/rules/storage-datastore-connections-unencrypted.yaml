@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: storage/datastore-connections-unencrypted
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'Datastore does not require encrypted client connections.'
+  when:
+    all:
+      - "component.hasTrait('datastore')"
+      - "component.props.bool('client_connections_encrypted') == false"
+  then:
+    - raise: THREAT-DATASTORE-CONNECTIONS-UNENCRYPTED
+      evidence: "{{ component.name }} does not require encrypted client connections."
+      require: [CM-ENFORCE-TLS]
+    - suggest_fix:
+        set: { client_connections_encrypted: true }
+        label: 'Require encrypted client connections'

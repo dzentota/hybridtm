@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: network/unencrypted-transit
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: flow
+  description: 'A data flow that crosses a trust boundary or touches the internet uses an unencrypted protocol.'
+  when:
+    all:
+      - "!flow.protocol.isEncrypted()"
+      - "(flow.crossesTrustBoundary() || flow.source.internet || flow.target.internet)"
+  then:
+    - raise: THREAT-UNENCRYPTED-TRANSIT
+      evidence: "The link from {{ flow.source.name }} to {{ flow.target.name }} uses {{ flow.protocol.value }}."
+      require: [CM-ENFORCE-TLS]

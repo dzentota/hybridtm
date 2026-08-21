@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/container-runs-as-root
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Compute resource runs as root/UID 0 instead of a dedicated unprivileged user.'
+  when:
+    all:
+      - "component.hasTrait('aws_compute')"
+      - "component.props.bool('runs_as_non_root') == false"
+  then:
+    - raise: THREAT-CONTAINER-RUNS-AS-ROOT
+      evidence: "{{ component.name }} runs as root."
+      require: [CM-RUN-AS-NON-ROOT]
+    - suggest_fix:
+        set: { runs_as_non_root: true }
+        label: 'Run as a non-root user'

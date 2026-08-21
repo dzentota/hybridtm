@@ -1,0 +1,31 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-eks
+  name: AWS EKS
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [application, cloud]
+  icon: simple-icons:amazoneks
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/aws-compute
+  mapping:
+    type: process
+    technologies: [container-platform]
+  traits: [container_orchestrator_control_plane]
+  properties:
+    - id: control_plane_logging_enabled
+      label: 'Control plane audit logging enabled'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+    - id: public_endpoint_unrestricted
+      label: 'Public API endpoint has no IP restriction'
+      type: boolean
+      default: true
+      group: 'Network'
+  rules:
+    - eks/control-plane-logging-disabled
+    - eks/api-server-public

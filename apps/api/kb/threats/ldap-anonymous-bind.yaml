@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-LDAP-ANONYMOUS-BIND
+  version: 1.0.0
+spec:
+  title: 'Directory service permits anonymous LDAP bind'
+  summary: 'The directory accepts unauthenticated (anonymous) binds, allowing anyone on the network to enumerate users, groups, and directory attributes.'
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [287, 306]
+      pci_dss_4: ['2.2.1']
+  countermeasures:
+      - CM-DISABLE-ANONYMOUS-LDAP-BIND

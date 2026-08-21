@@ -241,6 +241,35 @@ class UserController
 
 ---
 
+## Knowledge Base & Rule Engine (component properties, KB authoring)
+
+Beyond attributes, `threat-model.php` assets can carry `traits` (a plain
+string list) and `properties` (a `PropertyBag`) that the Rule Engine's
+KB-driven rules (YAML under `apps/api/kb/`, schemas in
+`schema/kb/*.json`) match against:
+
+```php
+$asset->traits = ['datastore', 'sql_engine'];
+$asset->properties->set('encryption_at_rest', false);
+```
+
+If asked to add a KB component/threat/countermeasure/rule: a
+component's own `rules:` list is palette-display metadata only — every
+component-scope rule in the KB evaluates against every asset in the
+model, filtered solely by that rule's own `when` condition. Put a
+property on the abstract parent all trait-sharing components inherit
+from (not on one concrete leaf), or scope the rule's `when` with a
+trait specific enough that only the intended components have it —
+otherwise an unrelated component sharing the same broad trait gets
+evaluated against a property it never set, and an unset property
+reading as its zero value can spuriously trigger the rule. Full
+detail, the sandboxed expression surface, and a worked rule example:
+`SKILL.md`'s **Knowledge Base** and **Rule Engine & Analysis** sections.
+
+`php bin/hybridtm analyze --infra=threat-model.php --kb=<dir> --format=table` runs rule-based analysis directly (separate from `bin/hybridtm compile`'s Threagile-YAML export).
+
+---
+
 ## Critical Rules
 
 1. **Every `target` in `#[DataFlow]` MUST exactly match a TechnicalAsset `id` in `threat-model.php`.** Unknown IDs cause a `RuntimeException`.

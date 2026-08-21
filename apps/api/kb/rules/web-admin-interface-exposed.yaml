@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/admin-interface-exposed
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Component with an administrative interface exposes it outside the internal network.'
+  when:
+    all:
+      - "component.hasTrait('admin_interface')"
+      - "component.props.bool('admin_interface_exposed') == true"
+  then:
+    - raise: THREAT-ADMIN-INTERFACE-EXPOSED
+      evidence: "{{ component.name }}'s administrative interface is reachable from outside."
+      require: [CM-RESTRICT-ADMIN-INTERFACE]
+    - suggest_fix:
+        set: { admin_interface_exposed: false }
+        label: 'Restrict admin interface to an internal network'

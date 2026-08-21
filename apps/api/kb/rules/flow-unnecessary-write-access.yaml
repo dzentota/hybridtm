@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/unnecessary-write-access
+  version: 1.0.0
+  priority: 40
+spec:
+  scope: flow
+  description: 'A cross-boundary link carrying strictly confidential data is not marked read-only.'
+  when:
+    all:
+      - "flow.crossesTrustBoundary()"
+      - "flow.carriesDataAtLeast('strictly-confidential')"
+      - "!flow.readonly"
+  then:
+    - raise: THREAT-UNNECESSARY-WRITE-ACCESS
+      evidence: "The link from {{ flow.source.name }} to {{ flow.target.name }} carries strictly confidential data and is not read-only."
+      require: [CM-MINIMIZE-WRITE-ACCESS]
+    - suggest_fix:
+        set: { readonly: true }
+        label: 'Mark this flow as read-only'

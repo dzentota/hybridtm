@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNRESTRICTED-FILE-UPLOAD
+  version: 1.0.0
+spec:
+  title: 'Application does not validate uploaded file type/content'
+  summary: 'Uploaded files are accepted with no check on their actual content type (only trusting the client-supplied extension or MIME type), so an attacker can upload an executable script disguised as an image and have it served or executed.'
+  stride: [tampering, elevation-of-privilege]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [434]
+      capec: [650]
+      owasp_asvs: ['V12.2.1']
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-VALIDATE-UPLOAD-TYPE

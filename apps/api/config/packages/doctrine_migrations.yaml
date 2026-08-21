@@ -1,0 +1,10 @@
+doctrine_migrations:
+    # Migrations run as the superuser connection (DDL, CREATE ROLE) — never
+    # the restricted "app" connection requests are served from. The "admin"
+    # entity manager is backed by the "default" (superuser) DBAL connection.
+    em: admin
+    migrations_paths:
+        # namespace is arbitrary but should be different from App\Migrations
+        # as migrations classes should NOT be autoloaded
+        'DoctrineMigrations': '%kernel.project_dir%/migrations'
+    enable_profiler: false

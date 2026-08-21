@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-UNAUDITED-PRIVILEGED-ACTOR-ACCESS
+  version: 1.0.0
+spec:
+  title: 'Privileged threat actor can reach a component with no audit trail'
+  summary: 'A modeled Threat Actor with admin- or system-level privilege has a direct flow to a component that does not declare audit logging, so privilege abuse (unauthorized access, data exfiltration, tampering) by that actor would leave no record to investigate or attribute after the fact.'
+  stride: [repudiation, elevation-of-privilege]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+    cwe: [778, 284]
+    pci_dss_4: ['10.2.1']
+  countermeasures:
+    - CM-ENABLE-AUDIT-LOGGING

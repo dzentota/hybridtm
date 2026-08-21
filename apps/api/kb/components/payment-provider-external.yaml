@@ -1,0 +1,33 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: payment-provider-external
+  name: External payment provider (Stripe/Adyen/etc.)
+  version: 1.0.0
+  categories: [integration]
+  icon: mdi:credit-card-outline
+  color: '#635BFF'
+  maturity: stable
+spec:
+  mapping:
+    type: external-entity
+    technologies: [client-system]
+    defaults:
+      confidentiality: strictly-confidential
+      integrity: critical
+      availability: important
+  traits: [payment_processor]
+  properties:
+    - id: pci_scope_isolated
+      label: 'Payment integration is isolated into its own PCI scope'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: tokenization_enabled
+      label: 'Uses provider tokenization instead of raw card data'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - payment/scope-not-isolated
+    - payment/card-data-not-tokenized

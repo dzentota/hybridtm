@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: web/directory-listing-enabled
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Web server serves a directory listing for directories without an index file.'
+  when:
+    all:
+      - "component.hasTrait('http_server')"
+      - "component.props.bool('directory_listing_enabled') == true"
+  then:
+    - raise: THREAT-DIRECTORY-LISTING-ENABLED
+      evidence: "{{ component.name }} has directory listing enabled."
+    - suggest_fix:
+        set: { directory_listing_enabled: false }
+        label: 'Disable directory listing'

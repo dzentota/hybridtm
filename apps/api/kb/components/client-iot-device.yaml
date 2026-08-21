@@ -1,0 +1,23 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: client-iot-device
+  name: IoT device
+  version: 1.0.0
+  categories: [client]
+  icon: mdi:chip
+  maturity: stable
+spec:
+  extends: abstract/client
+  mapping:
+    type: external-entity
+    technologies: [iot-device]
+  traits: [iot_device]
+  properties:
+    - id: firmware_signature_verified
+      label: 'Verifies firmware update signatures'
+      type: boolean
+      default: false
+      group: 'Hardening'
+  rules:
+    - iot/firmware-unsigned

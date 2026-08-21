@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: queue-rabbitmq
+  name: RabbitMQ
+  version: 1.0.0
+  vendor: Broadcom
+  categories: [integration]
+  icon: simple-icons:rabbitmq
+  color: '#FF6600'
+  maturity: stable
+spec:
+  extends: abstract/queue
+  mapping:
+    type: process
+    technologies: [message-queue]
+  traits: [admin_interface]
+  properties: []
+  rules: []

@@ -1,0 +1,31 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-ses
+  name: AWS SES
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [integration, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  mapping:
+    type: process
+    technologies: [mail-server]
+    machine: serverless
+  traits: [mail_relay]
+  properties:
+    - id: open_relay
+      label: 'Relays mail for unauthenticated/unauthorized senders'
+      type: boolean
+      default: false
+      group: 'Access control'
+    - id: starttls_required
+      label: 'Requires STARTTLS before accepting mail'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - smtp/open-relay
+    - smtp/starttls-not-enforced

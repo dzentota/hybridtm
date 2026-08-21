@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-QUEUE-NO-MESSAGE-TTL
+  version: 1.0.0
+spec:
+  title: 'Message queue retains messages with no expiration'
+  summary: 'Messages have no time-to-live, so undelivered or unprocessed messages (which may carry sensitive data) accumulate indefinitely instead of expiring, expanding the window an attacker with queue access has to read them.'
+  stride: [information-disclosure]
+  base:
+    likelihood: unlikely
+    impact: low
+  standards:
+      cwe: [404]
+  countermeasures:
+      - CM-CONFIGURE-MESSAGE-TTL

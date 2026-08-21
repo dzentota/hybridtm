@@ -1,8 +1,16 @@
 <?php
+
 declare(strict_types=1);
+
 namespace HybridTM\Tests\Yaml;
 
+use HybridTM\DSL\AbuseCase;
 use HybridTM\DSL\DataAsset;
+use HybridTM\DSL\IndividualRiskCategory;
+use HybridTM\DSL\Question;
+use HybridTM\DSL\RiskTracking;
+use HybridTM\DSL\SecurityRequirement;
+use HybridTM\DSL\SharedRuntime;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
 use HybridTM\DSL\TrustBoundary;
@@ -13,11 +21,14 @@ use HybridTM\Enums\BusinessCriticality;
 use HybridTM\Enums\Confidentiality;
 use HybridTM\Enums\DataOrigin;
 use HybridTM\Enums\DataUsage;
+use HybridTM\Enums\DecisionStatus;
 use HybridTM\Enums\Encryption;
 use HybridTM\Enums\Integrity;
 use HybridTM\Enums\Machine;
 use HybridTM\Enums\Protocol;
 use HybridTM\Enums\Quantity;
+use HybridTM\Enums\RiskFunction;
+use HybridTM\Enums\Stride;
 use HybridTM\Enums\Technology;
 use HybridTM\Enums\TrustBoundaryType;
 use HybridTM\Yaml\ThreagileSerializer;
@@ -38,9 +49,12 @@ final class ThreagileSerializerTest extends TestCase
         return new ThreatModel($title);
     }
 
+    /** @return array<string, mixed> */
     private function parse(ThreatModel $model): array
     {
-        return Yaml::parse($this->serializer->serialize($model));
+        $parsed = Yaml::parse($this->serializer->serialize($model));
+        self::assertIsArray($parsed);
+        return $parsed;
     }
 
     // ── Top-level fields ───────────────────────────────────────────────────────
@@ -299,5 +313,155 @@ final class ThreagileSerializerTest extends TestCase
         $data = $this->parse($model);
         self::assertIsArray($data['technical_assets']['svc']['data_assets_processed']);
         self::assertSame([], $data['technical_assets']['svc']['data_assets_processed']);
+    }
+
+    // ── Governance sections (T-1.1) ─────────────────────────────────────────────
+
+    public function testQuestionsSerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $model->addQuestion(new Question('pentest-done', 'Was a pentest performed?', 'Not yet planned'));
+
+        $data = $this->parse($model);
+        self::assertSame('Not yet planned', $data['questions']['pentest-done']);
+    }
+
+    public function testQuestionWithoutAnswerSerializesEmptyString(): void
+    {
+        $model = $this->buildMinimalModel();
+        $model->addQuestion(new Question('open-q', 'Unanswered?'));
+
+        $data = $this->parse($model);
+        self::assertSame('', $data['questions']['open-q']);
+    }
+
+    public function testAbuseCasesSerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $model->addAbuseCase(new AbuseCase('steal-data', 'Attacker exfiltrates customer PII'));
+
+        $data = $this->parse($model);
+        self::assertSame('Attacker exfiltrates customer PII', $data['abuse_cases']['steal-data']);
+    }
+
+    public function testSecurityRequirementsSerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $model->addSecurityRequirement(new SecurityRequirement('firewall', 'Corporate firewall in place'));
+
+        $data = $this->parse($model);
+        self::assertSame('Corporate firewall in place', $data['security_requirements']['firewall']);
+    }
+
+    public function testSharedRuntimeSerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $runtime = new SharedRuntime('k8s-node-1', 'Kubernetes Node 1');
+        $runtime->description = 'Shared worker node';
+        $runtime->tags = ['prod'];
+        $runtime->addAssets('web', 'worker');
+        $model->addSharedRuntime($runtime);
+
+        $data = $this->parse($model);
+        $serialized = $data['shared_runtimes']['k8s-node-1'];
+
+        self::assertSame('k8s-node-1', $serialized['id']);
+        self::assertSame('Shared worker node', $serialized['description']);
+        self::assertSame(['prod'], $serialized['tags']);
+        self::assertSame(['web', 'worker'], $serialized['technical_assets_running']);
+    }
+
+    public function testIndividualRiskCategorySerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $category = new IndividualRiskCategory('custom-prompt-injection');
+        $category->title = 'Prompt Injection';
+        $category->description = 'LLM input is not isolated from instructions';
+        $category->function = RiskFunction::Development;
+        $category->stride = [Stride::Tampering, Stride::ElevationOfPrivilege];
+        $category->cwe = ['CWE-1427'];
+        $model->addIndividualRiskCategory($category);
+
+        $data = $this->parse($model);
+        $serialized = $data['individual_risk_categories']['custom-prompt-injection'];
+
+        self::assertSame('Prompt Injection', $serialized['title']);
+        self::assertSame('development', $serialized['function']);
+        self::assertSame(['tampering', 'elevation-of-privilege'], $serialized['stride']);
+        self::assertSame(['CWE-1427'], $serialized['cwe']);
+    }
+
+    public function testRiskTrackingSerialized(): void
+    {
+        $model = $this->buildMinimalModel();
+        $tracking = new RiskTracking('unencrypted-storage@user-db');
+        $tracking->status = DecisionStatus::Accepted;
+        $tracking->justification = 'Compensating control in place';
+        $tracking->ticket = 'JIRA-123';
+        $tracking->date = '2026-01-01';
+        $tracking->checkedBy = 'Alice';
+        $model->addRiskTracking($tracking);
+
+        $data = $this->parse($model);
+        $serialized = $data['risk_tracking']['unencrypted-storage@user-db'];
+
+        self::assertSame('accepted', $serialized['status']);
+        self::assertSame('Compensating control in place', $serialized['justification']);
+        self::assertSame('JIRA-123', $serialized['ticket']);
+        self::assertSame('Alice', $serialized['checked_by']);
+    }
+
+    // ── TechnologyList (ADR-10, T-1.4) ──────────────────────────────────────────
+
+    public function testSingleTechnologyStillUsesLegacyScalarField(): void
+    {
+        $model = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('web');
+        $ta->technology = Technology::ReverseProxy;
+        $model->addTechnicalAsset($ta);
+
+        $data = $this->parse($model);
+        $asset = $data['technical_assets']['web'];
+
+        self::assertSame('reverse-proxy', $asset['technology']);
+        self::assertArrayNotHasKey('technologies', $asset);
+    }
+
+    public function testMultipleTechnologiesUseListField(): void
+    {
+        $model = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('nginx');
+        $ta->technologies->add(Technology::ReverseProxy)->add(Technology::WebServer)->add('load-balancer');
+        $model->addTechnicalAsset($ta);
+
+        $data = $this->parse($model);
+        $asset = $data['technical_assets']['nginx'];
+
+        self::assertSame(['reverse-proxy', 'web-server', 'load-balancer'], $asset['technologies']);
+        self::assertArrayNotHasKey('technology', $asset);
+    }
+
+    public function testUnusedTechnologiesFieldProducesByteIdenticalYaml(): void
+    {
+        // Backward compatibility (T-1.4 DoD): a model that never touches
+        // $technologies must serialize exactly as before this feature existed.
+        $before = $this->buildMinimalModel();
+        $before->addTechnicalAsset(new TechnicalAsset('svc'));
+
+        $after = $this->buildMinimalModel();
+        $ta = new TechnicalAsset('svc');
+        self::assertSame(0, $ta->technologies->count());
+        $after->addTechnicalAsset($ta);
+
+        self::assertSame($this->serializer->serialize($before), $this->serializer->serialize($after));
+    }
+
+    public function testGovernanceSectionsStillEmptyMapsWhenUnused(): void
+    {
+        $data = $this->parse($this->buildMinimalModel());
+
+        foreach (['shared_runtimes', 'individual_risk_categories', 'risk_tracking', 'questions', 'abuse_cases', 'security_requirements'] as $key) {
+            self::assertSame([], $data[$key], "Field '$key' should remain an empty map when unused");
+        }
     }
 }

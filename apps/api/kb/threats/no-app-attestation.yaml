@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NO-APP-ATTESTATION
+  version: 1.0.0
+spec:
+  title: 'Mobile client has no app/device attestation'
+  summary: 'The backend cannot distinguish requests from the genuine app running on a genuine device from requests crafted by a script or an automated bot, so it has no way to reject traffic that never went through the real client at all.'
+  stride: [spoofing]
+  base:
+    likelihood: likely
+    impact: medium
+  standards:
+      cwe: [287]
+  countermeasures:
+      - CM-ENABLE-APP-ATTESTATION

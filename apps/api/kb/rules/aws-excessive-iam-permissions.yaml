@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/excessive-iam-permissions
+  version: 1.0.0
+  priority: 40
+spec:
+  scope: component
+  description: 'Compute resource execution role is not scoped to least privilege.'
+  when:
+    all:
+      - "component.hasTrait('aws_compute')"
+      - "component.props.bool('least_privilege_iam_enabled') == false"
+  then:
+    - raise: THREAT-EXCESSIVE-IAM-PERMISSIONS
+      evidence: "{{ component.name }}'s execution role is not scoped to least privilege."
+      require: [CM-APPLY-LEAST-PRIVILEGE-IAM]
+    - suggest_fix:
+        set: { least_privilege_iam_enabled: true }
+        label: 'Scope the execution role to least privilege'

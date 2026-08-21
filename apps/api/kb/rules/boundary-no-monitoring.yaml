@@ -1,0 +1,16 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: boundary/no-monitoring
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: boundary
+  description: 'Trust boundary has no observability collector among its components.'
+  when:
+    all:
+      - "!boundary.anyAssetHasTrait('observability_collector')"
+  then:
+    - raise: THREAT-BOUNDARY-NO-MONITORING
+      evidence: "Trust boundary \"{{ boundary.name }}\" has no observability collector inside it."
+      require: [CM-ADD-BOUNDARY-MONITORING]

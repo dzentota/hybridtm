@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: mobile/certificate-pinning-missing
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: "Mobile client does not pin the backend's certificate/public key."
+  when:
+    all:
+      - "component.hasTrait('client_device')"
+      - "component.hasTrait('mobile_client')"
+      - "component.props.bool('certificate_pinning_enabled') == false"
+  then:
+    - raise: THREAT-CERTIFICATE-PINNING-MISSING
+      evidence: "{{ component.name }} does not pin the backend certificate."
+      require: [CM-CERTIFICATE-PINNING]
+    - suggest_fix:
+        set: { certificate_pinning_enabled: true }
+        label: 'Enable certificate pinning'

@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-CACHE-DANGEROUS-COMMANDS
+  version: 1.0.0
+spec:
+  title: 'Cache allows destructive/administrative commands from clients'
+  summary: 'Commands like FLUSHALL, CONFIG, or SHUTDOWN are reachable by any authenticated client, so a compromised application credential can wipe the entire cache or reconfigure the server, not just read/write its own keys.'
+  stride: [tampering, denial-of-service]
+  base:
+    likelihood: unlikely
+    impact: high
+  standards:
+      cwe: [284]
+      pci_dss_4: ['2.2.1']
+  countermeasures:
+      - CM-RESTRICT-DANGEROUS-COMMANDS

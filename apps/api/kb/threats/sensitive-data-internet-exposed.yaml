@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-SENSITIVE-DATA-INTERNET-EXPOSED
+  version: 1.0.0
+spec:
+  title: 'Internet-reachable component processes strictly confidential data'
+  summary: "A component reachable from the internet processes or stores data classified as strictly confidential, the combination the plan's severity model treats as maximum exposure."
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: very-high
+  standards:
+      cwe: [284]
+      pci_dss_4: ['1.3.1']
+  countermeasures:
+      - CM-ENCRYPT-AT-REST
+      - CM-ENFORCE-TLS
+      - CM-WAF-BLOCK-MODE

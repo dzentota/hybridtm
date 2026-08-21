@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DATASTORE-PUBLIC-ACCESS
+  version: 1.0.0
+spec:
+  title: 'Datastore reachable from a public network'
+  summary: 'A datastore accepts connections from a public network instead of being restricted to an internal segment or VPC, letting any internet host attempt to connect.'
+  stride: [information-disclosure, tampering]
+  base:
+    likelihood: likely
+    impact: high
+  standards:
+    cwe: [284, 668]
+    pci_dss_4: ['1.3.1']
+  countermeasures:
+      - CM-RESTRICT-DB-NETWORK-ACCESS

@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-NOSQL-NO-SCHEMA-VALIDATION
+  version: 1.0.0
+spec:
+  title: 'NoSQL database has no schema/document validation'
+  summary: 'The database accepts any document shape with no validation rules, so an application-layer bug or a NoSQL injection can insert malformed or oversized documents that downstream code implicitly trusts to match the expected shape.'
+  stride: [tampering]
+  base:
+    likelihood: unlikely
+    impact: medium
+  standards:
+      cwe: [943, 20]
+      pci_dss_4: ['6.2.4']
+  countermeasures:
+      - CM-ENABLE-SCHEMA-VALIDATION

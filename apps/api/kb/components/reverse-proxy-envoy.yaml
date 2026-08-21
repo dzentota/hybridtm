@@ -1,0 +1,19 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: reverse-proxy-envoy
+  name: Envoy
+  version: 1.0.0
+  vendor: Cloud Native Computing Foundation
+  categories: [web, edge, proxy]
+  icon: simple-icons:envoyproxy
+  color: '#AC6199'
+  maturity: stable
+spec:
+  extends: abstract/reverse-proxy
+  mapping:
+    type: process
+    technologies: [reverse-proxy, service-mesh]
+  traits: [admin_interface]
+  properties: []
+  rules: []

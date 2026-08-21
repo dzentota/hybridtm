@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: nosql/no-schema-validation
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'NoSQL database has no document/schema validation.'
+  when:
+    all:
+      - "component.hasTrait('nosql_engine')"
+      - "component.props.bool('schema_validation_enabled') == false"
+  then:
+    - raise: THREAT-NOSQL-NO-SCHEMA-VALIDATION
+      evidence: "{{ component.name }} has no document/schema validation."
+      require: [CM-ENABLE-SCHEMA-VALIDATION]
+    - suggest_fix:
+        set: { schema_validation_enabled: true }
+        label: 'Enable schema validation'

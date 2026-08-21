@@ -1,0 +1,17 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Threat
+metadata:
+  id: THREAT-DIRECTORY-LISTING-ENABLED
+  version: 1.0.0
+spec:
+  title: 'Web server directory listing exposes file structure'
+  summary: 'The web server returns a browsable file index for directories without an index file, revealing filenames that can hint at backups, configs, or source code.'
+  stride: [information-disclosure]
+  base:
+    likelihood: likely
+    impact: low
+  standards:
+      cwe: [548]
+      pci_dss_4: ['2.2.1']
+  countermeasures:
+      - CM-DISABLE-DIRECTORY-LISTING

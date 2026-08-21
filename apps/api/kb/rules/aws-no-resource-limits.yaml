@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/no-resource-limits
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: component
+  description: 'Compute resource has no CPU/memory limits configured.'
+  when:
+    all:
+      - "component.hasTrait('aws_compute')"
+      - "component.props.bool('resource_limits_configured') == false"
+  then:
+    - raise: THREAT-NO-RESOURCE-LIMITS
+      evidence: "{{ component.name }} has no resource limits configured."
+      require: [CM-SET-RESOURCE-LIMITS]
+    - suggest_fix:
+        set: { resource_limits_configured: true }
+        label: 'Set resource limits'

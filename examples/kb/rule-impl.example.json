@@ -1,0 +1,14 @@
+{
+  "apiVersion": "hybridtm.io/kb/v1",
+  "kind": "Rule",
+  "metadata": {
+    "id": "topology/unguarded-path-from-internet",
+    "version": "1.0.0",
+    "priority": 300
+  },
+  "spec": {
+    "scope": "model",
+    "description": "A reachable path from the internet to a datastore with no guarding component along the way.",
+    "impl": "Acme\\Rules\\UnguardedPathFromInternetRule"
+  }
+}

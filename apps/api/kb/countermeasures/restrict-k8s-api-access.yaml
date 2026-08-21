@@ -1,0 +1,12 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Countermeasure
+metadata:
+  id: CM-RESTRICT-K8S-API-ACCESS
+  version: 1.0.0
+spec:
+  title: 'Restrict the Kubernetes API endpoint to known networks'
+  description: 'Make the cluster''s API server endpoint private, or restrict the public endpoint to an explicit CIDR allow-list (office/VPN ranges, CI runners) instead of accepting connections from any IP.'
+  cost: low
+  effort: medium
+  effectiveness: high
+  category: preventive

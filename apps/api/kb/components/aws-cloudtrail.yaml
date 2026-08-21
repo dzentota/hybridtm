@@ -1,0 +1,31 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: aws-cloudtrail
+  name: AWS CloudTrail
+  version: 1.0.0
+  vendor: Amazon Web Services
+  categories: [observability, cloud]
+  icon: mdi:aws
+  color: '#FF9900'
+  maturity: stable
+spec:
+  extends: abstract/observability-collector
+  mapping:
+    type: process
+    technologies: [monitoring]
+  traits: [audit_trail]
+  properties:
+    - id: log_file_validation_enabled
+      label: 'Log file integrity validation enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: multi_region_enabled
+      label: 'Trail covers all regions'
+      type: boolean
+      default: false
+      group: 'Monitoring'
+  rules:
+    - audit/cloudtrail-log-integrity-disabled
+    - audit/cloudtrail-single-region

@@ -1,0 +1,148 @@
+import i18n from 'i18next'
+import { initReactI18next } from 'react-i18next'
+
+const LANGUAGE_KEY = 'hybridtm.studio.language'
+
+const resources = {
+  en: {
+    translation: {
+      login: {
+        title: 'HybridTM Studio',
+        email: 'Email',
+        password: 'Password',
+        signIn: 'Sign in',
+        signingIn: 'Signing in…',
+        invalid: 'Invalid email or password.',
+      },
+      palette: {
+        search: 'Search components…',
+        loading: 'Loading knowledge base…',
+        addAria: 'Add {{name}} to canvas',
+        rules: '{{count}} rule',
+        rules_other: '{{count}} rules',
+      },
+      toolbar: {
+        title: 'Model title',
+        save: 'Save model',
+        saving: 'Saving…',
+        undo: 'Undo (Ctrl+Z)',
+        redo: 'Redo (Ctrl+Shift+Z)',
+        autoLayout: 'Auto-layout',
+        layingOut: 'Laying out…',
+        addBoundary: 'Add trust boundary',
+        overlay: 'Overlay',
+        overlayRisks: 'Risks',
+        overlayData: 'Data',
+        overlayExposure: 'Exposure',
+        overlayCoverage: 'Coverage',
+        templates: 'Browse templates',
+        diff: 'Compare versions',
+        code: 'Toggle PHP DSL code view',
+        exportPng: 'Export as PNG',
+        exportSvg: 'Export as SVG',
+        language: 'Language',
+        logOut: 'Log out',
+        notSaved: 'Not saved yet',
+        savedNow: 'Saved just now',
+        savedSecondsAgo: 'Saved {{count}}s ago',
+        savedMinutesAgo: 'Saved {{count}}m ago',
+      },
+      findings: {
+        runAnalysis: 'Run analysis',
+        analyzing: 'Analyzing…',
+        minSeverity: 'min severity: {{severity}}',
+        empty: 'No findings yet — run analysis to check the model.',
+      },
+      autosave: {
+        found: 'Unsaved changes from a previous session were found (saved {{time}}).',
+        restore: 'Restore',
+        discard: 'Discard',
+      },
+      command: {
+        placeholder: 'Type a command…',
+        empty: 'No matching commands',
+      },
+      inspector: {
+        empty: 'Select a component, trust boundary, or data flow to inspect it.',
+      },
+      canvasBanner: 'HybridTM Studio — drag a component from the palette onto the canvas',
+    },
+  },
+  ru: {
+    translation: {
+      login: {
+        title: 'HybridTM Studio',
+        email: 'Эл. почта',
+        password: 'Пароль',
+        signIn: 'Войти',
+        signingIn: 'Выполняется вход…',
+        invalid: 'Неверный email или пароль.',
+      },
+      palette: {
+        search: 'Поиск компонентов…',
+        loading: 'Загрузка базы знаний…',
+        addAria: 'Добавить «{{name}}» на холст',
+        rules_one: '{{count}} правило',
+        rules_few: '{{count}} правила',
+        rules_many: '{{count}} правил',
+        rules_other: '{{count}} правила',
+      },
+      toolbar: {
+        title: 'Название модели',
+        save: 'Сохранить модель',
+        saving: 'Сохранение…',
+        undo: 'Отменить (Ctrl+Z)',
+        redo: 'Повторить (Ctrl+Shift+Z)',
+        autoLayout: 'Авторазметка',
+        layingOut: 'Разметка…',
+        addBoundary: 'Добавить границу доверия',
+        overlay: 'Слой',
+        overlayRisks: 'Риски',
+        overlayData: 'Данные',
+        overlayExposure: 'Экспозиция',
+        overlayCoverage: 'Покрытие',
+        templates: 'Шаблоны архитектур',
+        diff: 'Сравнить версии',
+        code: 'PHP DSL код',
+        exportPng: 'Экспорт в PNG',
+        exportSvg: 'Экспорт в SVG',
+        language: 'Язык',
+        logOut: 'Выйти',
+        notSaved: 'Ещё не сохранено',
+        savedNow: 'Сохранено только что',
+        savedSecondsAgo: 'Сохранено {{count}} с назад',
+        savedMinutesAgo: 'Сохранено {{count}} мин назад',
+      },
+      findings: {
+        runAnalysis: 'Запустить анализ',
+        analyzing: 'Анализ…',
+        minSeverity: 'мин. серьёзность: {{severity}}',
+        empty: 'Пока нет находок — запустите анализ модели.',
+      },
+      autosave: {
+        found: 'Найдены несохранённые изменения из предыдущей сессии (сохранено {{time}}).',
+        restore: 'Восстановить',
+        discard: 'Отклонить',
+      },
+      command: {
+        placeholder: 'Введите команду…',
+        empty: 'Нет подходящих команд',
+      },
+      inspector: {
+        empty: 'Выберите компонент, границу доверия или поток данных, чтобы посмотреть его свойства.',
+      },
+      canvasBanner: 'HybridTM Studio — перетащите компонент из палитры на холст',
+    },
+  },
+}
+
+void i18n.use(initReactI18next).init({
+  resources,
+  lng: localStorage.getItem(LANGUAGE_KEY) ?? 'en',
+  fallbackLng: 'en',
+  interpolation: { escapeValue: false },
+})
+
+i18n.on('languageChanged', (lng) => localStorage.setItem(LANGUAGE_KEY, lng))
+
+export default i18n

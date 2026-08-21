@@ -1,0 +1,35 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/kms-key
+  name: Abstract Key Management Service
+  version: 1.0.0
+  categories: [identity]
+  maturity: stable
+  icon: mdi:key-variant
+  color: '#f43f5e'
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [vault]
+    machine: serverless
+    defaults:
+      confidentiality: strictly-confidential
+      integrity: mission-critical
+      availability: critical
+  traits: [encryption_key_manager]
+  properties:
+    - id: key_rotation_enabled
+      label: 'Automatic key rotation enabled'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+    - id: key_policy_least_privilege
+      label: 'Key policy restricted to specific principals'
+      type: boolean
+      default: false
+      group: 'Access control'
+  rules:
+    - kms/key-rotation-disabled
+    - kms/overly-permissive-policy

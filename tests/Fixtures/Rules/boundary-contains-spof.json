@@ -1,0 +1,92 @@
+{
+    "ruleId": "boundary/contains-spof",
+    "expectedThreatId": "THREAT-BOUNDARY-CONTAINS-SPOF",
+    "positive": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "spofcomp",
+                "name": "spofcomp",
+                "properties": [],
+                "traits": [
+                    "single_point_of_failure"
+                ],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "spofcomp"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    },
+    "negative": {
+        "schemaVersion": 1,
+        "model": {
+            "title": "Fixture",
+            "businessCriticality": "important"
+        },
+        "dataAssets": [],
+        "components": [
+            {
+                "id": "normalcomp",
+                "name": "normalcomp",
+                "properties": [],
+                "traits": [],
+                "overrides": {
+                    "type": "process",
+                    "technology": "web-service-rest",
+                    "machine": "virtual",
+                    "size": "service",
+                    "encryption": "none",
+                    "confidentiality": "internal",
+                    "integrity": "operational",
+                    "availability": "operational",
+                    "usage": "business"
+                }
+            }
+        ],
+        "trustBoundaries": [
+            {
+                "id": "b1",
+                "name": "B",
+                "type": "network-cloud-provider",
+                "contains": [
+                    "normalcomp"
+                ]
+            }
+        ],
+        "dataFlows": [],
+        "sharedRuntimes": [],
+        "riskTracking": [],
+        "questions": [],
+        "abuseCases": [],
+        "securityRequirements": []
+    }
+}

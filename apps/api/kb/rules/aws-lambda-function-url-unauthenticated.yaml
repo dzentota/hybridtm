@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: aws/lambda-function-url-unauthenticated
+  version: 1.0.0
+  priority: 20
+spec:
+  scope: component
+  description: 'Lambda function URL has no IAM authentication required.'
+  when:
+    all:
+      - "component.hasTrait('serverless_function')"
+      - "component.props.bool('function_url_auth_configured') == false"
+  then:
+    - raise: THREAT-LAMBDA-FUNCTION-URL-UNAUTHENTICATED
+      evidence: "{{ component.name }}'s function URL does not require IAM authentication."
+      require: [CM-REQUIRE-FUNCTION-URL-AUTH]
+    - suggest_fix:
+        set: { function_url_auth_configured: true }
+        label: 'Require IAM authentication on the function URL'

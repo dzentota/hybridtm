@@ -1,0 +1,49 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Component
+metadata:
+  id: abstract/web-server
+  name: Abstract Web Server
+  version: 1.0.0
+  categories: [web, edge]
+  maturity: stable
+  icon: mdi:web
+  color: '#3b82f6'
+  abstract: true
+spec:
+  mapping:
+    type: process
+    technologies: [web-server]
+    machine: container
+  traits: [http_server, processing_end_user_requests]
+  properties:
+    - id: server_version_disclosed
+      label: 'Server header discloses version'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: directory_listing_enabled
+      label: 'Directory listing enabled'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: security_headers_configured
+      label: 'Sends standard security response headers'
+      type: boolean
+      default: false
+      group: 'Hardening'
+    - id: trace_method_enabled
+      label: 'Accepts the HTTP TRACE method'
+      type: boolean
+      default: true
+      group: 'Hardening'
+    - id: weak_ciphers_disabled
+      label: 'Weak/non-forward-secret TLS ciphers disabled'
+      type: boolean
+      default: false
+      group: 'Cryptography'
+  rules:
+    - web/server-version-disclosure
+    - web/directory-listing-enabled
+    - web/security-headers-missing
+    - web/http-trace-enabled
+    - web/weak-cipher-suites

@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: app/csrf-protection-disabled
+  version: 1.0.0
+  priority: 50
+spec:
+  scope: component
+  description: 'Application runtime does not protect state-changing requests against CSRF.'
+  when:
+    all:
+      - "component.hasTrait('app_runtime')"
+      - "component.props.bool('csrf_protection_enabled') == false"
+  then:
+    - raise: THREAT-CSRF
+      evidence: "{{ component.name }} has no CSRF protection."
+      require: [CM-CSRF-TOKENS]
+    - suggest_fix:
+        set: { csrf_protection_enabled: true }
+        label: 'Enable CSRF protection'

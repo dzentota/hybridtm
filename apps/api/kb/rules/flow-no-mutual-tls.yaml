@@ -1,0 +1,21 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: flow/no-mutual-tls
+  version: 1.0.0
+  priority: 10
+spec:
+  scope: flow
+  description: 'An internal service-to-service link has no mutual TLS.'
+  when:
+    all:
+      - "!flow.source.internet"
+      - "!flow.target.internet"
+      - "flow.props.bool('mutual_tls_enabled') == false"
+  then:
+    - raise: THREAT-NO-MUTUAL-TLS
+      evidence: "The internal link from {{ flow.source.name }} to {{ flow.target.name }} has no mutual TLS."
+      require: [CM-ENABLE-MUTUAL-TLS]
+    - suggest_fix:
+        set: { mutual_tls_enabled: true }
+        label: 'Enable mutual TLS'

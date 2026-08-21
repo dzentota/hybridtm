@@ -1,0 +1,20 @@
+apiVersion: hybridtm.io/kb/v1
+kind: Rule
+metadata:
+  id: cache/dangerous-commands-enabled
+  version: 1.0.0
+  priority: 30
+spec:
+  scope: component
+  description: 'Cache allows destructive/administrative commands from any authenticated client.'
+  when:
+    all:
+      - "component.hasTrait('cache_store')"
+      - "component.props.bool('dangerous_commands_restricted') == false"
+  then:
+    - raise: THREAT-CACHE-DANGEROUS-COMMANDS
+      evidence: "{{ component.name }} does not restrict destructive/administrative commands."
+      require: [CM-RESTRICT-DANGEROUS-COMMANDS]
+    - suggest_fix:
+        set: { dangerous_commands_restricted: true }
+        label: 'Restrict destructive/administrative commands'
