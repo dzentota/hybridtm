@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace HybridTM\Analysis\Subjects;
 
 use HybridTM\Analysis\DerivedTraits;
+use HybridTM\Analysis\MitigationEvidence;
+use HybridTM\Analysis\MitigationIndex;
 use HybridTM\DSL\PropertyBag;
 use HybridTM\DSL\TechnicalAsset;
 use HybridTM\DSL\ThreatModel;
@@ -33,6 +35,7 @@ final readonly class ComponentSubject
         private TechnicalAsset $asset,
         private ThreatModel $model,
         private DerivedTraits $derived,
+        private ?MitigationIndex $mitigations = null,
     ) {
         $this->id = $asset->id;
         $this->name = $asset->name;
@@ -80,15 +83,17 @@ final readonly class ComponentSubject
     }
 
     /**
-     * Always false in this engine version: whether a #[Mitigation] closes a
-     * CWE requires the AST scanner's DiscoveredMitigation list, which
-     * AnalyzerInterface::analyze() has no parameter for yet. Present so KB
-     * rule authors can write `hasMitigationFor(...)` in `unless` today
-     * without a runtime error; it will start suppressing once that wiring
-     * lands (tracked as a follow-up, not silently done here).
+     * True when source scan found a #[Mitigation] for this CWE on this asset
+     * with status Mitigated. Requires AnalysisOptions::$mitigations from
+     * AstScanner; without it, always false.
      */
     public function hasMitigationFor(string $cwe): bool
     {
-        return false;
+        return $this->mitigations?->hasMitigated($this->asset->id, $cwe) ?? false;
+    }
+
+    public function mitigationEvidence(string $cwe): ?MitigationEvidence
+    {
+        return $this->mitigations?->evidence($this->asset->id, $cwe);
     }
 }

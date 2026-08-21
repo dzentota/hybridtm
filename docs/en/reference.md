@@ -8,13 +8,14 @@ Complete reference for all HybridTM classes, attributes, and enumerations.
 
 1. [CLI Commands](#cli-commands)
 2. [ThreatModel — Root Model Object](#threatmodel)
-3. [TechnicalAsset — Technical Components](#technicalasset)
-4. [DataAsset — Data Types](#dataasset)
-5. [TrustBoundary — Security Zones](#trustboundary)
-6. [CommunicationLink — Connections](#communicationlink)
-7. [Code Attributes](#code-attributes)
-8. [Enumerations](#enumerations)
-9. [Quick Cheat Sheet](#quick-cheat-sheet)
+3. [AbuseCase — Abuser Stories](#abusecase-abuser-story)
+4. [TechnicalAsset — Technical Components](#technicalasset)
+5. [DataAsset — Data Types](#dataasset)
+6. [TrustBoundary — Security Zones](#trustboundary)
+7. [CommunicationLink — Connections](#communicationlink)
+8. [Code Attributes](#code-attributes)
+9. [Enumerations](#enumerations)
+10. [Quick Cheat Sheet](#quick-cheat-sheet)
 
 ---
 
@@ -94,6 +95,42 @@ The wizard provides a styled ASCII/box-drawing interface and outputs a valid bas
 
 ---
 
+### `analyze`
+
+Runs the HybridTM Rule Engine against a threat model and optional PHP source scan.
+
+```bash
+php bin/hybridtm analyze [options]
+```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `--infra=PATH` | `threat-model.php` | Path to the infrastructure DSL file |
+| `--source=DIR` | _(none)_ | Scan for `#[Mitigation]` / `#[AbuserStory]` |
+| `--kb=DIR` | _(empty KB)_ | Knowledge-base directory (repeatable; later overrides earlier) |
+| `--format=…` | `table` | `table`, `json`, or `sarif` |
+| `--min-severity=…` | `low` | Only show findings at or above this severity |
+| `--fail-on=…` | _(off)_ | Exit non-zero if any finding reaches this severity |
+| `--fail-on-uncovered-stories` | _(off)_ | Exit non-zero if any Abuser Story is `uncovered` or `partial` |
+| `--check-stories` | _(auto)_ | Always compute story coverage (also runs when the model has abuse cases) |
+| `--include-suppressed` | _(off)_ | Keep findings resolved by `riskTracking` |
+
+**Examples:**
+
+```bash
+php bin/hybridtm analyze --infra=threat-model.php --kb=apps/api/kb --format=table
+
+php bin/hybridtm analyze \
+    --infra=threat-model.php \
+    --source=src/ \
+    --kb=apps/api/kb \
+    --fail-on-uncovered-stories
+```
+
+With `--source`, `component.hasMitigationFor('CWE-…')` in KB `unless` clauses becomes true when a matching `#[Mitigation]` with status `Mitigated` exists on that asset. JSON output includes `storyCoverage[]`. See [Abuser Stories](/en/guide/abuser-stories).
+
+---
+
 ## ThreatModel
 
 Root object of the model. Created in the DSL file and returned via `return $model;`.
@@ -122,11 +159,48 @@ $model = new ThreatModel('System Name');
 | `addDataAsset(DataAsset)` | Add a data type; returns `$this` |
 | `addTechnicalAsset(TechnicalAsset)` | Add a component; returns `$this` |
 | `addTrustBoundary(TrustBoundary)` | Add a trust boundary; returns `$this` |
+| `addAbuseCase(AbuseCase)` | Add an Abuser Story; returns `$this` |
 | `getDataAsset(string $id)` | Find a DataAsset by ID, or `null` |
 | `getTechnicalAsset(string $id)` | Find a TechnicalAsset by ID, or `null` |
+| `getAbuseCase(string $id)` | Find an AbuseCase by ID, or `null` |
 | `getDataAssets()` | All DataAssets indexed by ID |
 | `getTechnicalAssets()` | All TechnicalAssets indexed by ID |
 | `getTrustBoundaries()` | All TrustBoundaries indexed by ID |
+| `getAbuseCases()` | All AbuseCases indexed by ID |
+
+---
+
+## AbuseCase (Abuser Story)
+
+Business-level abuser / misuser story the model should defend against. Threagile export keeps `abuse_cases: { id: description }`; richer fields live in the canonical JSON model and PHP DSL.
+
+```php
+use HybridTM\DSL\AbuseCase;
+use HybridTM\Enums\AbuseCaseStatus;
+
+$story = new AbuseCase('brute-force-login', 'Guess passwords at login');
+$story->asA = 'anonymous attacker';
+$story->iWant = 'brute-force credentials';
+$story->soThat = 'take over accounts';
+$story->actorId = 'external-attacker';
+$story->assetIds = ['auth-service'];
+$story->requiredCwes = ['CWE-307'];
+$story->status = AbuseCaseStatus::Open;
+$model->addAbuseCase($story);
+```
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `id` | `string` | _(constructor)_ | Stable slug |
+| `description` | `string` | `''` | Free-text / Threagile export text |
+| `asA` / `iWant` / `soThat` | `string` | `''` | Agile narrative parts |
+| `actorId` | `?string` | `null` | Threat-actor TechnicalAsset id |
+| `assetIds` / `dataFlowIds` / `dataAssetIds` | `string[]` | `[]` | Architecture scope |
+| `threatIds` | `string[]` | `[]` | KB threat ids |
+| `requiredCwes` | `string[]` | `[]` | e.g. `CWE-307` |
+| `status` | `AbuseCaseStatus` | `Open` | Story lifecycle |
+
+`narrative()` builds `As a …, I want to …, so that …` when narrative fields are set; otherwise returns `description`.
 
 ---
 
@@ -361,6 +435,23 @@ public function findUser(int $id): array {}
 | `MitigationStatus::InProgress` | `in-progress` | Work in progress |
 | `MitigationStatus::Accepted` | `accepted` | Risk accepted (justification required) |
 | `MitigationStatus::Unchecked` | `unchecked` | Not yet reviewed |
+
+Pass `--source=` to `hybridtm analyze` so discoveries feed `hasMitigationFor` and story coverage.
+
+---
+
+### `#[AbuserStory(...)]`
+
+**Target:** class, method, or function (repeatable)  
+**Purpose:** links code to an Abuser Story (`AbuseCase`) id. Place next to `#[Mitigation]` so coverage can verify required CWEs.
+
+```php
+#[AbuserStory('brute-force-login')]
+#[Mitigation(cwe: 'CWE-307', description: 'Account lockout after N failures')]
+public function authenticate(string $email, string $password): ?string {}
+```
+
+See [Abuser Stories](/en/guide/abuser-stories).
 
 ---
 
@@ -630,11 +721,22 @@ Use this to document data processing even when there are no outbound `#[DataFlow
 
 ---
 
+### `AbuseCaseStatus` — Abuser Story Status
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `Open` | `open` | Not yet covered |
+| `InProgress` | `in-progress` | Work underway |
+| `Mitigated` | `mitigated` | Story treated as mitigated (model-side) |
+| `Accepted` | `accepted` | Risk accepted for this story (coverage → accepted) |
+
+---
+
 ## Quick Cheat Sheet
 
 ```php
 use HybridTM\Enums\{
-    AssetType, Authentication, Authorization, Availability,
+    AbuseCaseStatus, AssetType, Authentication, Authorization, Availability,
     BusinessCriticality, Confidentiality, DataOrigin, DataUsage,
     Encryption, Integrity, Machine, MitigationStatus,
     Protocol, Quantity, Size, Technology, TrustBoundaryType

@@ -23,6 +23,9 @@ final class DataFlowVisitor extends NodeVisitorAbstract
     /** @var list<DiscoveredProcessesData> */
     private array $processesData = [];
 
+    /** @var list<DiscoveredAbuserStoryRef> */
+    private array $abuserStoryRefs = [];
+
     /** @var list<string> */
     public array $warnings = [];
 
@@ -58,6 +61,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
                     }
                 }
             }
+            $this->collectStoryAndMitigationAttrs($node->attrGroups, $this->currentClass);
         }
 
         if ($node instanceof Node\Stmt\ClassMethod || $node instanceof Node\Stmt\Function_) {
@@ -73,10 +77,6 @@ final class DataFlowVisitor extends NodeVisitorAbstract
                         $this->handleDataFlow($attr, $context);
                     }
 
-                    if ($this->isAttr($attrName, 'Mitigation')) {
-                        $this->handleMitigation($attr, $context);
-                    }
-
                     if ($this->isAttr($attrName, 'ProcessesData')) {
                         $args = $this->extractArgs($attr->args);
                         $dataAssets = $args['dataAssets'] ?? $args[0] ?? [];
@@ -87,6 +87,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
                     }
                 }
             }
+            $this->collectStoryAndMitigationAttrs($node->attrGroups, $context);
         }
 
         return null;
@@ -106,7 +107,84 @@ final class DataFlowVisitor extends NodeVisitorAbstract
 
     public function getResult(): AstResult
     {
-        return new AstResult($this->dataFlows, $this->mitigations, $this->processesData, $this->warnings);
+        return new AstResult(
+            $this->dataFlows,
+            $this->mitigations,
+            $this->processesData,
+            $this->warnings,
+            $this->abuserStoryRefs,
+        );
+    }
+
+    /**
+     * Collect #[AbuserStory] and #[Mitigation] on the same context together
+     * so each mitigation knows sibling story ids and each story knows sibling CWEs.
+     *
+     * @param Node\AttributeGroup[] $attrGroups
+     */
+    private function collectStoryAndMitigationAttrs(array $attrGroups, string $context): void
+    {
+        /** @var list<array{attr: Node\Attribute, storyId: string}> $stories */
+        $stories = [];
+        /** @var list<Node\Attribute> $mitigationAttrs */
+        $mitigationAttrs = [];
+
+        foreach ($attrGroups as $attrGroup) {
+            foreach ($attrGroup->attrs as $attr) {
+                $attrName = implode('\\', $attr->name->getParts());
+                if ($this->isAttr($attrName, 'AbuserStory')) {
+                    $args = $this->extractArgs($attr->args);
+                    $storyId = (string) ($args['id'] ?? $args[0] ?? '');
+                    if ($storyId !== '') {
+                        $stories[] = ['attr' => $attr, 'storyId' => $storyId];
+                    }
+                }
+                if ($this->isAttr($attrName, 'Mitigation')) {
+                    $mitigationAttrs[] = $attr;
+                }
+            }
+        }
+
+        $storyIds = array_values(array_unique(array_map(
+            static fn (array $s): string => $s['storyId'],
+            $stories,
+        )));
+        $cwes = [];
+
+        foreach ($mitigationAttrs as $attr) {
+            $args = $this->extractArgs($attr->args);
+            $cwe = (string) ($args['cwe'] ?? $args[0] ?? '');
+            $description = (string) ($args['description'] ?? $args[1] ?? '');
+            $statusRaw = $args['status'] ?? MitigationStatus::Mitigated;
+            $status = $statusRaw instanceof MitigationStatus
+                ? $statusRaw
+                : MitigationStatus::tryFrom((string) $statusRaw) ?? MitigationStatus::Mitigated;
+
+            if ($cwe !== '') {
+                $cwes[] = $cwe;
+            }
+
+            $this->mitigations[] = new DiscoveredMitigation(
+                cwe: $cwe,
+                description: $description,
+                status: $status,
+                context: $context,
+                location: $this->currentLocation($attr),
+                assetId: $this->sourceAssetId,
+                abuserStoryIds: $storyIds,
+            );
+        }
+
+        $cwes = array_values(array_unique($cwes));
+        foreach ($stories as $story) {
+            $this->abuserStoryRefs[] = new DiscoveredAbuserStoryRef(
+                storyId: $story['storyId'],
+                context: $context,
+                assetId: $this->sourceAssetId,
+                siblingCwes: $cwes,
+                location: $this->currentLocation($story['attr']),
+            );
+        }
     }
 
     private function handleDataFlow(Node\Attribute $attr, string $context): void
@@ -120,13 +198,13 @@ final class DataFlowVisitor extends NodeVisitorAbstract
         }
 
         $protocolRaw = $args['protocol'] ?? Protocol::Https;
-        $protocol = $protocolRaw instanceof Protocol ? $protocolRaw : Protocol::tryFrom((string)$protocolRaw) ?? Protocol::Https;
+        $protocol = $protocolRaw instanceof Protocol ? $protocolRaw : Protocol::tryFrom((string) $protocolRaw) ?? Protocol::Https;
 
         $authRaw = $args['authentication'] ?? Authentication::None;
-        $auth = $authRaw instanceof Authentication ? $authRaw : Authentication::tryFrom((string)$authRaw) ?? Authentication::None;
+        $auth = $authRaw instanceof Authentication ? $authRaw : Authentication::tryFrom((string) $authRaw) ?? Authentication::None;
 
         $authzRaw = $args['authorization'] ?? Authorization::None;
-        $authz = $authzRaw instanceof Authorization ? $authzRaw : Authorization::tryFrom((string)$authzRaw) ?? Authorization::None;
+        $authz = $authzRaw instanceof Authorization ? $authzRaw : Authorization::tryFrom((string) $authzRaw) ?? Authorization::None;
 
         $dataSent = array_values(array_map(static fn (mixed $v): string => (string) $v, (array) ($args['dataSent'] ?? [])));
         $dataReceived = array_values(array_map(static fn (mixed $v): string => (string) $v, (array) ($args['dataReceived'] ?? [])));
@@ -145,17 +223,6 @@ final class DataFlowVisitor extends NodeVisitorAbstract
             context: $context,
             location: $this->currentLocation($attr),
         );
-    }
-
-    private function handleMitigation(Node\Attribute $attr, string $context): void
-    {
-        $args = $this->extractArgs($attr->args);
-        $cwe = (string) ($args['cwe'] ?? $args[0] ?? '');
-        $description = (string) ($args['description'] ?? $args[1] ?? '');
-        $statusRaw = $args['status'] ?? MitigationStatus::Mitigated;
-        $status = $statusRaw instanceof MitigationStatus ? $statusRaw : MitigationStatus::tryFrom((string)$statusRaw) ?? MitigationStatus::Mitigated;
-
-        $this->mitigations[] = new DiscoveredMitigation($cwe, $description, $status, $context, $this->currentLocation($attr));
     }
 
     private function currentLocation(Node\Attribute $attr): ?CodeLocation
@@ -192,7 +259,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
             $expr instanceof Node\Scalar\String_ => $expr->value,
             $expr instanceof Node\Scalar\LNumber => $expr->value,
             $expr instanceof Node\Scalar\DNumber => $expr->value,
-            $expr instanceof Node\Expr\ConstFetch => match(strtolower($expr->name->toString())) {
+            $expr instanceof Node\Expr\ConstFetch => match (strtolower($expr->name->toString())) {
                 'true' => true, 'false' => false, 'null' => null, default => $expr->name->toString(),
             },
             $expr instanceof Node\Expr\Array_ => $this->resolveArray($expr),
@@ -233,8 +300,7 @@ final class DataFlowVisitor extends NodeVisitorAbstract
 
         foreach ($enumMap as $shortName => $fqn) {
             if (str_ends_with($class, $shortName) || $class === $fqn) {
-                $value = constant($fqn . '::' . $const);
-                return $value;
+                return constant($fqn . '::' . $const);
             }
         }
 

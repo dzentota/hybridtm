@@ -12,6 +12,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Guide', link: '/en/guide/getting-started' },
+          { text: 'Abuser Stories', link: '/en/guide/abuser-stories' },
           { text: 'Knowledge Base', link: '/en/guide/kb-authoring' },
           { text: 'API Reference', link: '/en/guide/api-reference' },
           { text: 'Migration', link: '/en/guide/migration' },
@@ -23,6 +24,7 @@ export default defineConfig({
               text: 'Studio Guide',
               items: [
                 { text: 'Getting Started', link: '/en/guide/getting-started' },
+                { text: 'Abuser Stories', link: '/en/guide/abuser-stories' },
                 { text: 'Knowledge Base Authoring', link: '/en/guide/kb-authoring' },
                 { text: 'API Reference', link: '/en/guide/api-reference' },
                 { text: 'Migrating from plain hybridtm', link: '/en/guide/migration' },
@@ -34,6 +36,7 @@ export default defineConfig({
               text: 'Studio Guide',
               items: [
                 { text: 'Getting Started', link: '/en/guide/getting-started' },
+                { text: 'Abuser Stories', link: '/en/guide/abuser-stories' },
                 { text: 'Knowledge Base Authoring', link: '/en/guide/kb-authoring' },
                 { text: 'API Reference', link: '/en/guide/api-reference' },
                 { text: 'Migrating from plain hybridtm', link: '/en/guide/migration' },
@@ -59,6 +62,7 @@ export default defineConfig({
       themeConfig: {
         nav: [
           { text: 'Руководство', link: '/ru/guide/getting-started' },
+          { text: 'Abuser Stories', link: '/ru/guide/abuser-stories' },
           { text: 'База знаний', link: '/ru/guide/kb-authoring' },
           { text: 'API', link: '/ru/guide/api-reference' },
           { text: 'Миграция', link: '/ru/guide/migration' },
@@ -70,6 +74,7 @@ export default defineConfig({
               text: 'Руководство по Studio',
               items: [
                 { text: 'Быстрый старт', link: '/ru/guide/getting-started' },
+                { text: 'Abuser Stories', link: '/ru/guide/abuser-stories' },
                 { text: 'Наполнение базы знаний', link: '/ru/guide/kb-authoring' },
                 { text: 'Справочник API', link: '/ru/guide/api-reference' },
                 { text: 'Миграция с чистого hybridtm', link: '/ru/guide/migration' },
@@ -81,6 +86,7 @@ export default defineConfig({
               text: 'Руководство по Studio',
               items: [
                 { text: 'Быстрый старт', link: '/ru/guide/getting-started' },
+                { text: 'Abuser Stories', link: '/ru/guide/abuser-stories' },
                 { text: 'Наполнение базы знаний', link: '/ru/guide/kb-authoring' },
                 { text: 'Справочник API', link: '/ru/guide/api-reference' },
                 { text: 'Миграция с чистого hybridtm', link: '/ru/guide/migration' },

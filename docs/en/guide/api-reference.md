@@ -28,7 +28,7 @@ from `/login_check` or a long-lived `htm_...` token from
 | Method | Path | Notes |
 |---|---|---|
 | `GET` | `/kb/bundle` | The whole merged KB as JSON. ETag = KB content hash; supports `If-None-Match` → 304. |
-| `POST` | `/model-versions/{id}/analyze` | Synchronous, no persistence — the "check as you edit" path. |
+| `POST` | `/model-versions/{id}/analyze` | Synchronous, no persistence — the "check as you edit" path. Response includes findings and, when the model has abuse cases, `storyCoverage`. |
 | `POST` | `/model-versions/{id}/analyze/deep` | Dispatches a Threagile-backed job to the async worker; returns 202 + a job id immediately. |
 | `GET` | `/deep-analysis-results/{id}` | One-shot JSON snapshot of a deep-analysis job. |
 | `GET` | `/deep-analysis-results/{id}/events` | Same data as an SSE stream, polling until a terminal status. |

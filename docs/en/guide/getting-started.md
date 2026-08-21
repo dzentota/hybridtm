@@ -26,11 +26,19 @@ return $model;
 
 ```bash
 php bin/hybridtm analyze --infra=threat-model.php --kb=path/to/kb --format=table
+
+# With code mitigations + Abuser Story coverage gate:
+php bin/hybridtm analyze \
+    --infra=threat-model.php \
+    --source=src/ \
+    --kb=path/to/kb \
+    --fail-on-uncovered-stories
 ```
 
-This is the whole pipeline: DSL → Rule Engine → findings, in one
+This is the whole pipeline: DSL → Rule Engine → findings (and optional story coverage), in one
 command, no database, no server. See [Knowledge Base
-Authoring](/en/guide/kb-authoring) for what goes in `--kb`.
+Authoring](/en/guide/kb-authoring) for what goes in `--kb`, and [Abuser
+Stories](/en/guide/abuser-stories) for attacker-shaped acceptance criteria.
 
 ## Studio (API + canvas editor)
 
@@ -57,15 +65,17 @@ npm run dev
 Open the Studio dev server, sign in with the account you just created,
 and drag a component from the palette onto the canvas. **Run
 analysis** calls the same Rule Engine the CLI does — findings appear
-with a rule trace (**Why did this fire?**) explaining exactly which
-conditions matched.
+with a rule trace (**Why did this fire?**). Use the **Stories** tab to
+author Abuser Stories, link actors/assets/threats, and see coverage
+badges from `storyCoverage`.
 
 ### The core loop
 
 1. Create a project, then a model version under it (a canvas, or `POST
    /api/model_versions` with a canonical-JSON `data` payload).
 2. `POST /model-versions/{id}/analyze` — synchronous, fast, no
-   persistence of the result. This is the "check as you edit" path.
+   persistence of the result. This is the "check as you edit" path
+   (response may include `storyCoverage` when the model has abuse cases).
 3. `POST /model-versions/{id}/analyze/deep` — asynchronous,
    Threagile-backed; poll or stream `GET
    /deep-analysis-results/{id}(/events)`.

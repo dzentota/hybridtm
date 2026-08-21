@@ -30,6 +30,7 @@ final readonly class FlowSubject
         private ThreatModel $model,
         private ModelIndex $index,
         DerivedTraits $derived,
+        ?\HybridTM\Analysis\MitigationIndex $mitigations = null,
     ) {
         $this->sourceId = $sourceId;
         $this->targetId = $link->targetAssetId;
@@ -43,8 +44,8 @@ final readonly class FlowSubject
             ?? throw new \InvalidArgumentException("Unknown source technical asset: {$sourceId}");
         $targetAsset = $model->getTechnicalAsset($this->targetId)
             ?? throw new \InvalidArgumentException("Unknown target technical asset: {$this->targetId}");
-        $this->source = new ComponentSubject($sourceAsset, $model, $derived);
-        $this->target = new ComponentSubject($targetAsset, $model, $derived);
+        $this->source = new ComponentSubject($sourceAsset, $model, $derived, $mitigations);
+        $this->target = new ComponentSubject($targetAsset, $model, $derived, $mitigations);
     }
 
     /** True if source and target sit in different trust boundaries (including "one has none, the other does"). */

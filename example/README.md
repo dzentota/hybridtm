@@ -24,7 +24,7 @@ A complete, runnable HybridTM example modelling a cloud-native PHP e-commerce pl
 
 | Zone | Assets |
 |------|--------|
-| Public Internet | Browser, Stripe |
+| Public Internet | Browser, Stripe, External Attacker |
 | DMZ (WAF + Load Balancer) | Web Application |
 | Internal VPC | Auth Service, Order Service, Notification Service |
 | Data Layer | PostgreSQL, Redis, RabbitMQ |
@@ -70,6 +70,14 @@ php bin/hybridtm compile \
     --source=example/src/ \
     --out=build/threagile.yaml
 
+# 1b. Rule Engine + Abuser Story coverage
+php bin/hybridtm analyze \
+    --infra=example/threat-model.php \
+    --source=example/src/ \
+    --kb=apps/api/kb \
+    --format=table \
+    --fail-on-uncovered-stories
+
 # 2. Generate DFD, risk report, and risk tracking spreadsheet
 mkdir -p build/threagile-output
 docker run --rm \
@@ -83,9 +91,19 @@ open build/threagile-output/report.pdf
 open build/threagile-output/data-flow-diagram.pdf
 ```
 
+## Abuser Stories in this example
+
+| Story id | Narrative (short) | Required CWE | Code link |
+|----------|-------------------|--------------|-----------|
+| `brute-force-login` | Anonymous attacker brute-forces login | `CWE-307` | `#[AbuserStory]` on `AuthenticationService::authenticate` (covered) |
+| `insider-pii-exfil` | Insider exfiltrates customer PII | `CWE-311` | No matching mitigation yet (uncovered — CI fails with `--fail-on-uncovered-stories`) |
+
+Threat actors `external-attacker` and `malicious-insider` use the `threat_actor` trait.
+
 ## What This Example Demonstrates
 
-- **Multi-service modelling** — 9 technical assets across 4 trust boundaries.
+- **Multi-service modelling** — technical assets across 4 trust boundaries, plus threat actors.
+- **Abuser Stories** — DSL `AbuseCase` + `#[AbuserStory]` + coverage via `hybridtm analyze --source=…`.
 - **Multiple `#[AssetId]` contexts** — `web-app`, `auth-service`, and `order-service` each have multiple annotated classes.
 - **Repeatable `#[DataFlow]`** — a single method can fan out to multiple targets.
 - **`#[Mitigation]`** — CWE-tagged security controls documented inline (CWE-89, CWE-307, CWE-312, CWE-362, CWE-613, …).

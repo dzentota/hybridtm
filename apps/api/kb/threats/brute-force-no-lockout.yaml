@@ -12,5 +12,7 @@ spec:
     impact: high
   standards:
       cwe: [307]
+      capec: [49]
+      owasp_asvs: ['V2.2.1']
   countermeasures:
       - CM-ENABLE-ACCOUNT-LOCKOUT

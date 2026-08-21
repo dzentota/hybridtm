@@ -33,6 +33,11 @@ export function DataFlowEdge({
     const targetNode = s.nodes.find((n) => n.id === target)
     return (sourceNode?.parentId ?? null) !== (targetNode?.parentId ?? null)
   })
+  const storyHighlighted = useModelStore((s) => {
+    if (!s.selectedStoryId) return false
+    const story = s.abuseCases.find((c) => c.title === s.selectedStoryId)
+    return Boolean(story?.dataFlowIds?.includes(id))
+  })
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -43,11 +48,13 @@ export function DataFlowEdge({
   })
 
   const color =
-    overlayMode === 'exposure' && crossesBoundary
-      ? 'var(--severity-high)'
-      : d.maxSeverity
-        ? severityColor[d.maxSeverity]
-        : 'var(--text-secondary)'
+    storyHighlighted
+      ? 'var(--accent)'
+      : overlayMode === 'exposure' && crossesBoundary
+        ? 'var(--severity-high)'
+        : d.maxSeverity
+          ? severityColor[d.maxSeverity]
+          : 'var(--text-secondary)'
 
   return (
     <>
@@ -56,7 +63,7 @@ export function DataFlowEdge({
         path={edgePath}
         style={{
           stroke: color,
-          strokeWidth: selected ? 2.5 : 1.5,
+          strokeWidth: selected || storyHighlighted ? 2.5 : 1.5,
           strokeDasharray: crossesBoundary ? '6 4' : undefined,
         }}
       />

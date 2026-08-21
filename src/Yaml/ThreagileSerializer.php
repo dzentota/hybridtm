@@ -20,7 +20,10 @@ final class ThreagileSerializer
             'management_summary_comment' => $model->managementSummaryComment,
             'business_criticality' => $model->businessCriticality->value,
             'questions' => $this->mapOrEmpty($model->getQuestions(), static fn ($q) => $q->answer ?? ''),
-            'abuse_cases' => $this->mapOrEmpty($model->getAbuseCases(), static fn ($c) => $c->description),
+            'abuse_cases' => $this->mapOrEmpty(
+                $model->getAbuseCases(),
+                static fn ($c) => $c->description !== '' ? $c->description : $c->narrative(),
+            ),
             'security_requirements' => $this->mapOrEmpty($model->getSecurityRequirements(), static fn ($r) => $r->description),
             'tags_available' => [],
             'data_assets' => $this->buildDataAssets($model),

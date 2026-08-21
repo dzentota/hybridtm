@@ -8,13 +8,14 @@
 
 1. [CLI-команды](#cli-команды)
 2. [ThreatModel — корневой объект модели](#threatmodel)
-3. [TechnicalAsset — технические компоненты](#technicalasset)
-4. [DataAsset — типы данных](#dataasset)
-5. [TrustBoundary — границы доверия](#trustboundary)
-6. [CommunicationLink — соединения](#communicationlink)
-7. [Атрибуты кода](#атрибуты-кода)
-8. [Перечисления](#перечисления)
-9. [Быстрая шпаргалка по перечислениям](#быстрая-шпаргалка-по-перечислениям)
+3. [AbuseCase — Abuser Stories](#abusecase--abuser-stories)
+4. [TechnicalAsset — технические компоненты](#technicalasset)
+5. [DataAsset — типы данных](#dataasset)
+6. [TrustBoundary — границы доверия](#trustboundary)
+7. [CommunicationLink — соединения](#communicationlink)
+8. [Атрибуты кода](#атрибуты-кода)
+9. [Перечисления](#перечисления)
+10. [Быстрая шпаргалка по перечислениям](#быстрая-шпаргалка-по-перечислениям)
 
 ---
 
@@ -63,6 +64,30 @@ docker run --rm \
 
 ---
 
+### `analyze`
+
+Запускает Rule Engine HybridTM против модели угроз и опционально сканирует PHP-исходники.
+
+```bash
+php bin/hybridtm analyze [options]
+```
+
+| Опция | По умолчанию | Описание |
+|-------|-------------|----------|
+| `--infra=PATH` | `threat-model.php` | Путь к DSL-файлу |
+| `--source=DIR` | _(нет)_ | Скан `#[Mitigation]` / `#[AbuserStory]` |
+| `--kb=DIR` | _(пустая KB)_ | Каталог базы знаний (повторяемый) |
+| `--format=…` | `table` | `table`, `json` или `sarif` |
+| `--min-severity=…` | `low` | Минимальная серьёзность находок |
+| `--fail-on=…` | _(выкл.)_ | Ненулевой exit, если есть finding ≥ severity |
+| `--fail-on-uncovered-stories` | _(выкл.)_ | Ненулевой exit, если Abuser Story `uncovered`/`partial` |
+| `--check-stories` | _(авто)_ | Всегда считать coverage историй |
+| `--include-suppressed` | _(выкл.)_ | Оставлять findings, закрытые `riskTracking` |
+
+С `--source` выражение `component.hasMitigationFor('CWE-…')` начинает работать; в JSON появляется `storyCoverage[]`. См. [Abuser Stories](/ru/guide/abuser-stories).
+
+---
+
 ## ThreatModel
 
 Корневой объект модели. Создаётся в DSL-файле, возвращается через `return $model;`.
@@ -91,11 +116,46 @@ $model = new ThreatModel('Название системы');
 | `addDataAsset(DataAsset)` | Добавить тип данных; возвращает `$this` |
 | `addTechnicalAsset(TechnicalAsset)` | Добавить компонент; возвращает `$this` |
 | `addTrustBoundary(TrustBoundary)` | Добавить границу доверия; возвращает `$this` |
+| `addAbuseCase(AbuseCase)` | Добавить Abuser Story; возвращает `$this` |
 | `getDataAsset(string $id)` | Найти DataAsset по ID или `null` |
 | `getTechnicalAsset(string $id)` | Найти TechnicalAsset по ID или `null` |
+| `getAbuseCase(string $id)` | Найти AbuseCase по ID или `null` |
 | `getDataAssets()` | Все DataAssets, индексированные по ID |
 | `getTechnicalAssets()` | Все TechnicalAssets, индексированные по ID |
 | `getTrustBoundaries()` | Все TrustBoundaries, индексированные по ID |
+| `getAbuseCases()` | Все AbuseCases, индексированные по ID |
+
+---
+
+## AbuseCase — Abuser Stories
+
+Бизнес-сценарий злоупотребления (abuser / misuser story). Для Threagile по-прежнему экспортируется `abuse_cases: { id: description }`; расширенные поля живут в canonical JSON и PHP DSL.
+
+```php
+use HybridTM\DSL\AbuseCase;
+use HybridTM\Enums\AbuseCaseStatus;
+
+$story = new AbuseCase('brute-force-login', 'Подбор паролей на логине');
+$story->asA = 'анонимный атакующий';
+$story->iWant = 'подобрать учётные данные';
+$story->soThat = 'захватить аккаунты';
+$story->actorId = 'external-attacker';
+$story->assetIds = ['auth-service'];
+$story->requiredCwes = ['CWE-307'];
+$story->status = AbuseCaseStatus::Open;
+$model->addAbuseCase($story);
+```
+
+| Свойство | Тип | По умолчанию | Описание |
+|----------|-----|-------------|----------|
+| `id` | `string` | _(конструктор)_ | Стабильный slug |
+| `description` | `string` | `''` | Свободный текст / текст для Threagile |
+| `asA` / `iWant` / `soThat` | `string` | `''` | Agile-нарратив |
+| `actorId` | `?string` | `null` | ID threat-actor TechnicalAsset |
+| `assetIds` / `dataFlowIds` / `dataAssetIds` | `string[]` | `[]` | Scope архитектуры |
+| `threatIds` | `string[]` | `[]` | ID угроз KB |
+| `requiredCwes` | `string[]` | `[]` | Например `CWE-307` |
+| `status` | `AbuseCaseStatus` | `Open` | Жизненный цикл истории |
 
 ---
 
@@ -330,6 +390,23 @@ public function findUser(int $id): array { }
 | `MitigationStatus::InProgress` | `in-progress` | В работе |
 | `MitigationStatus::Accepted` | `accepted` | Риск принят (с обоснованием) |
 | `MitigationStatus::Unchecked` | `unchecked` | Не проверено |
+
+Передайте `--source=` в `hybridtm analyze`, чтобы discoveries питали `hasMitigationFor` и coverage историй.
+
+---
+
+### `#[AbuserStory(...)]`
+
+**Где:** на классе, методе или функции (повторяемый)  
+**Назначение:** связывает код с Abuser Story (`AbuseCase`). Ставьте рядом с `#[Mitigation]`, чтобы coverage мог проверить required CWEs.
+
+```php
+#[AbuserStory('brute-force-login')]
+#[Mitigation(cwe: 'CWE-307', description: 'Блокировка аккаунта после N неудач')]
+public function authenticate(string $email, string $password): ?string { }
+```
+
+См. [Abuser Stories](/ru/guide/abuser-stories).
 
 ---
 
@@ -599,11 +676,22 @@ class UserController { }
 
 ---
 
+### `AbuseCaseStatus` — статус Abuser Story
+
+| Константа | Значение | Описание |
+|-----------|----------|----------|
+| `Open` | `open` | Ещё не покрыта |
+| `InProgress` | `in-progress` | В работе |
+| `Mitigated` | `mitigated` | Считается митигированной на уровне модели |
+| `Accepted` | `accepted` | Риск по истории принят (coverage → accepted) |
+
+---
+
 ## Быстрая шпаргалка по перечислениям
 
 ```php
 use HybridTM\Enums\{
-    AssetType, Authentication, Authorization, Availability,
+    AbuseCaseStatus, AssetType, Authentication, Authorization, Availability,
     BusinessCriticality, Confidentiality, DataOrigin, DataUsage,
     Encryption, Integrity, Machine, MitigationStatus,
     Protocol, Quantity, Size, Technology, TrustBoundaryType

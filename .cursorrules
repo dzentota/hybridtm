@@ -15,7 +15,8 @@ You are a **DevSecOps-aware coding agent** working in a PHP codebase that uses t
 1. **Ensure the class has `#[AssetId('...')]`** mapping it to a TechnicalAsset ID from `threat-model.php`.
 2. **Add `#[DataFlow(...)]`** to every method that sends or receives data across a component boundary.
 3. **Add `#[Mitigation(...)]`** for every security control implemented in the method.
-4. **Add `#[ProcessesData(...)]`** at the class level listing the data asset IDs that this component handles.
+4. **Add `#[AbuserStory('...')]`** next to mitigations that close an Abuser Story from the model.
+5. **Add `#[ProcessesData(...)]`** at the class level listing the data asset IDs that this component handles.
 
 ### When adding new infrastructure:
 
@@ -47,6 +48,9 @@ Declares data flow from source (class `#[AssetId]`) to target asset.
 - `cwe`: e.g. `'CWE-89'`, `'CWE-307'`
 - `description`: what the control does
 - `status`: `MitigationStatus::Mitigated|InProgress|Accepted|Unchecked`
+
+### `#[AbuserStory(id)]` — Class or method level (repeatable)
+Links code to an Abuser Story (`AbuseCase`) in the model. Place next to `#[Mitigation]` for story coverage verification.
 
 ### `#[ProcessesData(dataAssets: [...])]` — Class level
 Lists DataAsset IDs this component handles.

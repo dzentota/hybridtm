@@ -27,7 +27,7 @@
 | Метод | Путь | Примечания |
 |---|---|---|
 | `GET` | `/kb/bundle` | Вся объединённая KB в виде JSON. ETag = хеш содержимого KB; поддерживает `If-None-Match` → 304. |
-| `POST` | `/model-versions/{id}/analyze` | Синхронно, без сохранения — путь «проверка по мере редактирования». |
+| `POST` | `/model-versions/{id}/analyze` | Синхронно, без сохранения — путь «проверка по мере редактирования». В ответе — findings и, при наличии abuse cases, `storyCoverage`. |
 | `POST` | `/model-versions/{id}/analyze/deep` | Отправляет задачу на основе Threagile в асинхронный воркер; сразу возвращает 202 + id задачи. |
 | `GET` | `/deep-analysis-results/{id}` | Разовый JSON-снимок задачи глубокого анализа. |
 | `GET` | `/deep-analysis-results/{id}/events` | Те же данные в виде SSE-потока, опрос до достижения финального статуса. |

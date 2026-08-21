@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace HybridTM\Tests\Analysis\Subjects;
 
 use HybridTM\Analysis\DerivedTraits;
+use HybridTM\Analysis\MitigationIndex;
 use HybridTM\Analysis\Subjects\ComponentSubject;
 use HybridTM\DSL\DataAsset;
 use HybridTM\DSL\TechnicalAsset;
@@ -110,5 +111,34 @@ final class ComponentSubjectTest extends TestCase
 
         $subject = new ComponentSubject($asset, $model, new DerivedTraits());
         self::assertFalse($subject->hasMitigationFor('CWE-89'));
+    }
+
+    public function testHasMitigationForUsesMitigationIndex(): void
+    {
+        $model = new ThreatModel('App');
+        $asset = new TechnicalAsset('svc');
+        $model->addTechnicalAsset($asset);
+
+        $index = MitigationIndex::fromDiscoveries([
+            new \HybridTM\Compiler\DiscoveredMitigation(
+                'CWE-89',
+                'ORM',
+                \HybridTM\Enums\MitigationStatus::Mitigated,
+                'App\\Svc::save',
+                assetId: 'svc',
+            ),
+            new \HybridTM\Compiler\DiscoveredMitigation(
+                'CWE-307',
+                'WIP',
+                \HybridTM\Enums\MitigationStatus::InProgress,
+                'App\\Svc::login',
+                assetId: 'svc',
+            ),
+        ]);
+
+        $subject = new ComponentSubject($asset, $model, new DerivedTraits(), $index);
+        self::assertTrue($subject->hasMitigationFor('CWE-89'));
+        self::assertFalse($subject->hasMitigationFor('CWE-307'));
+        self::assertFalse($subject->hasMitigationFor('CWE-311'));
     }
 }

@@ -51,6 +51,7 @@ final class AstScanner
             $result->mitigations,
             $result->processesData,
             array_merge($result->warnings, $warnings),
+            $result->abuserStoryRefs,
         );
     }
 }

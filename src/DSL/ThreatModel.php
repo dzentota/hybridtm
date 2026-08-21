@@ -161,4 +161,9 @@ class ThreatModel
     {
         return $this->technicalAssets[$id] ?? null;
     }
+
+    public function getAbuseCase(string $id): ?AbuseCase
+    {
+        return $this->abuseCases[$id] ?? null;
+    }
 }

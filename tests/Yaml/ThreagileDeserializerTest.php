@@ -315,7 +315,32 @@ final class ThreagileDeserializerTest extends TestCase
         // $description likewise has no YAML representation (see class docblock).
         $model->description = '';
 
+        // Abuser Story structured fields, traits, and PropertyBag are HybridTM
+        // extensions — Threagile YAML only keeps abuse_cases as id→description.
+        $this->stripHybridExtensions($model);
+        $this->stripHybridExtensions($roundTripped);
+
         self::assertEquals($model, $roundTripped);
+    }
+
+    private function stripHybridExtensions(ThreatModel $model): void
+    {
+        foreach ($model->getTechnicalAssets() as $asset) {
+            $asset->traits = [];
+            $asset->properties = new \HybridTM\DSL\PropertyBag();
+        }
+        foreach ($model->getAbuseCases() as $case) {
+            $case->asA = '';
+            $case->iWant = '';
+            $case->soThat = '';
+            $case->actorId = null;
+            $case->assetIds = [];
+            $case->dataFlowIds = [];
+            $case->dataAssetIds = [];
+            $case->threatIds = [];
+            $case->requiredCwes = [];
+            $case->status = \HybridTM\Enums\AbuseCaseStatus::Open;
+        }
     }
 
     private function normalizeDisplayNames(ThreatModel $model): void

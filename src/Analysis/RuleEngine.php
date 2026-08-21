@@ -39,10 +39,10 @@ use HybridTM\Validation\ModelValidatorInterface;
  *  8. Suppress    — `unless` is handled inline per rule (§ RuleEvaluator).
  *                   Resolved `riskTracking` entries additionally drop a
  *                   matching finding unless `includeSuppressed` is set.
- *                   #[Mitigation]-from-code suppression is NOT implemented:
- *                   AnalyzerInterface::analyze() has no parameter carrying
- *                   AstScanner output, so there is nothing to suppress with
- *                   yet — a signature change, not something to fake here.
+ *                   #[Mitigation]-from-code suppression works when
+ *                   AnalysisOptions::$mitigations is populated from AstScanner
+ *                   (`hybridtm analyze --source=...`): ComponentSubject::
+ *                   hasMitigationFor() then returns true for Mitigated CWEs.
  *  9. Score       — Finding::create() computes the base severity from
  *                   likelihood x impact via Severity::calculate();
  *                   SeverityModifierEngine then applies 5 of the 8 §5.3
@@ -53,6 +53,7 @@ use HybridTM\Validation\ModelValidatorInterface;
  *                   (rule, threat, subject) are merged via Finding::mergeWith().
  *                   Merging against a separate Threagile run is T-5.4 and
  *                   needs a Threagile bridge that doesn't exist yet.
+ * 11. Stories     — optional Abuser Story coverage when checkStories is set.
  */
 final class RuleEngine implements AnalyzerInterface
 {
@@ -100,6 +101,7 @@ final class RuleEngine implements AnalyzerInterface
                     kbVersion: $kb->version(),
                 ),
                 inputHash: $inputHash,
+                storyCoverage: [],
             );
         }
 
@@ -154,6 +156,16 @@ final class RuleEngine implements AnalyzerInterface
             static fn (Finding $f): bool => $f->severity->isAtLeast($options->minSeverity),
         ));
 
+        $storyCoverage = [];
+        if ($options->checkStories || $model->getAbuseCases() !== []) {
+            $storyCoverage = (new StoryCoverageAnalyzer())->analyze(
+                $model,
+                $kb,
+                $options->mitigations,
+                $options->abuserStoryRefs,
+            );
+        }
+
         return new AnalysisResult(
             findings: $findings,
             validation: $validation,
@@ -166,6 +178,7 @@ final class RuleEngine implements AnalyzerInterface
                 kbVersion: $kb->version(),
             ),
             inputHash: $inputHash,
+            storyCoverage: $storyCoverage,
         );
     }
 
@@ -177,7 +190,7 @@ final class RuleEngine implements AnalyzerInterface
         $evaluated = 0;
 
         foreach ($model->getTechnicalAssets() as $assetId => $asset) {
-            $subject = new ComponentSubject($asset, $model, $derived);
+            $subject = new ComponentSubject($asset, $model, $derived, $options->mitigations);
             $context = ['component' => $subject];
 
             foreach ($ruleIds as $ruleId) {
@@ -207,7 +220,7 @@ final class RuleEngine implements AnalyzerInterface
                     continue; // dangling link — Validate should already have stopped the pipeline
                 }
 
-                $subject = new FlowSubject($link, $sourceId, $model, $index, $derived);
+                $subject = new FlowSubject($link, $sourceId, $model, $index, $derived, $options->mitigations);
                 $context = ['flow' => $subject];
 
                 foreach ($ruleIds as $ruleId) {

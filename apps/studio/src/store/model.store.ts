@@ -3,6 +3,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { temporal } from 'zundo'
 import type { Edge, Node } from '@xyflow/react'
 import type {
+  CanonicalAbuserStory,
   CanonicalDataAsset,
   CanonicalDataFlow,
   CanonicalModel,
@@ -13,6 +14,7 @@ import type {
   ModelLayout,
   PropertyBag,
   PropertyValue,
+  StoryCoverage,
 } from '../api/types'
 
 export interface ComponentNodeData extends Record<string, unknown> {
@@ -266,10 +268,13 @@ interface ModelState {
   nodes: StudioNode[]
   edges: StudioEdge[]
   dataAssets: CanonicalDataAsset[]
+  abuseCases: CanonicalAbuserStory[]
   selectedId: string | null
   selectedEdgeId: string | null
+  selectedStoryId: string | null
   focusSubjectId: string | null
   findings: Finding[]
+  storyCoverage: StoryCoverage[]
   lastSavedAt: string | null
   overlayMode: OverlayMode
 
@@ -277,6 +282,7 @@ interface ModelState {
   setEdges: (updater: (edges: StudioEdge[]) => StudioEdge[]) => void
   select: (id: string | null) => void
   selectEdge: (id: string | null) => void
+  selectStory: (id: string | null) => void
   setFocusSubject: (id: string | null) => void
   removeNode: (id: string) => void
   duplicateNode: (id: string) => void
@@ -285,6 +291,9 @@ interface ModelState {
   addDataAsset: (name: string, classification?: string) => CanonicalDataAsset
   updateDataAsset: (id: string, patch: Partial<Pick<CanonicalDataAsset, 'name' | 'classification'>>) => void
   removeDataAsset: (id: string) => void
+  addAbuseCase: (partial?: Partial<CanonicalAbuserStory>) => CanonicalAbuserStory
+  updateAbuseCase: (title: string, patch: Partial<CanonicalAbuserStory>) => void
+  removeAbuseCase: (title: string) => void
 
   addComponentFromKb: (kbId: string, kb: KbComponent, position: { x: number; y: number }) => void
   insertTemplate: (
@@ -300,7 +309,7 @@ interface ModelState {
   updateEdgeData: (edgeId: string, patch: Partial<DataFlowEdgeData>) => void
   connect: (sourceId: string, targetId: string) => void
 
-  applyFindings: (findings: Finding[]) => void
+  applyFindings: (findings: Finding[], storyCoverage?: StoryCoverage[]) => void
   toCanonicalModel: () => CanonicalModel
   toLayout: () => ModelLayout
   loadCanonicalModel: (model: CanonicalModel, layout?: ModelLayout | null) => void
@@ -316,10 +325,13 @@ export const useModelStore = create<ModelState>()(
       nodes: [],
       edges: [],
       dataAssets: [],
+      abuseCases: [],
       selectedId: null,
       selectedEdgeId: null,
+      selectedStoryId: null,
       focusSubjectId: null,
       findings: [],
+      storyCoverage: [],
       lastSavedAt: null,
       overlayMode: 'risks',
 
@@ -327,8 +339,9 @@ export const useModelStore = create<ModelState>()(
       setEdges: (updater) => set((s) => ({ edges: updater(s.edges) })),
       // Selecting a node clears any edge selection and vice versa — the
       // Inspector shows one or the other, never both.
-      select: (id) => set({ selectedId: id, selectedEdgeId: id ? null : get().selectedEdgeId }),
-      selectEdge: (id) => set({ selectedEdgeId: id, selectedId: id ? null : get().selectedId }),
+      select: (id) => set({ selectedId: id, selectedEdgeId: id ? null : get().selectedEdgeId, selectedStoryId: null }),
+      selectEdge: (id) => set({ selectedEdgeId: id, selectedId: id ? null : get().selectedId, selectedStoryId: null }),
+      selectStory: (id) => set({ selectedStoryId: id, selectedId: null, selectedEdgeId: null }),
       setFocusSubject: (id) => set({ focusSubjectId: id }),
       // Mirrors what xyflow's own Backspace/Delete key handling does
       // (applyNodeChanges with a "remove" change) — a boundary also drops
@@ -389,6 +402,53 @@ export const useModelStore = create<ModelState>()(
               dataReceived: e.data?.dataReceived?.filter((aid) => aid !== id),
             },
           })),
+        }))
+      },
+
+      addAbuseCase: (partial) => {
+        const title = partial?.title && /^[a-z][a-z0-9-]{0,62}$/.test(partial.title)
+          ? partial.title
+          : freshId('story')
+        const story: CanonicalAbuserStory = {
+          title,
+          text: partial?.text ?? '',
+          asA: partial?.asA ?? '',
+          iWant: partial?.iWant ?? '',
+          soThat: partial?.soThat ?? '',
+          actorId: partial?.actorId ?? null,
+          assetIds: partial?.assetIds ?? [],
+          dataFlowIds: partial?.dataFlowIds ?? [],
+          dataAssetIds: partial?.dataAssetIds ?? [],
+          threatIds: partial?.threatIds ?? [],
+          requiredCwes: partial?.requiredCwes ?? [],
+          status: partial?.status ?? 'open',
+        }
+        set((s) => ({ abuseCases: [...s.abuseCases, story], selectedStoryId: story.title }))
+        return story
+      },
+
+      updateAbuseCase: (title, patch) => {
+        set((s) => ({
+          abuseCases: s.abuseCases.map((c) => {
+            if (c.title !== title) return c
+            const next = { ...c, ...patch }
+            if (patch.title && patch.title !== title) {
+              // Keep selection in sync when renaming the story id.
+              return next
+            }
+            return next
+          }),
+          selectedStoryId:
+            get().selectedStoryId === title && patch.title && patch.title !== title
+              ? patch.title
+              : get().selectedStoryId,
+        }))
+      },
+
+      removeAbuseCase: (title) => {
+        set((s) => ({
+          abuseCases: s.abuseCases.filter((c) => c.title !== title),
+          selectedStoryId: s.selectedStoryId === title ? null : s.selectedStoryId,
         }))
       },
 
@@ -521,7 +581,7 @@ export const useModelStore = create<ModelState>()(
         }))
       },
 
-      applyFindings: (findings) => {
+      applyFindings: (findings, storyCoverage = []) => {
         const bySubject = new Map<string, Finding[]>()
         for (const f of findings) {
           const list = bySubject.get(f.subject) ?? []
@@ -543,6 +603,7 @@ export const useModelStore = create<ModelState>()(
 
         set((s) => ({
           findings,
+          storyCoverage,
           nodes: s.nodes.map((n) => {
             if (n.data.kind !== 'component') return n
             const list = bySubject.get(`component:${n.id}`) ?? []
@@ -564,7 +625,7 @@ export const useModelStore = create<ModelState>()(
       },
 
       toCanonicalModel: () => {
-        const { title, nodes, edges, dataAssets } = get()
+        const { title, nodes, edges, dataAssets, abuseCases } = get()
         const componentNodes = nodes.filter(
           (n): n is StudioNode & { data: ComponentNodeData } => n.data.kind === 'component',
         )
@@ -608,6 +669,7 @@ export const useModelStore = create<ModelState>()(
             nested: [],
           })),
           dataFlows,
+          abuseCases,
         }
       },
 
@@ -635,9 +697,12 @@ export const useModelStore = create<ModelState>()(
           nodes,
           edges,
           dataAssets: model.dataAssets ?? [],
+          abuseCases: model.abuseCases ?? [],
           selectedId: null,
           selectedEdgeId: null,
+          selectedStoryId: null,
           findings: [],
+          storyCoverage: [],
         })
       },
 
