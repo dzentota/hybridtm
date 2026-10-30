@@ -140,6 +140,46 @@ final class AstScannerTest extends TestCase
         self::assertSame(MitigationStatus::Mitigated, $m->status);
     }
 
+    public function testVisitorWarnsOnMitigationWithoutAssetIdOrStory(): void
+    {
+        $result = $this->parse(<<<'PHP'
+            <?php
+            use HybridTM\Attributes\Mitigation;
+            use HybridTM\Attributes\AbuserStory;
+
+            class MyService {
+                #[Mitigation(cwe: 'CWE-89', description: 'Use PDO')]
+                public function query(): void {}
+
+                #[AbuserStory('sqli')]
+                #[Mitigation(cwe: 'CWE-89', description: 'Use PDO')]
+                public function linked(): void {}
+            }
+            PHP);
+        self::assertCount(2, $result->mitigations);
+        $hits = array_values(array_filter($result->warnings, static fn (string $w): bool => str_contains($w, '#[Mitigation]')));
+        self::assertCount(1, $hits);
+        self::assertStringContainsString('MyService::query', $hits[0]);
+        self::assertStringContainsString('CWE-89', $hits[0]);
+        self::assertMatchesRegularExpression('/:\\d+/', $hits[0]);
+    }
+
+    public function testVisitorDoesNotWarnOnMitigationWithAssetId(): void
+    {
+        $result = $this->parse(<<<'PHP'
+            <?php
+            use HybridTM\Attributes\Mitigation;
+            use HybridTM\Attributes\AssetId;
+
+            #[AssetId('svc')]
+            class MyService {
+                #[Mitigation(cwe: 'CWE-89', description: 'Use PDO')]
+                public function query(): void {}
+            }
+            PHP);
+        self::assertSame([], $result->warnings);
+    }
+
     public function testVisitorExtractsProcessesDataOnClass(): void
     {
         $result = $this->parse(<<<'PHP'

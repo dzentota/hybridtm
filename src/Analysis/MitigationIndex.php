@@ -15,10 +15,15 @@ final class MitigationIndex
 {
     /**
      * @param array<string, array<string, list<DiscoveredMitigation>>> $byAssetCwe
-     *        assetId => cwe => mitigations
+     *                                                                             assetId => cwe => mitigations
+     * @param list<DiscoveredMitigation> $storyOnly mitigations without assetId but linked to an
+     *                                              #[AbuserStory]; they count for story coverage only, never for asset-level KB rules
+     * @param list<DiscoveredMitigation> $ignored mitigations with neither assetId nor story link
      */
     public function __construct(
         private array $byAssetCwe = [],
+        private array $storyOnly = [],
+        private array $ignored = [],
     ) {
     }
 
@@ -26,14 +31,24 @@ final class MitigationIndex
     public static function fromDiscoveries(array $mitigations): self
     {
         $byAssetCwe = [];
+        $storyOnly = [];
+        $ignored = [];
         foreach ($mitigations as $m) {
-            if ($m->assetId === '' || $m->cwe === '') {
+            if ($m->cwe === '') {
+                continue;
+            }
+            if ($m->assetId === '') {
+                if ($m->abuserStoryIds !== []) {
+                    $storyOnly[] = $m;
+                } else {
+                    $ignored[] = $m;
+                }
                 continue;
             }
             $byAssetCwe[$m->assetId][$m->cwe][] = $m;
         }
 
-        return new self($byAssetCwe);
+        return new self($byAssetCwe, $storyOnly, $ignored);
     }
 
     public function hasMitigated(string $assetId, string $cwe): bool
@@ -65,7 +80,21 @@ final class MitigationIndex
         return new MitigationEvidence($m->cwe, $m->description, $m->status, $m->location);
     }
 
-    /** @return list<DiscoveredMitigation> */
+    /**
+     * Mitigations dropped because they have neither an #[AssetId] nor a sibling #[AbuserStory].
+     *
+     * @return list<DiscoveredMitigation>
+     */
+    public function ignored(): array
+    {
+        return $this->ignored;
+    }
+
+    /**
+     * All usable mitigations: asset-linked ones plus story-linked ones without an asset.
+     *
+     * @return list<DiscoveredMitigation>
+     */
     public function all(): array
     {
         $out = [];
@@ -75,6 +104,10 @@ final class MitigationIndex
                     $out[] = $m;
                 }
             }
+        }
+
+        foreach ($this->storyOnly as $m) {
+            $out[] = $m;
         }
 
         return $out;
