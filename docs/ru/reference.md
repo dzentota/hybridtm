@@ -393,6 +393,12 @@ public function findUser(int $id): array { }
 
 Передайте `--source=` в `hybridtm analyze`, чтобы discoveries питали `hasMitigationFor` и coverage историй.
 
+**Правила связывания:**
+
+- KB-правила уровня актива (`component.hasMitigationFor(...)`) видят только меры, у класса которых есть `#[AssetId]`.
+- Coverage историй также учитывает `#[Mitigation]` без `#[AssetId]`, если рядом на том же классе/методе стоит `#[AbuserStory]` (история сама перечисляет свои активы).
+- `#[Mitigation]` без `#[AssetId]` и без соседнего `#[AbuserStory]` игнорируется, а `analyze --source` выводит предупреждение с `file:line`.
+
 ---
 
 ### `#[AbuserStory(...)]`

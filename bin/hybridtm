@@ -3,9 +3,22 @@
 
 declare(strict_types=1);
 
-$autoload = dirname(__DIR__) . '/vendor/autoload.php';
+// Composer 2.2+ bin proxies expose the project's autoloader path; otherwise
+// fall back to the root-project layout and the vendor/<pkg>/bin layout.
+$candidates = [
+    $GLOBALS['_composer_autoload_path'] ?? null,
+    dirname(__DIR__) . '/vendor/autoload.php',
+    dirname(__DIR__, 3) . '/autoload.php',
+];
+$autoload = null;
+foreach ($candidates as $candidate) {
+    if (is_string($candidate) && $candidate !== '' && file_exists($candidate)) {
+        $autoload = $candidate;
+        break;
+    }
+}
 
-if (!file_exists($autoload)) {
+if ($autoload === null) {
     fwrite(STDERR, "Run `composer install` first.\n");
     exit(1);
 }

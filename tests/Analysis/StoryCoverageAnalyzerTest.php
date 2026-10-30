@@ -66,6 +66,35 @@ final class StoryCoverageAnalyzerTest extends TestCase
         self::assertSame([], $coverage[0]->missingCwes);
     }
 
+    public function testStoryLinkedMitigationWithoutAssetIdCountsForCoverageButNotAssetRules(): void
+    {
+        $model = new ThreatModel('App');
+        $web = new TechnicalAsset('web-app');
+        $model->addTechnicalAsset($web);
+        $case = new AbuseCase('brute-force-login', 'Guess passwords');
+        $case->assetIds = ['web-app'];
+        $case->requiredCwes = ['CWE-307'];
+        $model->addAbuseCase($case);
+
+        $mitigations = MitigationIndex::fromDiscoveries([
+            new DiscoveredMitigation(
+                'CWE-307',
+                'Account lockout',
+                MitigationStatus::Mitigated,
+                'App\\LoginController::authenticate',
+                abuserStoryIds: ['brute-force-login'],
+            ),
+            new DiscoveredMitigation('CWE-89', 'PDO', MitigationStatus::Mitigated, 'App\\Repo::q'),
+        ]);
+
+        $coverage = (new StoryCoverageAnalyzer())->analyze($model, new InMemoryKnowledgeBase([], 'empty'), $mitigations);
+
+        self::assertSame(StoryCoverageStatus::Covered, $coverage[0]->status);
+        self::assertFalse($mitigations->hasMitigated('', 'CWE-307'));
+        self::assertCount(1, $mitigations->ignored());
+        self::assertSame('CWE-89', $mitigations->ignored()[0]->cwe);
+    }
+
     public function testPartialAndAcceptedStatuses(): void
     {
         $model = new ThreatModel('App');

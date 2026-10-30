@@ -164,6 +164,13 @@ final class DataFlowVisitor extends NodeVisitorAbstract
                 $cwes[] = $cwe;
             }
 
+            if ($this->sourceAssetId === '' && $storyIds === []) {
+                $where = ($this->currentFile !== '' ? $this->currentFile : '<code>') . ':' . $attr->getStartLine();
+                $this->warnings[] = "[Mitigation@{$context}] #[Mitigation] for '{$cwe}' at {$where} is ignored: "
+                    . 'its class has no #[AssetId] and it has no sibling #[AbuserStory]. '
+                    . "Add #[AssetId('asset-id')] to the class (asset-level KB rules) or #[AbuserStory('story-id')] next to it (story coverage).";
+            }
+
             $this->mitigations[] = new DiscoveredMitigation(
                 cwe: $cwe,
                 description: $description,

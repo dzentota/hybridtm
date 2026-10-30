@@ -438,6 +438,12 @@ public function findUser(int $id): array {}
 
 Pass `--source=` to `hybridtm analyze` so discoveries feed `hasMitigationFor` and story coverage.
 
+**Linking rules:**
+
+- Asset-level KB rules (`component.hasMitigationFor(...)`) only see mitigations whose class has `#[AssetId]`.
+- Story coverage also counts a `#[Mitigation]` without `#[AssetId]` when a sibling `#[AbuserStory]` sits on the same class/method (the story already names its assets).
+- A `#[Mitigation]` with neither `#[AssetId]` nor a sibling `#[AbuserStory]` is ignored, and `analyze --source` prints a warning with its `file:line`.
+
 ---
 
 ### `#[AbuserStory(...)]`
